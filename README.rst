@@ -20,8 +20,6 @@ The algorithms and techniques used in this library are based on the 2021 textboo
       edition = {2nd}
     }
 
-To start using this library, you may find it helpful to look at this LINK-TO-TUTORIAL-HERE, which gives step-by-step instructions and sample code. You may also want to consult the user guide of `NetworkX <https://networkx.org/>`_
-
 Support
 -------
 The GCol repository is hosted on github `here <https://github.com/Rhyd-Lewis/GCol>`_. If you have any questions, please ask it on `this dedicated question page on StackOverflow <https://stackoverflow.com/search?q=gcol>`_.
