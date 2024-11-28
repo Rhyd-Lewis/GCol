@@ -5,7 +5,7 @@ GCol is an open-source Python library for graph coloring, built on top of Networ
 
 In general, graph coloring problems are NP-hard. This library therefore offers both exponential-time exact algorithms and polynomial-time heuristic algorithms.
 
-GCol currently requires Python 3.7 or above. It also requires an istallation of NetworkX (ideally version 3.4 or above). To install the GCol library from the `Python Package Index (PyPi) <https://pypi.org/>`_, run the following command from a command prompt::
+GCol currently requires Python 3.7 or above. It also requires an installation of NetworkX (ideally version 3.4 or above). To install the GCol library from the `Python Package Index (PyPi) <https://pypi.org/>`_, run the following command from a command prompt::
 
     $ python -m pip install gcol
 
