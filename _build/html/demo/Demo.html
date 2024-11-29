@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>2. An Introduction to the gcol Library &#8212; GCol 0.0.4 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=649a27d8" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css?v=34905f61" />
+    <script src="../_static/documentation_options.js?v=8c5712d9"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3. Case Study: Exam Timetabling" href="../casestudy/CaseStudy.html" />
+    <link rel="prev" title="1. General Info" href="../info.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../casestudy/CaseStudy.html" title="3. Case Study: Exam Timetabling"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../info.html" title="1. General Info"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GCol 0.0.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">2. </span>An Introduction to the <code class="docutils literal notranslate"><span class="pre">gcol</span></code> Library</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="an-introduction-to-the-gcol-library">
+<h1><span class="section-number">2. </span>An Introduction to the <code class="docutils literal notranslate"><span class="pre">gcol</span></code> Library<a class="headerlink" href="#an-introduction-to-the-gcol-library" title="Link to this heading">¶</a></h1>
+<p>In this section, we demonstrate the functionality of the <code class="docutils literal notranslate"><span class="pre">gcol</span></code>
+library’s routines using both textual and graphical output. If you have
+not done so already, the <code class="docutils literal notranslate"><span class="pre">gcol</span></code> library should first be installed by
+typing the following at the command line: <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">gcol</span></code>,
+and then restarting the kernal.</p>
+<p>Let us first review of some basic terminology in graph theory.</p>
+<ul class="simple">
+<li><p>A
+<a class="reference external" href="https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)">graph</a>
+is an object comprising a set of nodes that are linked by edges. They
+can visualized in diagram form, as shown below. Graphs are sometimes
+known as <em>networks</em>; nodes are sometimes called <em>vertices</em>.</p></li>
+<li><p>A <a class="reference external" href="https://en.wikipedia.org/wiki/Graph_coloring">node coloring</a> of
+a graph is an assignment of colors to nodes so that all pairs of
+adjacent nodes have different colors. The aim is to use as few colors
+as possible. The smallest number of colors needed to color the nodes
+of a graph <span class="math notranslate nohighlight">\(G\)</span> is known as the graph’s chromatic number, denoted
+by <span class="math notranslate nohighlight">\(\chi(G)\)</span>.</p></li>
+<li><p>An <a class="reference external" href="https://en.wikipedia.org/wiki/Edge_coloring">edge coloring</a> of
+a graph is an assignment of colors to edges so that all pairs of
+adjacent edges have different colors (a pair of edges is considered
+adjacent if and only if they share a common endpoint). The aim is to
+use as few colors as possible. The smallest number of colors needed
+for coloring the edges of a graph <span class="math notranslate nohighlight">\(G\)</span> is known as the graph’s
+chromatic index, denoted by <span class="math notranslate nohighlight">\(\chi'(G)\)</span>. According to Vizing’s
+theorem, <span class="math notranslate nohighlight">\(\chi'(G)\)</span> is either <span class="math notranslate nohighlight">\(\Delta(G)\)</span> or
+<span class="math notranslate nohighlight">\(\Delta(G) + 1\)</span>, where <span class="math notranslate nohighlight">\(\Delta(G)\)</span> is the maximum degree
+in <span class="math notranslate nohighlight">\(G\)</span>.</p></li>
+<li><p>In the <a class="reference external" href="https://en.wikipedia.org/wiki/Precoloring_extension">node
+precoloring</a>
+problem, some of the nodes have already been assigned colors. The aim
+is to allocate colors to the remaining nodes so that we get a full
+coloring that uses a minimum number of colors. The same concepts apply
+for the edge precoloring problem.</p></li>
+</ul>
+<p>Note that all the above problems are NP-hard.</p>
+<section id="getting-started">
+<h2><span class="section-number">2.1. </span>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h2>
+<p>In this first example, we start by importing the libraries we need. The
+<code class="docutils literal notranslate"><span class="pre">networkx</span></code> library is used to generate and visualize the graphs, the
+<code class="docutils literal notranslate"><span class="pre">matplotlib.pyplot</span></code> is used to render the drawings, and the <code class="docutils literal notranslate"><span class="pre">gcol</span></code>
+library contains all of our graph coloring routines.</p>
+<p>Having imported the relevant libraries, the following code generates a
+<a class="reference external" href="https://en.wikipedia.org/wiki/Regular_dodecahedron">dodecahedron
+graph</a> and draws
+it to the screen.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>              <span class="c1"># popular python library for the graph theory</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>    <span class="c1"># popular library for visualization</span>
+<span class="kn">import</span> <span class="nn">gcol</span>                        <span class="c1"># the gcol library</span>
+
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">dodecahedral_graph</span><span class="p">()</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/output_2_0.png" src="../_images/output_2_0.png" />
+<p>Now that we have defined a graph, we can easily color it using
+<code class="docutils literal notranslate"><span class="pre">gcol</span></code>’s routines. The example below shows how to use the
+<code class="docutils literal notranslate"><span class="pre">gcol.node_coloring()</span></code> routine to color the nodes of <code class="docutils literal notranslate"><span class="pre">G</span></code>. Some
+information about this coloring is then written to the screen, along
+with a visualization. The colors of the nodes are held in the dictionary
+<code class="docutils literal notranslate"><span class="pre">c</span></code>, using the integers <code class="docutils literal notranslate"><span class="pre">0,1,2,...</span></code> as color labels. We can also
+write the coloring as a partition, which groups all nodes of the same
+color. Note that adjacent nodes are always painted with different
+colors, as required.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">node_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Here is a node coloring of the above graph:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The number of colors in this solution is:&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Here is the same solution, expressed as a partition of the nodes:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">gcol</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Here is a picture of this coloring:&quot;</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Here</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">node</span> <span class="n">coloring</span> <span class="n">of</span> <span class="n">the</span> <span class="n">above</span> <span class="n">graph</span><span class="p">:</span>
+<span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">19</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">9</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">18</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">11</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">13</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">12</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">14</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">16</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">17</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="n">The</span> <span class="n">number</span> <span class="n">of</span> <span class="n">colors</span> <span class="ow">in</span> <span class="n">this</span> <span class="n">solution</span> <span class="ow">is</span><span class="p">:</span> <span class="mi">3</span>
+<span class="n">Here</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">same</span> <span class="n">solution</span><span class="p">,</span> <span class="n">expressed</span> <span class="k">as</span> <span class="n">a</span> <span class="n">partition</span> <span class="n">of</span> <span class="n">the</span> <span class="n">nodes</span><span class="p">:</span>
+<span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">18</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">19</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">16</span><span class="p">]]</span>
+<span class="n">Here</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">picture</span> <span class="n">of</span> <span class="n">this</span> <span class="n">coloring</span><span class="p">:</span>
+</pre></div>
+</div>
+<img alt="../_images/output_4_1.png" src="../_images/output_4_1.png" />
+<p>We can also write similar commands to determine the <a class="reference external" href="https://en.wikipedia.org/wiki/Graph_coloring">chromatic
+number</a> and <a class="reference external" href="https://en.wikipedia.org/wiki/Edge_coloring">chromatic
+index</a> of this graph.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The chromatic number of this graph is:&quot;</span><span class="p">,</span> <span class="n">gcol</span><span class="o">.</span><span class="n">chromatic_number</span><span class="p">(</span><span class="n">G</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The chromatic index of this graph is:&quot;</span><span class="p">,</span> <span class="n">gcol</span><span class="o">.</span><span class="n">chromatic_index</span><span class="p">(</span><span class="n">G</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">The</span> <span class="n">chromatic</span> <span class="n">number</span> <span class="n">of</span> <span class="n">this</span> <span class="n">graph</span> <span class="ow">is</span><span class="p">:</span> <span class="mi">3</span>
+<span class="n">The</span> <span class="n">chromatic</span> <span class="n">index</span> <span class="n">of</span> <span class="n">this</span> <span class="n">graph</span> <span class="ow">is</span><span class="p">:</span> <span class="mi">3</span>
+</pre></div>
+</div>
+</section>
+<section id="node-coloring-and-visualization">
+<h2><span class="section-number">2.2. </span>Node Coloring and Visualization<a class="headerlink" href="#node-coloring-and-visualization" title="Link to this heading">¶</a></h2>
+<p>The previous example shows a node 3-coloring of the 20-node dodecahedron
+graph. The positions of the nodes in the visualization have been
+determined using the <code class="docutils literal notranslate"><span class="pre">nx.spring_layout()</span></code> routine from <code class="docutils literal notranslate"><span class="pre">networkx</span></code>;
+however, we can also choose to position the nodes based on their colors.</p>
+<p>The first example below uses the routine <code class="docutils literal notranslate"><span class="pre">gcol.coloring_layout()</span></code> in
+combination with <code class="docutils literal notranslate"><span class="pre">nx.draw_networkx()</span></code> to position the nodes in a ring
+so that those of the same color are next to each other. Similarly, the
+second example uses the routine <code class="docutils literal notranslate"><span class="pre">gcol.multipartite_layout()</span></code> to put
+nodes of the same color into columns.</p>
+<p>Note that, despite looking superficially different, the solutions shown
+are the same as the previous example.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">dodecahedral_graph</span><span class="p">()</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">coloring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">multipartite_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/output_8_0.png" src="../_images/output_8_0.png" />
+<img alt="../_images/output_8_1.png" src="../_images/output_8_1.png" />
+<p>We will now do something similar with a larger graph. In the following,
+the nodes of the graph <code class="docutils literal notranslate"><span class="pre">G</span></code> represent the different characters in the
+play Les Miserables. Edges between nodes then indicate pairs of
+characters that appear in the same scenes together.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">les_miserables_graph</span><span class="p">()</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">node_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">opt_alg</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of colors =&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                 <span class="n">font_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Number</span> <span class="n">of</span> <span class="n">colors</span> <span class="o">=</span> <span class="mi">10</span>
+</pre></div>
+</div>
+<img alt="../_images/output_10_1.png" src="../_images/output_10_1.png" />
+<p>Note in the above that we have used the option <code class="docutils literal notranslate"><span class="pre">opt_alg=1</span></code> meaning
+that an exact algorithm has been used to produce the optimal solution.
+The output tells us that the nodes of <code class="docutils literal notranslate"><span class="pre">G</span></code> can be colored using a
+minimum of ten colors. In this case, it means that it is possible to
+partition the characters of Les Miserables into ten groups (but not
+fewer) so that the characters in each group never appear together.</p>
+<p>The visualization of the above graph appears rather cluttered, however,
+so we might choose to position the nodes according to color and remove
+the node’s labels. This can be done using the following commands, which
+show the same solution.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">coloring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                 <span class="n">with_labels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">multipartite_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                 <span class="n">with_labels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/output_12_0.png" src="../_images/output_12_0.png" />
+<img alt="../_images/output_12_1.png" src="../_images/output_12_1.png" />
+<p>The following code carries out a similar sequence of operations for a
+<a class="reference external" href="https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model">random</a>
+<span class="math notranslate nohighlight">\(G(n,p)\)</span> graph. These graphs are generated at random by taking
+<span class="math notranslate nohighlight">\(n\)</span> nodes and then adding an edge between each pair of nodes at
+random with probability <span class="math notranslate nohighlight">\(p\)</span>. In this case we use <span class="math notranslate nohighlight">\(n=100\)</span> and
+<span class="math notranslate nohighlight">\(p=0.05\)</span>. We also make use of local search by setting
+<code class="docutils literal notranslate"><span class="pre">opt_alg=2</span></code> and <code class="docutils literal notranslate"><span class="pre">it_limit=10000</span></code> in the <code class="docutils literal notranslate"><span class="pre">gcol.node_coloring()</span></code>
+routine.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">gnp_random_graph</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">node_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;random&quot;</span><span class="p">,</span> <span class="n">opt_alg</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">it_limit</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of colors =&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">arf_layout</span><span class="p">(</span><span class="n">G</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">font_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">coloring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                 <span class="n">with_labels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">multipartite_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                 <span class="n">with_labels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Number</span> <span class="n">of</span> <span class="n">colors</span> <span class="o">=</span> <span class="mi">4</span>
+</pre></div>
+</div>
+<img alt="../_images/output_14_1.png" src="../_images/output_14_1.png" />
+<img alt="../_images/output_14_2.png" src="../_images/output_14_2.png" />
+<img alt="../_images/output_14_3.png" src="../_images/output_14_3.png" />
+<p>The final example in this section gives a bespoke routine for producing
+a dense <a class="reference external" href="https://en.wikipedia.org/wiki/Planar_graph">planar graph</a>.
+In the production of this graph, each node is given an <span class="math notranslate nohighlight">\((x,y)\)</span>
+coordinate in the unit square. These coordinates are then used when
+drawing the graph. In the following code, we generate a 1000-node graph
+and color it using local search.</p>
+<p>Note that the nodes of all planar graphs can be colored using at most
+four colors. This is due to the famous <a class="reference external" href="https://en.wikipedia.org/wiki/Four_color_theorem">Four Color
+Theorem</a>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">make_planar_graph</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1">#Function for making a dense planar graph by placing nodes randomly into the unit square</span>
+    <span class="kn">import</span> <span class="nn">random</span>
+    <span class="kn">from</span> <span class="nn">scipy.spatial</span> <span class="kn">import</span> <span class="n">Delaunay</span>
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="p">[(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(),</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">())</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">Delaunay</span><span class="p">(</span><span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">simplices</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">P</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">T</span><span class="p">:</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">([(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">),</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)])</span>
+    <span class="k">return</span> <span class="n">G</span>
+
+<span class="n">G</span> <span class="o">=</span> <span class="n">make_planar_graph</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">node_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">opt_alg</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">it_limit</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of colors =&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">get_node_attributes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s2">&quot;pos&quot;</span><span class="p">),</span>
+                 <span class="n">with_labels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">node_size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Number</span> <span class="n">of</span> <span class="n">colors</span> <span class="o">=</span> <span class="mi">4</span>
+</pre></div>
+</div>
+<img alt="../_images/output_16_1.png" src="../_images/output_16_1.png" />
+</section>
+<section id="edge-coloring-and-visualization">
+<h2><span class="section-number">2.3. </span>Edge Coloring and Visualization<a class="headerlink" href="#edge-coloring-and-visualization" title="Link to this heading">¶</a></h2>
+<p>The following example shows how we can use the <code class="docutils literal notranslate"><span class="pre">gcol</span></code> library to color
+the edges of a graph. As we have discussed, in edge coloring the maximum
+degree <span class="math notranslate nohighlight">\(\Delta(G)\)</span> in the graph <span class="math notranslate nohighlight">\(G\)</span> gives a lower bound on
+the chromatic index <span class="math notranslate nohighlight">\(\chi'(G)\)</span>. Since <span class="math notranslate nohighlight">\(\Delta(G)=3\)</span> and an
+edge-3-coloring has been determined, we can conclude that this is an
+optimal solution.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">dodecahedral_graph</span><span class="p">()</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">edge_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Here is the color of each edge:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Here is the same solution, expressed as a partition of the edges:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">gcol</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Maximum degree   =&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">degree</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">G</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of colors =&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                 <span class="n">edge_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_edge_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Here</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">color</span> <span class="n">of</span> <span class="n">each</span> <span class="n">edge</span><span class="p">:</span>
+<span class="p">{(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">):</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">18</span><span class="p">):</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">16</span><span class="p">):</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">):</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">19</span><span class="p">):</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">17</span><span class="p">,</span> <span class="mi">18</span><span class="p">):</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">17</span><span class="p">):</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">17</span><span class="p">):</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">):</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">13</span><span class="p">):</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">):</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">):</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">):</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">):</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">14</span><span class="p">):</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">19</span><span class="p">):</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">19</span><span class="p">):</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">):</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span> <span class="mi">0</span><span class="p">}</span>
+<span class="n">Here</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">same</span> <span class="n">solution</span><span class="p">,</span> <span class="n">expressed</span> <span class="k">as</span> <span class="n">a</span> <span class="n">partition</span> <span class="n">of</span> <span class="n">the</span> <span class="n">edges</span><span class="p">:</span>
+<span class="p">[[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span> <span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">17</span><span class="p">),</span> <span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">19</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">13</span><span class="p">)],</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">19</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">18</span><span class="p">),</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">17</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">)],</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">),</span> <span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="p">(</span><span class="mi">17</span><span class="p">,</span> <span class="mi">18</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">19</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">14</span><span class="p">),</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">)]]</span>
+<span class="n">Maximum</span> <span class="n">degree</span>   <span class="o">=</span> <span class="mi">3</span>
+<span class="n">Number</span> <span class="n">of</span> <span class="n">colors</span> <span class="o">=</span> <span class="mi">3</span>
+</pre></div>
+</div>
+<img alt="../_images/output_18_1.png" src="../_images/output_18_1.png" />
+<p>Here is another example using a <a class="reference external" href="https://en.wikipedia.org/wiki/Complete_graph">complete
+graph</a>. Edge coloring
+in complete graphs has applications in <a class="reference external" href="https://rhydlewis.eu/papers/sportsPaper.pdf">sports league
+scheduling</a>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">complete_graph</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">edge_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">opt_alg</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Maximum degree   =&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">degree</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">G</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of colors =&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">circular_layout</span><span class="p">(</span><span class="n">G</span><span class="p">),</span>
+                 <span class="n">edge_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_edge_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Maximum</span> <span class="n">degree</span>   <span class="o">=</span> <span class="mi">19</span>
+<span class="n">Number</span> <span class="n">of</span> <span class="n">colors</span> <span class="o">=</span> <span class="mi">19</span>
+</pre></div>
+</div>
+<img alt="../_images/output_20_1.png" src="../_images/output_20_1.png" />
+<p>Here is another example using the same 1000-node planar graph from
+earlier.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">make_planar_graph</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">edge_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">opt_alg</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">it_limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Maximum degree   =&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">degree</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">G</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of colors =&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">get_node_attributes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s2">&quot;pos&quot;</span><span class="p">),</span>
+                 <span class="n">with_labels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">node_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                 <span class="n">edge_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_edge_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Maximum</span> <span class="n">degree</span>   <span class="o">=</span> <span class="mi">11</span>
+<span class="n">Number</span> <span class="n">of</span> <span class="n">colors</span> <span class="o">=</span> <span class="mi">11</span>
+</pre></div>
+</div>
+<img alt="../_images/output_22_1.png" src="../_images/output_22_1.png" />
+</section>
+<section id="precoloring">
+<h2><span class="section-number">2.4. </span>Precoloring<a class="headerlink" href="#precoloring" title="Link to this heading">¶</a></h2>
+<p>As mentioned earlier, in the node precoloring problem some of the nodes
+have already been assigned colors. The aim is to assign colors to the
+remaining nodes so that we get a full coloring that uses a minimum
+number of colors. In the example below, the dictionary <code class="docutils literal notranslate"><span class="pre">P</span></code> is used to
+assign nodes 0, 1, 8, 9 and 10 to colors 0, 1, 2, 3, and 1,
+respectively. This partial coloring is then shown, together with a
+corresponding full coloring.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">dodecahedral_graph</span><span class="p">()</span>
+<span class="n">P</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="mi">9</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">:</span><span class="mi">1</span><span class="p">}</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">P</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">node_precoloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;random&quot;</span><span class="p">,</span> <span class="n">opt_alg</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">it_limit</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/output_24_0.png" src="../_images/output_24_0.png" />
+<img alt="../_images/output_24_1.png" src="../_images/output_24_1.png" />
+<p>A similar process can also be followed for edge precoloring, which the
+following demonstrates. Note that, when defining edges in the dictionary
+<code class="docutils literal notranslate"><span class="pre">P</span></code> the endpoints must be given in the order used by NetworkX. For
+example, in the example below, using <code class="docutils literal notranslate"><span class="pre">(1,0):0</span></code> in <code class="docutils literal notranslate"><span class="pre">P</span></code> instead of
+<code class="docutils literal notranslate"><span class="pre">(0,1):0</span></code> will raise a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">dodecahedral_graph</span><span class="p">()</span>
+<span class="n">P</span> <span class="o">=</span> <span class="p">{(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">):</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">):</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">):</span> <span class="mi">3</span><span class="p">}</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                 <span class="n">edge_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_edge_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">P</span><span class="p">),</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">edge_precoloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;random&quot;</span><span class="p">,</span> <span class="n">opt_alg</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">it_limit</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                 <span class="n">edge_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_edge_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/output_26_0.png" src="../_images/output_26_0.png" />
+<img alt="../_images/output_26_1.png" src="../_images/output_26_1.png" />
+<p>Node precoloring can also be used to solve <a class="reference external" href="https://en.wikipedia.org/wiki/Sudoku">sudoku
+puzzles</a>. The objective in
+sudoku is to fill a <span class="math notranslate nohighlight">\(d^2 \times d^2\)</span> grid with digits so that each
+column, each row, and each of the <span class="math notranslate nohighlight">\(d \times d\)</span> boxes contains all
+of the digits from <span class="math notranslate nohighlight">\(0\)</span> to <span class="math notranslate nohighlight">\(d^2-1\)</span>. The puzzle comes with
+some of the cells filled. The player then needs to fill the remaining
+cells while satisfying the above constraints. Here is an example puzzle
+using <span class="math notranslate nohighlight">\(d=3\)</span> and the digits <span class="math notranslate nohighlight">\(0,1,\ldots,8\)</span>. Blank cells are
+marked by dots.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{pmatrix}
+. &amp; . &amp; . &amp; . &amp; 5 &amp; . &amp; . &amp; . &amp; . \\
+. &amp; . &amp; 8 &amp; . &amp; 1 &amp; . &amp; . &amp; . &amp; . \\
+. &amp; . &amp; . &amp; . &amp; . &amp; . &amp; . &amp; 1 &amp; 2 \\
+. &amp; 7 &amp; . &amp; . &amp; . &amp; 2 &amp; . &amp; . &amp; . \\
+. &amp; . &amp; . &amp; 6 &amp; . &amp; . &amp; . &amp; . &amp; . \\
+. &amp; 4 &amp; . &amp; . &amp; . &amp; 0 &amp; . &amp; 3 &amp; . \\
+. &amp; 5 &amp; . &amp; . &amp; . &amp; . &amp; . &amp; . &amp; . \\
+. &amp; . &amp; . &amp; . &amp; 2 &amp; . &amp; 6 &amp; . &amp; . \\
+. &amp; . &amp; . &amp; . &amp; . &amp; . &amp; . &amp; 2 &amp; .
+\end{pmatrix}\end{split}\]</div>
+<p>Sudoku puzzles can be solved by first forming a <a class="reference external" href="https://en.wikipedia.org/wiki/Sudoku_graph">sudoku
+graph</a>, which uses a node
+for each cell in the grid. Edges in this graph occur between all pairs
+of nodes in the same column, row or box. Finally, we use the filled
+cells in the puzzle to precolor the correct nodes. The puzzle is then
+solved by coloring the remaining nodes using <span class="math notranslate nohighlight">\(d^2\)</span> colors. The
+following code shows how to solve the above puzzle</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Function for laying out the nodes of a (d**2 x d**2)-node sudoku puzzle</span>
+<span class="k">def</span> <span class="nf">sudoku_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="o">**</span><span class="mi">2</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="o">**</span><span class="mi">2</span><span class="p">):</span>
+            <span class="n">pos</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="o">-</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">u</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">pos</span>
+
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">sudoku_graph</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">P</span> <span class="o">=</span> <span class="p">{</span><span class="mi">4</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="mi">11</span><span class="p">:</span><span class="mi">8</span><span class="p">,</span> <span class="mi">13</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="mi">25</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="mi">26</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="mi">28</span><span class="p">:</span><span class="mi">7</span><span class="p">,</span> <span class="mi">32</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="mi">39</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span> <span class="mi">46</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span> <span class="mi">50</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="mi">52</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">55</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="mi">67</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="mi">69</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span> <span class="mi">79</span><span class="p">:</span><span class="mi">2</span><span class="p">}</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Here is the sudoku puzzle from above&quot;</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">sudoku_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">P</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">node_precoloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">opt_alg</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Here is its solution. Number of colors =&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">sudoku_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Here</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">sudoku</span> <span class="n">puzzle</span> <span class="kn">from</span> <span class="nn">above</span>
+</pre></div>
+</div>
+<img alt="../_images/output_28_1.png" src="../_images/output_28_1.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Here</span> <span class="ow">is</span> <span class="n">its</span> <span class="n">solution</span><span class="o">.</span> <span class="n">Number</span> <span class="n">of</span> <span class="n">colors</span> <span class="o">=</span> <span class="mi">9</span>
+</pre></div>
+</div>
+<img alt="../_images/output_28_3.png" src="../_images/output_28_3.png" />
+</section>
+<section id="k-coloring">
+<h2><span class="section-number">2.5. </span><span class="math notranslate nohighlight">\(k\)</span>-Coloring<a class="headerlink" href="#k-coloring" title="Link to this heading">¶</a></h2>
+<p>The <span class="math notranslate nohighlight">\(k\)</span>-coloring problem is a version of the graph coloring
+problem where the desired number of colors <span class="math notranslate nohighlight">\(k\)</span> is stated
+beforehand by the user. For node coloring, if <span class="math notranslate nohighlight">\(k&lt;\chi(G)\)</span>, then no
+solution is possible; for edge coloring, if <span class="math notranslate nohighlight">\(k &lt; \chi'(G)\)</span>, then
+no solution is possible. Several variants of the <span class="math notranslate nohighlight">\(k\)</span>-coloring
+problem can be formulated, including equitable coloring and weighted
+graph coloring, using both weighted and unweighted graphs. Examples are
+considered below.</p>
+<p>In this first example, we make use of <code class="docutils literal notranslate"><span class="pre">gcol.node_k_coloring()</span></code> method
+to produce <span class="math notranslate nohighlight">\(k\)</span>-colorings of a random <span class="math notranslate nohighlight">\(G(1000,0.05)\)</span> graph
+for <span class="math notranslate nohighlight">\(k=6\)</span>, <span class="math notranslate nohighlight">\(5\)</span>, and <span class="math notranslate nohighlight">\(4\)</span>. (For values of <span class="math notranslate nohighlight">\(k&lt;4\)</span>,
+solutions are not possible and a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> will be returned)</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">gnp_random_graph</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Here is a node 6-coloring of G, &quot;</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">node_k_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="n">opt_alg</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">it_limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">arf_layout</span><span class="p">(</span><span class="n">G</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">font_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;here is a node 5-coloring of G,&quot;</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">node_k_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">opt_alg</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">it_limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">arf_layout</span><span class="p">(</span><span class="n">G</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">font_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;and here is a node 4-coloring of G.&quot;</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">node_k_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">opt_alg</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">it_limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">arf_layout</span><span class="p">(</span><span class="n">G</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">font_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Here</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">node</span> <span class="mi">6</span><span class="o">-</span><span class="n">coloring</span> <span class="n">of</span> <span class="n">G</span><span class="p">,</span>
+</pre></div>
+</div>
+<img alt="../_images/output_30_1.png" src="../_images/output_30_1.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">here</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">node</span> <span class="mi">5</span><span class="o">-</span><span class="n">coloring</span> <span class="n">of</span> <span class="n">G</span><span class="p">,</span>
+</pre></div>
+</div>
+<img alt="../_images/output_30_3.png" src="../_images/output_30_3.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ow">and</span> <span class="n">here</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">node</span> <span class="mi">4</span><span class="o">-</span><span class="n">coloring</span> <span class="n">of</span> <span class="n">G</span><span class="o">.</span>
+</pre></div>
+</div>
+<img alt="../_images/output_30_5.png" src="../_images/output_30_5.png" />
+<p>The following shows a similar process for edge <span class="math notranslate nohighlight">\(k\)</span>-coloring.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">dodecahedral_graph</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Here is an edge 5-coloring of G,&quot;</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">edge_k_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                 <span class="n">edge_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_edge_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;here is an edge 4-coloring of G,&quot;</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">edge_k_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                 <span class="n">edge_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_edge_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;and here is an edge 3-coloring of G.&quot;</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">edge_k_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                 <span class="n">edge_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_edge_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Here</span> <span class="ow">is</span> <span class="n">an</span> <span class="n">edge</span> <span class="mi">5</span><span class="o">-</span><span class="n">coloring</span> <span class="n">of</span> <span class="n">G</span><span class="p">,</span>
+</pre></div>
+</div>
+<img alt="../_images/output_32_1.png" src="../_images/output_32_1.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">here</span> <span class="ow">is</span> <span class="n">an</span> <span class="n">edge</span> <span class="mi">4</span><span class="o">-</span><span class="n">coloring</span> <span class="n">of</span> <span class="n">G</span><span class="p">,</span>
+</pre></div>
+</div>
+<img alt="../_images/output_32_3.png" src="../_images/output_32_3.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ow">and</span> <span class="n">here</span> <span class="ow">is</span> <span class="n">an</span> <span class="n">edge</span> <span class="mi">3</span><span class="o">-</span><span class="n">coloring</span> <span class="n">of</span> <span class="n">G</span><span class="o">.</span>
+</pre></div>
+</div>
+<img alt="../_images/output_32_5.png" src="../_images/output_32_5.png" />
+<section id="equitable-k-coloring">
+<h3><span class="section-number">2.5.1. </span>Equitable <span class="math notranslate nohighlight">\(k\)</span>-coloring<a class="headerlink" href="#equitable-k-coloring" title="Link to this heading">¶</a></h3>
+<p>In the equitable node <span class="math notranslate nohighlight">\(k\)</span>-coloring problem we are seeking an
+assignment of colors to nodes so that no two adjacent nodes have the
+same color, and the number of nodes per-color is as uniform as possible.
+We can also choose to define positive weights on the nodes, in which
+case we are seeking a proper coloring in which the sum of the node
+weights in each color is as uniform as possible.</p>
+<p>The following example determines an equitable node <span class="math notranslate nohighlight">\(5\)</span>-coloring
+for a random <span class="math notranslate nohighlight">\(G(100,0.05)\)</span> graph.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">gnp_random_graph</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Here is an equitable node-5-coloring of G,&quot;</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">equitable_node_k_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">opt_alg</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">it_limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">arf_layout</span><span class="p">(</span><span class="n">G</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">font_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">P</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Largest color class has&quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">P</span><span class="p">),</span> <span class="s2">&quot;nodes&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Smallest color class has&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">P</span><span class="p">),</span> <span class="s2">&quot;nodes&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Here</span> <span class="ow">is</span> <span class="n">an</span> <span class="n">equitable</span> <span class="n">node</span><span class="o">-</span><span class="mi">5</span><span class="o">-</span><span class="n">coloring</span> <span class="n">of</span> <span class="n">G</span><span class="p">,</span>
+</pre></div>
+</div>
+<img alt="../_images/output_34_1.png" src="../_images/output_34_1.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Largest</span> <span class="n">color</span> <span class="k">class</span> <span class="nc">has</span> <span class="mi">20</span> <span class="n">nodes</span>
+<span class="n">Smallest</span> <span class="n">color</span> <span class="k">class</span> <span class="nc">has</span> <span class="mi">20</span> <span class="n">nodes</span>
+</pre></div>
+</div>
+<p>The following example also determines an equitable node
+<span class="math notranslate nohighlight">\(5\)</span>-coloring for a random <span class="math notranslate nohighlight">\(G(100,0.05)\)</span> graph. However, in
+this case, all nodes have been assigned weights randomly chosen from the
+set <span class="math notranslate nohighlight">\(\{1,2,\ldots,10\}\)</span>. The figure displays the weight of each
+node and the text gives the total weight of each color class.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+<span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">H</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">gnp_random_graph</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">H</span><span class="p">:</span>
+    <span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">u</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">H</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+    <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Here is an equitable node 5-coloring of the node-weighted graph G,&quot;</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">equitable_node_k_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">opt_alg</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">it_limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="n">labels</span> <span class="o">=</span> <span class="p">{</span><span class="n">u</span><span class="p">:</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">}</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">arf_layout</span><span class="p">(</span><span class="n">G</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">font_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+                 <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">P</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)):</span>
+    <span class="n">Wj</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">v</span><span class="p">][</span><span class="s2">&quot;weight&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="n">j</span><span class="p">]])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Weight of color class&quot;</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">Wj</span><span class="p">),</span> <span class="n">Wj</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Here</span> <span class="ow">is</span> <span class="n">an</span> <span class="n">equitable</span> <span class="n">node</span> <span class="mi">5</span><span class="o">-</span><span class="n">coloring</span> <span class="n">of</span> <span class="n">the</span> <span class="n">node</span><span class="o">-</span><span class="n">weighted</span> <span class="n">graph</span> <span class="n">G</span><span class="p">,</span>
+</pre></div>
+</div>
+<img alt="../_images/output_36_1.png" src="../_images/output_36_1.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Weight of color class 0 = 115 [1, 2, 2, 3, 4, 6, 7, 8, 8, 8, 8, 9, 9, 10, 10, 10, 10]
+Weight of color class 1 = 115 [1, 1, 2, 2, 3, 4, 4, 4, 4, 5, 7, 7, 7, 8, 9, 9, 9, 9, 10, 10]
+Weight of color class 2 = 114 [1, 1, 1, 1, 3, 4, 5, 5, 6, 6, 7, 7, 7, 7, 8, 9, 9, 9, 9, 9]
+Weight of color class 3 = 114 [1, 2, 2, 2, 3, 3, 4, 4, 4, 5, 6, 6, 7, 7, 8, 8, 8, 8, 8, 8, 10]
+Weight of color class 4 = 114 [1, 1, 1, 1, 2, 3, 4, 4, 4, 5, 5, 5, 6, 6, 7, 7, 7, 8, 9, 9, 9, 10]
+</pre></div>
+</div>
+<p>The same process can also be followed to produce equitable edge
+<span class="math notranslate nohighlight">\(k\)</span>-colorings, as the following demonstrates. This uses an
+edge-weighted graph as indicated.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">dodecahedral_graph</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+    <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">edgeweight</span><span class="o">=</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Here is an equitable edge-3-coloring of the edge-weighted graph G,&quot;</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">equitable_edge_k_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;edgeweight&quot;</span><span class="p">,</span> <span class="n">opt_alg</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">it_limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="n">pos</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">edge_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_edge_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">get_edge_attributes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="s1">&#39;edgeweight&#39;</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_edge_labels</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">edge_labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">P</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)):</span>
+    <span class="n">Wj</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">[</span><span class="n">e</span><span class="p">][</span><span class="s2">&quot;edgeweight&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="n">j</span><span class="p">]])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Weight of color class&quot;</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">Wj</span><span class="p">),</span> <span class="n">Wj</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Here</span> <span class="ow">is</span> <span class="n">an</span> <span class="n">equitable</span> <span class="n">edge</span><span class="o">-</span><span class="mi">3</span><span class="o">-</span><span class="n">coloring</span> <span class="n">of</span> <span class="n">the</span> <span class="n">edge</span><span class="o">-</span><span class="n">weighted</span> <span class="n">graph</span> <span class="n">G</span><span class="p">,</span>
+</pre></div>
+</div>
+<img alt="../_images/output_38_1.png" src="../_images/output_38_1.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Weight of color class 0 = 37 [1, 1, 2, 4, 4, 5, 5, 5, 5, 5]
+Weight of color class 1 = 38 [1, 3, 3, 4, 4, 4, 4, 5, 5, 5]
+Weight of color class 2 = 37 [2, 2, 3, 3, 3, 4, 5, 5, 5, 5]
+</pre></div>
+</div>
+</section>
+<section id="minimum-cost-k-coloring">
+<h3><span class="section-number">2.5.2. </span>Minimum Cost <span class="math notranslate nohighlight">\(k\)</span>-Coloring<a class="headerlink" href="#minimum-cost-k-coloring" title="Link to this heading">¶</a></h3>
+<p>Sometimes we are seeking a node <span class="math notranslate nohighlight">\(k\)</span>-coloring but are willing to
+allow some nodes to remain uncolored. This is particularly useful when
+using a value for <span class="math notranslate nohighlight">\(k\)</span> that is less than the graph’s chromatic
+number <span class="math notranslate nohighlight">\(\chi(G)\)</span>. In such cases, we are seeking to minimize the
+number of uncolored nodes, while ensuring that adjacent colored nodes
+never have the same color. We might also choose to add positive weights
+to the nodes, in which case we will seek to minimize the sum of the
+weights of the uncolored nodes.</p>
+<p>The following example creates a node-weighted random graph and then
+produces a node 3-coloring solution using the routine
+<code class="docutils literal notranslate"><span class="pre">gcol.min_cost_k_coloring()</span></code>. This solution has five uncolored nodes
+with a total weight of six.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">H</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">gnp_random_graph</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">H</span><span class="p">:</span>
+    <span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">u</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">H</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+    <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="p">{</span><span class="n">u</span><span class="p">:</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">G</span><span class="p">}</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">min_cost_k_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">weights_at</span><span class="o">=</span><span class="s2">&quot;nodes&quot;</span><span class="p">,</span> <span class="n">it_limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">arf_layout</span><span class="p">(</span><span class="n">G</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span>
+                 <span class="n">node_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">font_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+                 <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">U</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="s2">&quot;weight&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">c</span> <span class="k">if</span> <span class="n">c</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Uncolored nodes have weights&quot;</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">U</span><span class="p">),</span> <span class="s2">&quot;giving a total cost =&quot;</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">U</span><span class="p">))</span>
+</pre></div>
+</div>
+<img alt="../_images/output_40_0.png" src="../_images/output_40_0.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Uncolored</span> <span class="n">nodes</span> <span class="n">have</span> <span class="n">weights</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="n">giving</span> <span class="n">a</span> <span class="n">total</span> <span class="n">cost</span> <span class="o">=</span> <span class="mi">6</span>
+</pre></div>
+</div>
+<p>In a similar fashion, we may prefer a solution in which all nodes are
+assigned to colors, but are willing to allow some clashes in a solution
+(a clash occurs when the endpoints of an edge have the same color). The
+aim is to now <span class="math notranslate nohighlight">\(k\)</span>-color all nodes while minimizing the number of
+clashes. Again, we might also choose to add positive weights to the
+edges, in which case we will seek to minimize the sum of the weights of
+the clashing edges.</p>
+<p>The following example creates a small edge-weighted graph and then
+produces a node 2-coloring using the routine
+<code class="docutils literal notranslate"><span class="pre">gcol.min_cost_k_coloring()</span></code>. Six of the edges are causing a clash,
+giving a total weight of 12.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">dodecahedral_graph</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+    <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">edgeweight</span><span class="o">=</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">min_cost_k_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;edgeweight&quot;</span><span class="p">,</span> <span class="n">weights_at</span><span class="o">=</span><span class="s2">&quot;edges&quot;</span><span class="p">,</span> <span class="n">it_limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">pos</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">get_edge_attributes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="s1">&#39;edgeweight&#39;</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_edge_labels</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">edge_labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">C</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span> <span class="k">if</span> <span class="n">c</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="o">==</span><span class="n">c</span><span class="p">[</span><span class="n">v</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The following edges are causing clashes&quot;</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="s2">&quot;giving a total cost of&quot;</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">G</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="n">v</span><span class="p">][</span><span class="s2">&quot;edgeweight&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">C</span><span class="p">))</span>
+</pre></div>
+</div>
+<img alt="../_images/output_42_0.png" src="../_images/output_42_0.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">The</span> <span class="n">following</span> <span class="n">edges</span> <span class="n">are</span> <span class="n">causing</span> <span class="n">clashes</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">19</span><span class="p">)]</span> <span class="n">giving</span> <span class="n">a</span> <span class="n">total</span> <span class="n">cost</span> <span class="n">of</span> <span class="mi">12</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="kempe-chains">
+<h2><span class="section-number">2.6. </span>Kempe Chains<a class="headerlink" href="#kempe-chains" title="Link to this heading">¶</a></h2>
+<p>Given a node coloring of a graph, a <a class="reference external" href="https://en.wikipedia.org/wiki/Kempe_chain">Kempe
+chain</a> is a connected set
+of nodes that alternate in color. Equivalently, it is a maximal
+connected subgraph that contains nodes of at most two colors.
+Interchanging the colors of the nodes in a Kempe chain creates a new
+coloring that uses the same number of colors, or one fewer color.</p>
+<p>The following example takes a coloring <code class="docutils literal notranslate"><span class="pre">c</span></code> of a graph <code class="docutils literal notranslate"><span class="pre">G</span></code> and
+determines a Kempe using node 18 (which is yellow) and color 1 (green).
+The resultant Kempe chain is therefore the connected component of yellow
+and green nodes that contains node 18. The nodes in this chain are
+stored in the set <code class="docutils literal notranslate"><span class="pre">K</span></code>. A Kempe chain interchange is then performed,
+which swaps the colors of the nodes in <code class="docutils literal notranslate"><span class="pre">K</span></code>, leading to the second
+solution below.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">dodecahedral_graph</span><span class="p">()</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">node_k_coloring</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">K</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">kempe_chain</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Kempe Chain built from node-18 and color 1 =&quot;</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
+
+<span class="c1">#do a Kempe chain interchange</span>
+<span class="n">col1</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="mi">18</span><span class="p">]</span>
+<span class="n">col2</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">K</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">c</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">==</span> <span class="n">col1</span><span class="p">:</span>
+        <span class="n">c</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">col2</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">c</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="n">col1</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Interchanging the colors of these nodes gives:&quot;</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">pos</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_node_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/output_44_0.png" src="../_images/output_44_0.png" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Kempe</span> <span class="n">Chain</span> <span class="n">built</span> <span class="kn">from</span> <span class="nn">node</span><span class="o">-</span><span class="mi">18</span> <span class="ow">and</span> <span class="n">color</span> <span class="mi">1</span> <span class="o">=</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">18</span><span class="p">}</span>
+<span class="n">Interchanging</span> <span class="n">the</span> <span class="n">colors</span> <span class="n">of</span> <span class="n">these</span> <span class="n">nodes</span> <span class="n">gives</span><span class="p">:</span>
+</pre></div>
+</div>
+<img alt="../_images/output_44_2.png" src="../_images/output_44_2.png" />
+</section>
+<section id="independent-sets-cliques-and-coverings">
+<h2><span class="section-number">2.7. </span>Independent Sets, Cliques and Coverings<a class="headerlink" href="#independent-sets-cliques-and-coverings" title="Link to this heading">¶</a></h2>
+<p>In this final section we show how the algorithms of the <code class="docutils literal notranslate"><span class="pre">gcol</span></code> library
+can be used to find (possibly approximate) solutions to the following
+three NP-hard optimization problems.</p>
+<ul class="simple">
+<li><p>The <em>maximum independent set problem</em> involves determining the largest
+subset of nodes in a graph <span class="math notranslate nohighlight">\(G\)</span> such that none of the nodes in
+this set are neighboring. The size of the largest independent set in
+<span class="math notranslate nohighlight">\(G\)</span> is known as the <em>independence number</em>, denoted by
+<span class="math notranslate nohighlight">\(\alpha(G)\)</span>.</p></li>
+<li><p>The <em>minimum node cover problem</em> involves determining the smallest
+subset of nodes in <span class="math notranslate nohighlight">\(G\)</span> such that every edge in the graph has at
+least one endpoint from this set.</p></li>
+<li><p>The <em>maximum clique problem</em> involves determining the largest subset
+of nodes in <span class="math notranslate nohighlight">\(G\)</span> such that every pair of nodes in this set is
+adjacent. The size of the largest clique in a graph <span class="math notranslate nohighlight">\(G\)</span> is known
+as the <em>clique number</em>, denoted by <span class="math notranslate nohighlight">\(\omega(G)\)</span>.</p></li>
+</ul>
+<p>We can also define weights on the nodes, if desired. If these cases the
+aims are to now maximize (or minimize) the sum of the weights of the
+selected nodes.</p>
+<p>The following example demonstrates how a large independent set of nodes
+can be determined in the Les Miserables graph using the
+<code class="docutils literal notranslate"><span class="pre">gcol.max_independent_set()</span></code> method.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">les_miserables_graph</span><span class="p">()</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">max_independent_set</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">it_limit</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In the set of&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="p">),</span> <span class="s2">&quot;Les Miserables characters, there&#39;s a subset of&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">S</span><span class="p">),</span> <span class="s2">&quot;characters who never meet.&quot;</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_set_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">S</span><span class="p">),</span>
+                 <span class="n">node_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">font_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="n">the</span> <span class="nb">set</span> <span class="n">of</span> <span class="mi">77</span> <span class="n">Les</span> <span class="n">Miserables</span> <span class="n">characters</span><span class="p">,</span> <span class="n">there</span><span class="s1">&#39;s a subset of 35 characters who never meet.</span>
+</pre></div>
+</div>
+<img alt="../_images/output_46_1.png" src="../_images/output_46_1.png" />
+<p>In the above, the members of the independent set, whose size we have
+tried to maximize, are shown in yellow. The set of grey nodes, whose
+size has been minimized, gives us a node covering. Hence, we have
+determined solutions to both problems.</p>
+<p>Large cliques can also be found by using the
+<code class="docutils literal notranslate"><span class="pre">gcol.max_independent_set()</span></code> routine on the graph’s complement. A
+demonstration of this is shown below.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">S</span> <span class="o">=</span> <span class="n">gcol</span><span class="o">.</span><span class="n">max_independent_set</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">complement</span><span class="p">(</span><span class="n">G</span><span class="p">),</span> <span class="n">it_limit</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In the set of&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">G</span><span class="p">),</span> <span class="s2">&quot;Les Miserables characters, there&#39;s a subset of&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">S</span><span class="p">),</span> <span class="s2">&quot;characters who form a clique. These are&quot;</span><span class="p">,</span> <span class="n">S</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_set_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">S</span><span class="p">),</span>
+                 <span class="n">node_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">font_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx</span><span class="p">(</span><span class="n">G</span><span class="p">,</span>
+                 <span class="n">nx</span><span class="o">.</span><span class="n">arf_layout</span><span class="p">(</span><span class="n">G</span><span class="p">),</span>
+                 <span class="n">node_color</span><span class="o">=</span><span class="n">gcol</span><span class="o">.</span><span class="n">get_set_colors</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">S</span><span class="p">),</span>
+                 <span class="n">node_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">font_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                 <span class="n">width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="n">the</span> <span class="nb">set</span> <span class="n">of</span> <span class="mi">77</span> <span class="n">Les</span> <span class="n">Miserables</span> <span class="n">characters</span><span class="p">,</span> <span class="n">there</span><span class="s1">&#39;s a subset of 10 characters who form a clique. These are [&#39;</span><span class="n">Combeferre</span><span class="s1">&#39;, &#39;</span><span class="n">Feuilly</span><span class="s1">&#39;, &#39;</span><span class="n">Mabeuf</span><span class="s1">&#39;, &#39;</span><span class="n">Bahorel</span><span class="s1">&#39;, &#39;</span><span class="n">Joly</span><span class="s1">&#39;, &#39;</span><span class="n">Courfeyrac</span><span class="s1">&#39;, &#39;</span><span class="n">Bossuet</span><span class="s1">&#39;, &#39;</span><span class="n">Enjolras</span><span class="s1">&#39;, &#39;</span><span class="n">Marius</span><span class="s1">&#39;, &#39;</span><span class="n">Gavroche</span><span class="s1">&#39;]</span>
+</pre></div>
+</div>
+<img alt="../_images/output_48_1.png" src="../_images/output_48_1.png" />
+<img alt="../_images/output_48_2.png" src="../_images/output_48_2.png" />
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">2. An Introduction to the <code class="docutils literal notranslate"><span class="pre">gcol</span></code> Library</a><ul>
+<li><a class="reference internal" href="#getting-started">2.1. Getting Started</a></li>
+<li><a class="reference internal" href="#node-coloring-and-visualization">2.2. Node Coloring and Visualization</a></li>
+<li><a class="reference internal" href="#edge-coloring-and-visualization">2.3. Edge Coloring and Visualization</a></li>
+<li><a class="reference internal" href="#precoloring">2.4. Precoloring</a></li>
+<li><a class="reference internal" href="#k-coloring">2.5. <span class="math notranslate nohighlight">\(k\)</span>-Coloring</a><ul>
+<li><a class="reference internal" href="#equitable-k-coloring">2.5.1. Equitable <span class="math notranslate nohighlight">\(k\)</span>-coloring</a></li>
+<li><a class="reference internal" href="#minimum-cost-k-coloring">2.5.2. Minimum Cost <span class="math notranslate nohighlight">\(k\)</span>-Coloring</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#kempe-chains">2.6. Kempe Chains</a></li>
+<li><a class="reference internal" href="#independent-sets-cliques-and-coverings">2.7. Independent Sets, Cliques and Coverings</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../info.html"
+                          title="previous chapter"><span class="section-number">1. </span>General Info</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../casestudy/CaseStudy.html"
+                          title="next chapter"><span class="section-number">3. </span>Case Study: Exam Timetabling</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/demo/Demo.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../casestudy/CaseStudy.html" title="3. Case Study: Exam Timetabling"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../info.html" title="1. General Info"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">GCol 0.0.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">2. </span>An Introduction to the <code class="docutils literal notranslate"><span class="pre">gcol</span></code> Library</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, R. Lewis.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    </div>
+  </body>
+</html>
