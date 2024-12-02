@@ -1,5 +1,5 @@
 sphinx
-ipython3
+ipython
 networkx
 numpydoc
 sphinx-math-dollar
