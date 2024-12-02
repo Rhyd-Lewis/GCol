@@ -1,3 +1,6 @@
 sphinx>=5.0.0
 numpydoc
 sphinx-math-dollar
+sphinx.ext.autodoc
+sphinx.ext.viewcode
+sphinx_math_dollar
