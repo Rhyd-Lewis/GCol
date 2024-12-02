@@ -1,3 +1,4 @@
 sphinx
+networkx
 numpydoc
 sphinx-math-dollar
