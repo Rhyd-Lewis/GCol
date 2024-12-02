@@ -29,6 +29,7 @@ extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'numpydoc',
     'sphinx.ext.autosummary',
+    'sphinx.ext.mathjax',
     'sphinx_math_dollar',
 ]
     
