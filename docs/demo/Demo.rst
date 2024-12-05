@@ -2,9 +2,9 @@ An Introduction to the ``gcol`` Library
 =======================================
 
 In this section, we demonstrate the functionality of the ``gcol``
-library’s routines using both textual and graphical output. If you have
+library’s routines. If you have
 not done so already, the ``gcol`` library should first be installed by
-typing the following at the command line: ``python pip install gcol``,
+typing the following at the command line: ``python -m pip install gcol``,
 and then restarting the kernal.
 
 Let us first review of some basic terminology in graph theory.
