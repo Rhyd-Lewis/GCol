@@ -1,9 +1,9 @@
 General Info
 ============
 
-GCol currently requires Python 3.7 or above. It also requires an istallation of NetworkX (ideally version 3.4 or above). To install the GCol library from the Python Package Index (`PyPi <https://pypi.org/>`_), run the following command from a command prompt::
+GCol currently requires Python 3.7 or above. It also requires an installation of NetworkX (ideally version 3.4 or above). To install the library from the Python Package Index (`PyPi <https://pypi.org/>`_), run the following command from a command prompt::
 
-    $ python pip install gcol
+    $ python -m pip install gcol
 
 The algorithms and techniques used in this library are based on the 2021 textbook by Lewis, R. M. R. (2021) `A Guide to Graph Colouring: Algorithms and Applications <https://link.springer.com/book/10.1007/978-3-030-81054-2>`_, Springer Cham. (2nd Edition). In bibtex, this book can be cited as:: 
 
@@ -20,7 +20,7 @@ To start using this library, you might find it helpful to look at this :doc:`dem
 
 Support
 -------
-The GCol repository is hosted on `github <https://github.com/Rhyd-Lewis/GCol>`_. If you have any questions, please ask it on `this dedicated question page on StackOverflow <https://stackoverflow.com/search?q=gcol>`_.
+The GCol repository is hosted on `github <https://github.com/Rhyd-Lewis/GCol>`_. If you have any questions, please ask them on `stackoverflow <https://stackoverflow.com>`_ adding the tag ``graph-coloring``. All documentation is listed `here <https://gcol.readthedocs.io/en/latest/>`_ (website) and `here <https://readthedocs.org/projects/gcol/downloads/pdf/latest/>`_ (pdf).
 
 MIT License
 -----------
