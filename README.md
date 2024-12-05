@@ -45,7 +45,7 @@ If you have any questions or issues, please ask them on
 
 ## Simple example
 
-```
+```python
 >>> import networkx as nx 
 >>> import gcol 
 >>> G = nx.dodecahedral_graph() 
