@@ -20,11 +20,31 @@ class TestColorings:
                 for opt_alg in OPT_ALGS:
                     for it_limit in IT_LIMITS:
                         c = gcol.node_coloring(
-                            G, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit
+                            G,
+                            strategy=strategy,
+                            opt_alg=opt_alg,
+                            it_limit=it_limit
+                        )
+                        assert verify_node_coloring(G, c)
+                        c = gcol.node_colouring(
+                            G,
+                            strategy=strategy,
+                            opt_alg=opt_alg,
+                            it_limit=it_limit
                         )
                         assert verify_node_coloring(G, c)
                         c = gcol.edge_coloring(
-                            G, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit
+                            G,
+                            strategy=strategy,
+                            opt_alg=opt_alg,
+                            it_limit=it_limit
+                        )
+                        assert verify_edge_coloring(G, c)
+                        c = gcol.edge_colouring(
+                            G,
+                            strategy=strategy,
+                            opt_alg=opt_alg,
+                            it_limit=it_limit
                         )
                         assert verify_edge_coloring(G, c)
 
@@ -65,7 +85,8 @@ class TestColorings:
 
     def test_multigraph(self):
         graph = nx.MultiGraph()
-        graph.add_edges_from([(0, 1), (1, 2), (2, 3), (3, 4), (4, 0), (0, 1), (0, 1)])
+        graph.add_edges_from(
+            [(0, 1), (1, 2), (2, 3), (3, 4), (4, 0), (0, 1), (0, 1)])
         pytest.raises(NotImplementedError, gcol.node_coloring, graph)
 
 
@@ -110,6 +131,14 @@ class TestNodePrecolorings:
                             it_limit=it_limit,
                         )
                         assert verify_node_coloring(G, c, precol)
+                        c = gcol.node_precolouring(
+                            G,
+                            precol,
+                            strategy=strategy,
+                            opt_alg=opt_alg,
+                            it_limit=it_limit,
+                        )
+                        assert verify_node_coloring(G, c, precol)
                         c = gcol.node_precoloring(
                             G,
                             None,
@@ -119,13 +148,18 @@ class TestNodePrecolorings:
                         )
                         assert verify_node_coloring(G, c)
                         c = gcol.node_precoloring(
-                            G, {}, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit
+                            G,
+                            {},
+                            strategy=strategy,
+                            opt_alg=opt_alg,
+                            it_limit=it_limit
                         )
                         assert verify_node_coloring(G, c, {})
 
     def test_bad_precol1(self):
         graph = singleton()
-        pytest.raises(TypeError, gcol.node_precoloring, graph, precol="this is not a dict")
+        pytest.raises(TypeError, gcol.node_precoloring,
+                      graph, precol="this is not a dict")
 
     def test_bad_precol2(self):
         graph = three_node_clique()
@@ -133,15 +167,19 @@ class TestNodePrecolorings:
 
     def test_bad_precol3(self):
         graph = three_node_clique()
-        pytest.raises(ValueError, gcol.node_precoloring, graph, precol={0: "color 5"})
+        pytest.raises(ValueError, gcol.node_precoloring,
+                      graph, precol={0: "color 5"})
 
     def test_bad_precol4(self):
         graph = three_node_clique()
-        pytest.raises(ValueError, gcol.node_precoloring, graph, precol={0: 0, 1: 0})
+        pytest.raises(ValueError, gcol.node_precoloring,
+                      graph, precol={0: 0, 1: 0})
 
     def test_bad_precol5(self):
         graph = three_node_clique()
-        pytest.raises(ValueError, gcol.node_precoloring, graph, precol={0: 0, 1: 3})
+        pytest.raises(ValueError, gcol.node_precoloring,
+                      graph, precol={0: 0, 1: 3})
+
 
 class TestEdgePrecolorings:
     def test_many(self):
@@ -169,6 +207,14 @@ class TestEdgePrecolorings:
                             it_limit=it_limit,
                         )
                         assert verify_edge_coloring(G, c, precol)
+                        c = gcol.edge_precolouring(
+                            G,
+                            precol,
+                            strategy=strategy,
+                            opt_alg=opt_alg,
+                            it_limit=it_limit,
+                        )
+                        assert verify_edge_coloring(G, c, precol)
                         c = gcol.edge_precoloring(
                             G,
                             None,
@@ -178,29 +224,38 @@ class TestEdgePrecolorings:
                         )
                         assert verify_edge_coloring(G, c)
                         c = gcol.edge_precoloring(
-                            G, {}, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit
+                            G,
+                            {},
+                            strategy=strategy,
+                            opt_alg=opt_alg,
+                            it_limit=it_limit
                         )
                         assert verify_edge_coloring(G, c, {})
 
     def test_bad_precol1(self):
         graph = three_node_clique()
-        pytest.raises(TypeError, gcol.edge_precoloring, graph, precol="this is not a dict")
+        pytest.raises(TypeError, gcol.edge_precoloring,
+                      graph, precol="this is not a dict")
 
     def test_bad_precol2(self):
         graph = three_node_clique()
-        pytest.raises(ValueError, gcol.edge_precoloring, graph, precol={(1, 4): 1})
+        pytest.raises(ValueError, gcol.edge_precoloring,
+                      graph, precol={(1, 4): 1})
 
     def test_bad_precol3(self):
         graph = three_node_clique()
-        pytest.raises(ValueError, gcol.edge_precoloring, graph, precol={(0, 1): "color 5"})
+        pytest.raises(ValueError, gcol.edge_precoloring,
+                      graph, precol={(0, 1): "color 5"})
 
     def test_bad_precol4(self):
         graph = three_node_clique()
-        pytest.raises(ValueError, gcol.edge_precoloring, graph, precol={(0, 1): 0, (1, 2): 0})
+        pytest.raises(ValueError, gcol.edge_precoloring,
+                      graph, precol={(0, 1): 0, (1, 2): 0})
 
     def test_bad_precol5(self):
         graph = three_node_clique()
-        pytest.raises(ValueError, gcol.edge_precoloring, graph, precol={(0, 1): 0, (1, 2): 3})
+        pytest.raises(ValueError, gcol.edge_precoloring,
+                      graph, precol={(0, 1): 0, (1, 2): 3})
 
 
 class TestKempeChain:
@@ -234,12 +289,30 @@ class TestKColourings:
                         G, len(G), opt_alg=opt_alg, it_limit=it_limit
                     )
                     assert verify_node_coloring(G, c)
+                    c = gcol.node_k_colouring(
+                        G, len(G), opt_alg=opt_alg, it_limit=it_limit
+                    )
+                    assert verify_node_coloring(G, c)
                     c = gcol.edge_k_coloring(
-                        G, get_max_degree(G) + 1, opt_alg=opt_alg, it_limit=it_limit
+                        G,
+                        get_max_degree(G) + 1,
+                        opt_alg=opt_alg,
+                        it_limit=it_limit
+                    )
+                    assert verify_edge_coloring(G, c)
+                    c = gcol.edge_k_colouring(
+                        G,
+                        get_max_degree(G) + 1,
+                        opt_alg=opt_alg,
+                        it_limit=it_limit
                     )
                     assert verify_edge_coloring(G, c)
                     c = gcol.equitable_node_k_coloring(
-                        G, len(G), weight=None, opt_alg=opt_alg, it_limit=it_limit
+                        G,
+                        len(G),
+                        weight=None,
+                        opt_alg=opt_alg,
+                        it_limit=it_limit
                     )
                     assert verify_node_coloring(G, c)
                     c = gcol.equitable_edge_k_coloring(
@@ -270,7 +343,8 @@ class TestKColourings:
         graph.add_nodes_from([0, 1, 2], weight=-5)
         graph.add_edges_from([(0, 1), (1, 2), (2, 0)])
         pytest.raises(
-            ValueError, gcol.equitable_node_k_coloring, graph, 3, weight="weight"
+            ValueError,
+            gcol.equitable_node_k_coloring, graph, 3, weight="weight"
         )
 
     def test_bad_edge_weights(self):
@@ -278,7 +352,8 @@ class TestKColourings:
         graph.add_nodes_from([0, 1, 2])
         graph.add_edges_from([(0, 1), (1, 2), (2, 0)], weight=-5)
         pytest.raises(
-            ValueError, gcol.equitable_edge_k_coloring, graph, 3, weight="weight"
+            ValueError,
+            gcol.equitable_edge_k_coloring, graph, 3, weight="weight"
         )
 
 
@@ -301,15 +376,48 @@ class TestMinCostKColoring:
             for it_limit in IT_LIMITS:
                 for k in range(1, len(G) + 1):
                     gcol.min_cost_k_coloring(
-                        G, k, weight=None, weights_at="nodes", it_limit=it_limit
+                        G,
+                        k,
+                        weight=None,
+                        weights_at="nodes",
+                        it_limit=it_limit
+                    )
+                    gcol.min_cost_k_colouring(
+                        G,
+                        k,
+                        weight=None,
+                        weights_at="nodes",
+                        it_limit=it_limit
                     )
                 for k in range(2, len(G) + 1):
                     gcol.min_cost_k_coloring(
-                        G, k, weight=None, weights_at="edges", it_limit=it_limit
+                        G,
+                        k,
+                        weight=None,
+                        weights_at="edges",
+                        it_limit=it_limit
+                    )
+                    gcol.min_cost_k_colouring(
+                        G,
+                        k,
+                        weight=None,
+                        weights_at="edges",
+                        it_limit=it_limit
                     )
                 for k in range(2, len(G) + 1):
                     gcol.min_cost_k_coloring(
-                        G, k, weight="weight", weights_at="edges", it_limit=it_limit
+                        G,
+                        k,
+                        weight="weight",
+                        weights_at="edges",
+                        it_limit=it_limit
+                    )
+                    gcol.min_cost_k_colouring(
+                        G,
+                        k,
+                        weight="weight",
+                        weights_at="edges",
+                        it_limit=it_limit
                     )
 
     def test_bad_node_weights(self):
@@ -379,7 +487,7 @@ def verify_node_coloring(G, c, precol=None):
         for u in G:
             for v in G[u]:
                 assert c[u] != c[v], "Adjacent nodes have the same color"
-        if precol != None:
+        if precol is not None:
             for v in precol:
                 assert (
                     c[v] == precol[v]
@@ -408,8 +516,8 @@ def verify_edge_coloring(G, c, precol=None):
                         or e1[1] == e2[0]
                         or e1[1] == e2[1]
                     ):
-                        assert c[e1] != c[e2], "Adjacent edges have the same color"
-        if precol != None:
+                        assert c[e1] != c[e2], "Adjacent edges are same color"
+        if precol is not None:
             for u, v in precol:
                 assert (
                     c[u, v] == precol[u, v]
