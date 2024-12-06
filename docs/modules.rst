@@ -1,7 +1,8 @@
 Documentation
 =============
 
-The following commands are available in the ``gcol`` graph coloring library.
+The following methods are available in the ``gcol`` graph coloring library. All methods containing the word ``color`` in their name can also be called using the alternative spelling ``colour``.
 
 .. automodule:: gcol.coloring
    :members:
+   :exclude-members: colouring_layout, edge_colouring, edge_k_colouring, edge_precolouring, equitable_edge_k_colouring, equitable_node_k_colouring, get_edge_colours, get_node_colours, get_set_colours, min_cost_k_colouring, node_colouring, node_k_colouring, node_precolouring
