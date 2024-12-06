@@ -13,9 +13,13 @@ heuristic algorithms.
 GCol currently requires Python 3.7 or above. It also requires an
 installation of NetworkX (ideally version 3.4 or above). To install the
 GCol library from the [Python Package Index (PyPi)](https://pypi.org/),
-run the following command from a command prompt:
+run the following command at the command prompt:
 
-    $ python -m pip install gcol
+    python -m pip install gcol
+	
+or execute the following in a notebook:
+
+	!python -m pip install gcol
 
 The algorithms and techniques used in this library are based on the 2021
 textbook by Lewis, R. M. R. (2021) [A Guide to Graph Colouring:
@@ -36,8 +40,8 @@ Springer Cham. (2nd Edition). In bibtex, this book can be cited as:
 
 The GCol repository is hosted on github
 [here](https://github.com/Rhyd-Lewis/GCol). Its documentation can be
-found [here](https://gcol.readthedocs.io/en/latest/) (website) and 
-[here](https://readthedocs.org/projects/gcol/downloads/pdf/latest/) (pdf).
+found on [this website](https://gcol.readthedocs.io/en/latest/) and in 
+[this pdf](https://readthedocs.org/projects/gcol/downloads/pdf/latest/).
 
 If you have any questions or issues, please ask them on 
 [stackoverflow](https://stackoverflow.com), making sure to add the tag

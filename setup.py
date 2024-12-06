@@ -1,13 +1,13 @@
 from setuptools import setup, find_packages
 
-# read the contents of your README file
+# read the contents of the README file
 from pathlib import Path
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='gcol',
-    version='0.0.4',
+    version='1.2.2',
     author='Rhyd Lewis',
     author_email='lewisr9@cardiff.ac.uk',
     url="https://github.com/Rhyd-Lewis/GCol",
