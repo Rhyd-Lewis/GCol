@@ -85,10 +85,10 @@ def _LS_equitable(G, c, k, W):
                    len(ColWeight)) ** 0.5
     V = list(G)
     while True:
-        # Initialise data structures. KCRec[v,j] holds the size of the Kempe chain
-        # formed by node v and color j (once calculated). A[v,j] gives a list of
-        # all neighbours of v assigned to color j. These allow all possible Kempe
-        # chains to be evaluated in O(vk + m) time
+        # Initialise data structures. KCRec[v,j] holds the size of the Kempe
+        # chain formed by node v and color j (once calculated). A[v,j] gives a
+        # list of all neighbours of v assigned to color j. These allow all
+        # possible Kempe chains to be evaluated in O(vk + m) time
         KCRec = {v: [0 for j in range(k)] for v in G}
         A = {(v, j): [] for v in G for j in range(k)}
         for u in G:

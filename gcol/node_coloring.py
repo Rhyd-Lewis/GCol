@@ -19,14 +19,14 @@ def _greedy(G, V):
 
 
 def _dsatur(G, c=None):
-    # Dsatur algorithm for graph coloring. First initialise the data structures.
-    # These are: the colors of each node c[v]; the degree d[v] of each uncolored
-    # node in the graph induced by uncolored nodes; the set of colors adjacent
-    # to each uncolored node (initially empty sets); and a priority queue q In q,
-    # each element has 4 values for the node v. The first two are the the saturation
-    # degree of v, d[v] (as a tie breaker). The third value is a counter, which just
-    # stops comparisons being made with the final values, which might be of different
-    # types.
+    # Dsatur algorithm for graph coloring. First initialise the data
+    # structures. These are: the colors of each node c[v]; the degree d[v] of
+    # each uncolored node in the graph induced by uncolored nodes; the set of
+    # colors adjacent to each uncolored node (initially empty sets); and a
+    # priority queue q. In q, each element has 4 values for the node v. The
+    # first two are the the saturation degree of v, d[v] (as a tie breaker).
+    # The third value is a counter, which just stops comparisons being made
+    # with the final values, which might be of different types.
     d, adjcols, q = {}, {}, PriorityQueue()
     counter = itertools.count()
     for u in G.nodes:
@@ -38,7 +38,8 @@ def _dsatur(G, c=None):
     if c is not None:
         if not isinstance(c, dict):
             raise TypeError(
-                "Error, c should be a dict that assigns a subset of nodes to colors"
+                "Error, c should be a dict that assigns a subset of nodes ",
+                "to colors"
             )
         for u in c:
             for v in G[u]:
@@ -55,8 +56,8 @@ def _dsatur(G, c=None):
         c = {}
         # Color all remaining nodes
     while len(c) < len(G):
-        # Get the uncolored node u with max saturation degree, breaking ties using
-        # the highest value for d. Remove u from q.
+        # Get the uncolored node u with max saturation degree, breaking ties
+        # using the highest value for d. Remove u from q.
         _, _, _, u = q.get()
         if u not in c:
             # Get lowest color label i for uncolored node u
@@ -76,15 +77,15 @@ def _dsatur(G, c=None):
 
 def _rlf(G):
     def update_rlf(u):
-        # Remove u from X (it has been colored) and move all uncolored neighbors
-        # of u from X to Y
+        # Remove u from X (it has been colored) and move all uncolored
+        # neighbors of u from X to Y
         X.remove(u)
         for v in G[u]:
             if v not in c:
                 X.discard(v)
                 Y.add(v)
-        # Recalculate the contets of NInX and NInY. First calculate a set D2 of all
-        # uncolored nodes within distance two of u.
+        # Recalculate the contets of NInX and NInY. First calculate a set D2
+        # of all uncolored nodes within distance two of u.
         D2 = set()
         for v in G[u]:
             if v not in c:
@@ -92,8 +93,8 @@ def _rlf(G):
                 for w in G[v]:
                     if w not in c:
                         D2.add(w)
-        # For each node v in D2, recalculate the number of (uncolored) neighbors
-        # in X and Y
+        # For each node v in D2, recalculate the number of (uncolored)
+        # neighbors in X and Y
         for v in D2:
             NInX[v] = 0
             NInY[v] = 0
@@ -105,8 +106,8 @@ def _rlf(G):
                         NInY[v] += 1
 
     # RLF algorithm for graph coloring. Here, X is the set of uncolored nodes
-    # not adjacent to any nodes colored with color i, and Y is the set of uncolored
-    # nodes that are adjcent to nodes colored with i.
+    # not adjacent to any nodes colored with color i, and Y is the set of
+    # uncolored nodes that are adjcent to nodes colored with i.
     c, Y, n, i = {}, set(), len(G), 0
     X = set(G.nodes())
     while X:
@@ -155,7 +156,8 @@ def _backtrackcol(G, targetcols):
             # Current (partial) solution is using too many colors, so backtrack
             return False
         if uPos == len(G):
-            # At a leaf node in search tree. A new best solution has been found.
+            # At a leaf node in search tree. A new best solution has been
+            # found.
             bestc.clear()
             for v in c:
                 bestc[v] = c[v]
@@ -193,9 +195,9 @@ def _backtrackcol(G, targetcols):
     V = list(bestc)
     # Now assign the nodes in C to c and run the backtracking algorithm
     # from the next node in V. Here, bestc holds the best solution seen so far
-    # and colsize holds the size of all nonempty color classes in c. len(colsize)
-    # therefore gives the number of colors (cost) being used by the
-    # (sub-)solution c
+    # and colsize holds the size of all nonempty color classes in c.
+    # len(colsize) therefore gives the number of colors (cost) being used by
+    # the (sub-)solution c
     c, colsize = {}, defaultdict(int)
     for i in range(len(C)):
         c[C[i]] = i
@@ -227,7 +229,9 @@ def _partialcol(G, k, c, W, it_limit):
     for v in G:
         assert (
             isinstance(c[v], int) and c[v] >= -1 and c[v] < k
-        ), "Error, the coloring defined by c must allocate each node a value from the set {-1,0,...,k-1}, where -1 signifies that a node is uncolored"
+        ), ("Error, the coloring defined by c must allocate each node a ",
+            "value from the set {-1,0,...,k-1}, where -1 signifies that ",
+            "a node is uncolored")
         for j in range(k):
             C[v, j] = 0
             T[v, j] = 0
@@ -300,7 +304,8 @@ def _tabucol(G, k, c, W, it_limit):
     C, T, U, its, currentcost = {}, {}, set(), 0, 0
     for v in G:
         assert isinstance(c[v], int) and c[v] >= 0 and c[v] < k, (
-            "Error, the coloring defined by c must allocate each node a value from the set {0,...,k-1}"
+            "Error, the coloring defined by c must allocate each node a ",
+            "value from the set {0,...,k-1}"
             + str(v)
             + " "
             + str(c[v])
@@ -340,8 +345,8 @@ def _tabucol(G, k, c, W, it_limit):
                             if random.randint(0, numbestval) == 0:
                                 vbest, jbest, bestval = v, j, neighborcost
                             numbestval += 1
-        # Do the chosen move. If no move was chosen (all moves are tabu), choose
-        # a random move
+        # Do the chosen move. If no move was chosen (all moves are tabu),
+        # choose a random move
         if vbest == -1:
             vbest = random.choice(tuple(c))
             while True:
@@ -374,7 +379,8 @@ def _removeColor(c, j, alg):
 def _reducecolors(G, c, target, W, opt_alg, it_limit):
     # Uses specified optimisation algorithm to try to reduce the number of
     # colors in c to the target value. The observed proper solution with the
-    # fewest colors is returned (which may be using more colors than the target)
+    # fewest colors is returned (which may be using more colors than the
+    # target)
     if opt_alg == 1:
         return _backtrackcol(G, target)
     k, bestc, totalits = max(c.values()) + 1, dict(c), 0
