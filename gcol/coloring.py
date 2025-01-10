@@ -1,4 +1,3 @@
-"""Public coloring methods for the gcol library."""
 import gcol.equitable_node_coloring as enc
 import gcol.node_coloring as nc
 import gcol.face_coloring as fc
