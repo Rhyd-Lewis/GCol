@@ -1,5 +1,6 @@
 sphinx
 ipython
 networkx
+matplotlib
 numpydoc
 sphinx-math-dollar
