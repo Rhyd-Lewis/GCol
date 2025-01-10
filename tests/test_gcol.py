@@ -1,6 +1,4 @@
-"""Greedy coloring test suite.
-
-"""
+"""Greedy coloring test suite."""
 import pytest
 import networkx as nx
 from collections import defaultdict
@@ -87,6 +85,11 @@ class TestColorings:
         graph = nx.MultiGraph()
         graph.add_edges_from(
             [(0, 1), (1, 2), (2, 3), (3, 4), (4, 0), (0, 1), (0, 1)])
+        pytest.raises(NotImplementedError, gcol.node_coloring, graph)
+
+    def test_loops(self):
+        graph = nx.complete_graph(3)
+        graph.add_edge(0, 0)
         pytest.raises(NotImplementedError, gcol.node_coloring, graph)
 
 
@@ -473,6 +476,151 @@ class TestMinCostKColoring:
         )
 
 
+class TestFaceColorings:
+
+    def test_many(self):
+        for graph_func in FACE_TEST_CASES:
+            G = graph_func()
+            pos = nx.planar_layout(G)
+            for strategy in GREEDY_METHODS:
+                for opt_alg in OPT_ALGS:
+                    for it_limit in IT_LIMITS:
+                        c = gcol.face_coloring(
+                            G,
+                            pos,
+                            strategy=strategy,
+                            opt_alg=opt_alg,
+                            it_limit=it_limit
+                        )
+                        c = gcol.face_colouring(
+                            G,
+                            pos,
+                            strategy=strategy,
+                            opt_alg=opt_alg,
+                            it_limit=it_limit
+                        )
+
+    def test_bad_strategy(self):
+        graph = singleton()
+        pos = {0: (0, 0)}
+        pytest.raises(
+            ValueError,
+            gcol.face_coloring,
+            graph,
+            pos,
+            strategy="this is an invalid strategy",
+        )
+
+    def test_bad_opt_alg(self):
+        graph = singleton()
+        pos = {0: (0, 0)}
+        pytest.raises(
+            ValueError,
+            gcol.face_coloring,
+            graph,
+            pos,
+            opt_alg="this is an invalid optimisation algorithm",
+        )
+
+    def test_bad_its_parameter(self):
+        graph = singleton()
+        pos = {0: (0, 0)}
+        pytest.raises(
+            ValueError,
+            gcol.face_coloring,
+            graph,
+            pos,
+            it_limit="this is not an integer",
+        )
+
+    def test_negative_tabu_parameter(self):
+        graph = singleton()
+        pos = {0: (0, 0)}
+        pytest.raises(ValueError, gcol.face_coloring, graph, pos, it_limit=-1)
+
+    def test_directed_graph(self):
+        graph = nx.erdos_renyi_graph(3, 1.0, directed=True)
+        pos = {0: (0, 0), 1: (1, 1), 3: (1, 0)}
+        pytest.raises(NotImplementedError, gcol.face_coloring, graph, pos)
+
+    def test_multigraph(self):
+        graph = nx.MultiGraph()
+        graph.add_edges_from(
+            [(0, 1), (0, 1)])
+        pos = {0: (0, 0), 1: (1, 1)}
+        pytest.raises(NotImplementedError, gcol.face_coloring, graph, pos)
+
+    def test_invalid_pos(self):
+        graph = nx.complete_graph(3)
+        pos = "I am not a dict"
+        pytest.raises(TypeError, gcol.face_coloring, graph, pos)
+
+    def test_missing_pos(self):
+        graph = nx.complete_graph(3)
+        pos = {0: (0, 0), 1: (1, 0)}
+        pytest.raises(ValueError, gcol.face_coloring, graph, pos)
+
+    def test_duplicate_pos(self):
+        graph = nx.complete_graph(3)
+        pos = {0: (0, 0), 1: (1, 0), 2: (1, 0)}
+        pytest.raises(ValueError, gcol.face_coloring, graph, pos)
+
+    def test_not_planar(self):
+        graph = nx.complete_graph(4)
+        pos = {0: (0, 0), 1: (1, 0), 2: (0, 1), 3: (1, 1)}
+        pytest.raises(ValueError, gcol.face_coloring, graph, pos)
+
+    def test_has_bridges(self):
+        graph = nx.path_graph(3)
+        pos = {0: (0, 0), 1: (1, 0), 2: (0, 1)}
+        pytest.raises(ValueError, gcol.face_coloring, graph, pos)
+
+    def test_not_embedding(self):
+        graph = nx.cycle_graph(4)
+        pos = {0: (0, 0), 1: (1, 0), 2: (0, 1), 3: (1, 1)}
+        pytest.raises(ValueError, gcol.face_coloring, graph, pos)
+
+    def test_not_embedding2(self):
+        graph = nx.cycle_graph(4)
+        pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (2, 0)}
+        pytest.raises(ValueError, gcol.face_coloring, graph, pos)
+
+    def test_precol_invalid_arg(self):
+        graph = nx.cycle_graph(4)
+        graph.add_edge(0, 2)
+        pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (0, 1)}
+        precol = "I am not a dict"
+        pytest.raises(TypeError, gcol.face_precoloring, graph, pos, precol)
+
+    def test_precol_invalid_edge(self):
+        graph = nx.cycle_graph(4)
+        graph.add_edge(0, 2)
+        pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (0, 1)}
+        precol = {(1, 3): 1}
+        pytest.raises(ValueError, gcol.face_precoloring, graph, pos, precol)
+
+    def test_precol_invalid_col(self):
+        graph = nx.cycle_graph(4)
+        graph.add_edge(0, 2)
+        pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (0, 1)}
+        precol = {(1, 2): 0.5}
+        pytest.raises(ValueError, gcol.face_precoloring, graph, pos, precol)
+
+    def test_precol_invalid_col2(self):
+        graph = nx.cycle_graph(4)
+        graph.add_edge(0, 2)
+        pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (0, 1)}
+        precol = {(1, 2): 1}
+        pytest.raises(ValueError, gcol.face_precoloring, graph, pos, precol)
+
+    def test_precol_invalid_col3(self):
+        graph = nx.cycle_graph(4)
+        graph.add_edge(0, 2)
+        pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (0, 1)}
+        precol = {(1, 0): 0, (2, 1): 1}
+        pytest.raises(ValueError, gcol.face_precoloring, graph, pos, precol)
+
+
 # Utility functions
 def verify_node_coloring(G, c, precol=None):
     if len(c) != 0:
@@ -580,7 +728,8 @@ def disconnected():
 def mixed_names():
     graph = nx.Graph()
     graph.add_nodes_from([0, 1, "node-A", ("A", 3)])
-    graph.add_edges_from([(0, 1), (1, "node-A"), (0, ("A", 3))])
+    graph.add_edges_from([(0, 1), (1, "node-A"),
+                          ("node-A", ("A", 3)), (0, ("A", 3))])
     return graph
 
 
@@ -612,6 +761,14 @@ def complete_bipartite():
     return graph
 
 
+def dodec():
+    return nx.dodecahedral_graph()
+
+
+def grid():
+    return nx.grid_2d_graph(3, 4)
+
+
 # --------------------------------------------------------------------------
 # Test graphs
 TEST_CASES = [
@@ -627,4 +784,16 @@ TEST_CASES = [
     dense,
     complete,
     complete_bipartite,
+    dodec,
+    grid,
+]
+
+FACE_TEST_CASES = [
+    null_graph,
+    singleton,
+    three_node_clique,
+    mixed_names,
+    empty,
+    dodec,
+    grid,
 ]
