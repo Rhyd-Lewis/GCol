@@ -7,7 +7,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='gcol',
-    version='1.2.2',
+    version='1.3.2',
     author='Rhyd Lewis',
     author_email='lewisr9@cardiff.ac.uk',
     url="https://github.com/Rhyd-Lewis/GCol",
@@ -21,6 +21,6 @@ setup(
         'Operating System :: OS Independent',
         ],
     python_requires='>=3.7',
-    install_requires='networkx>=3.0'
+    install_requires=['networkx>=3.0', 'matplotlib>=3.8']
 )
 
