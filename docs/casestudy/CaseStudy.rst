@@ -1,9 +1,10 @@
 Case Study: Exam Timetabling
 ============================
 
-In this section, we consider a practical case study concerning the use
+In this chapter, we consider a practical case study concerning the use
 of graph coloring methods in the production of exam timetables at a
-university.
+university. This will help to showcase the various tools available in
+the GCol library.
 
 Background
 ----------
@@ -18,7 +19,7 @@ The problem is specified using an :math:`n\times n` symmetrical matrix
 :math:`X`, where :math:`n` is the number of exams to schedule. An
 element :math:`X_{ij}` in this matrix gives the number of students who
 need to sit both exams :math:`i` and :math:`j`. Also, an element
-:math:`X_{ii}` gives the total number of students who need to sit exam
+:math:`X_{ii}` gives the total number of students sitting exam
 :math:`i`. For example, in the following matrix:
 
 .. math::
@@ -49,21 +50,26 @@ to the same timeslot, and no students will be inconvenienced.
 
 A college administrator has been put in charge of creating this year’s
 timetable, which involves :math:`n=139` exams. The full details of this
-problem are given to her in the file `timetable.txt <timetable.txt>`__,
+problem are given to her in the file
+`timetable.txt <https://github.com/Rhyd-Lewis/GCol/blob/main/docs/casestudy/timetable.txt>`__,
 which contains an :math:`n \times n` symmetrical matrix as described
 above. She quickly realizes that this problem is too large to solve by
 hand but can be handled using graph coloring techniques, using nodes for
 exams and colors for timeslots.
 
+An Initial Solution
+-------------------
+
 To start, our administrator reads the file
-`timetable.txt <timetable.txt>`__ into a matrix :math:`X` and creates an
-:math:`n`-node graph where each node corresponds to an exam. Nodes in
-this graph are then made adjacent whenever the corresponding pair of
-exams has a common student. That is, nodes :math:`v_i` and :math:`v_j`
-are made adjacent if and only if :math:`X_{ij}>0` and :math:`i\neq j`.
-Having done this, the administrator determines the chromatic number of
-this graph. This corresponds to the minimum number of timeslots that are
-needed to construct a clash-free timetable.
+`timetable.txt <https://github.com/Rhyd-Lewis/GCol/blob/main/docs/casestudy/timetable.txt>`__
+into a matrix :math:`X` and creates an :math:`n`-node graph where each
+node corresponds to an exam. Nodes in this graph are then made adjacent
+whenever the corresponding pair of exams has a common student. That is,
+nodes :math:`v_i` and :math:`v_j` are made adjacent if and only if
+:math:`X_{ij}>0` and :math:`i\neq j`. Having done this, the
+administrator determines the chromatic number of this graph. This
+corresponds to the minimum number of timeslots that are needed to
+construct a clash-free timetable.
 
 .. code:: ipython3
 
@@ -100,12 +106,14 @@ needed to construct a clash-free timetable.
 The results reveal that clash-free timetables are only possible when 13
 or more timeslots are used to schedule these exams.
 
+Scheduling Large Exams First
+----------------------------
+
 In previous years, the college has constructed the timetable by taking
 the largest 15 exams and assigning each one to a different timeslot. The
 remaining exams are then added to the timetable, creating new timeslots
 where needed. The administrator thinks this could be a way forward and
-therefore uses ``gcol``\ ’s precoloring routines to emulate this
-process.
+uses ``gcol``\ ’s precoloring routines to emulate this process.
 
 .. code:: ipython3
 
@@ -147,27 +155,30 @@ process.
     Exam 28 has 90 students. Assigning to timeslot 13
     Exam 132 has 89 students. Assigning to timeslot 14
     Here are the exams assigned to each timeslot
-    Timeslot 0 : [47, 71, 76, 77, 78, 79, 80, 81, 82, 83, 131]
+    Timeslot 0 : [71, 111, 112, 113, 114, 115, 116, 117, 118, 131]
     Timeslot 1 : [133, 135, 137]
-    Timeslot 2 : [120, 121, 122, 124, 125, 126, 127, 128, 134]
-    Timeslot 3 : [17, 18, 19, 21, 22, 23, 24, 25, 41, 94, 95, 96, 99, 119]
-    Timeslot 4 : [37, 70, 102, 103, 138]
-    Timeslot 5 : [2, 85, 86, 87, 89, 90, 91, 92, 93, 108, 110, 123]
-    Timeslot 6 : [0, 1, 104, 107]
-    Timeslot 7 : [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-    Timeslot 8 : [109]
-    Timeslot 9 : [58, 59, 60, 62, 63, 64, 65, 66, 88, 105, 129]
-    Timeslot 10 : [20, 26, 49, 50, 51, 52, 53, 54, 55, 56, 57, 72, 73, 74, 75]
+    Timeslot 2 : [85, 86, 87, 89, 90, 91, 92, 93, 108, 110, 123, 134]
+    Timeslot 3 : [0, 1, 17, 18, 19, 21, 22, 23, 24, 25, 41, 96, 119]
+    Timeslot 4 : [3, 16, 70, 102, 103]
+    Timeslot 5 : [2]
+    Timeslot 6 : [94, 95, 99, 104, 107]
+    Timeslot 7 : [4, 5, 6, 7, 29, 30, 31, 32, 33, 34, 35, 36, 37, 138]
+    Timeslot 8 : [109, 120, 121, 122, 124, 125, 126, 127, 128]
+    Timeslot 9 : [38, 39, 40, 42, 43, 44, 45, 46, 61, 105, 129]
+    Timeslot 10 : [72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 97, 98, 100, 101]
     Timeslot 11 : [106]
-    Timeslot 12 : [38, 39, 40, 42, 43, 44, 45, 46, 61, 67, 68, 69]
-    Timeslot 13 : [27, 28, 48, 84, 97, 98, 100, 101, 111, 112, 113, 114, 115, 116, 117, 118]
-    Timeslot 14 : [29, 30, 31, 32, 33, 34, 35, 36, 130, 132, 136]
+    Timeslot 12 : [58, 59, 60, 62, 63, 64, 65, 66, 67, 68, 69, 88]
+    Timeslot 13 : [20, 26, 27, 28, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57]
+    Timeslot 14 : [8, 9, 10, 11, 12, 13, 14, 15, 130, 132, 136]
     
 
-Despite this process working satisfactorily, the administrator decides
-that it is overly complex and abandons it. She also notices that the
-seven smallest exams in the dataset have no attending students, so she
-decides to remove them from the graph in future calculations. She is
+Balancing Exams
+---------------
+
+Despite the previous approach working satisfactorily, the administrator
+decides that it is overly complex and abandons it. She also notices that
+the seven smallest exams in the dataset have no attending students, so
+she decides to remove them from the graph in future calculations. She is
 also worried that some timeslots might contain too many exams and that
 the university will not have enough seats available in these cases. As a
 result, she decides to try and balance the number of students sitting
@@ -232,6 +243,9 @@ per-timeslot ranges between 417 and 442.
     Number of students in timeslot 12 = 431
     
 
+Limiting Timeslots
+------------------
+
 At this point, the administrator is feeling rather pleased with herself:
 she has produced a 13-timeslot solution, proved that this is the minimum
 number of timeslots needed, and found a nice balance of students
@@ -278,9 +292,9 @@ solution:
 As shown, this gives a 12-timeslot solution but leaves 8 unscheduled
 exams.
 
-She then tries to minimize the number of clashes instead by forming an
-edge-weighted graph in which each edge :math:`\{v_i,v_j\}` has a weight
-equal to :math:`X_{ij}`.
+As an alternative, she now tries to minimize the number of clashes by
+forming an edge-weighted graph in which each edge :math:`\{v_i,v_j\}`
+has a weight equal to :math:`X_{ij}`.
 
 .. code:: ipython3
 
