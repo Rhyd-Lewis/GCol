@@ -15,11 +15,11 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 project = 'GCol'
-copyright = '2024, R. Lewis'
+copyright = '2025, R. Lewis'
 author = 'R. Lewis'
 
 # The full version, including alpha/beta/rc tags
-release = '1.2.2'
+release = '1.3.2'
 
 # -- General configuration ---------------------------------------------------
 # Add any Sphinx extension module names here, as strings. They can be
@@ -53,4 +53,4 @@ numfig = True
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+#html_static_path = ['_static']
