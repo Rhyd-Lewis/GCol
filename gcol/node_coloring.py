@@ -1,3 +1,4 @@
+"""Node coloring functions for the gcol library."""
 import random
 import itertools
 import networkx as nx

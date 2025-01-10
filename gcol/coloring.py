@@ -1,68 +1,52 @@
+"""Public coloring methods for the gcol library."""
 import gcol.equitable_node_coloring as enc
 import gcol.node_coloring as nc
+import gcol.face_coloring as fc
 import networkx as nx
+import matplotlib.pyplot as plt
+from matplotlib.patches import Polygon
 from collections import deque
 from collections import defaultdict
 import random
 
-_RGBList = [
-    (255, 0, 0),
-    (0, 255, 0),
-    (0, 0, 255),
-    (255, 255, 0),
-    (255, 0, 255),
-    (0, 255, 255),
-    (0, 0, 0),
-    (128, 0, 0),
-    (0, 128, 0),
-    (0, 0, 128),
-    (128, 128, 0),
-    (128, 0, 128),
-    (0, 128, 128),
-    (128, 128, 128),
-    (192, 0, 0),
-    (0, 192, 0),
-    (0, 0, 192),
-    (192, 192, 0),
-    (192, 0, 192),
-    (0, 192, 192),
-    (192, 192, 192),
-    (64, 0, 0),
-    (0, 64, 0),
-    (0, 0, 64),
-    (64, 64, 0),
-    (64, 0, 64),
-    (0, 64, 64),
-    (64, 64, 64),
-    (32, 0, 0),
-    (0, 32, 0),
-    (0, 0, 32),
-    (32, 32, 0),
-    (32, 0, 32),
-    (0, 32, 32),
-    (32, 32, 32),
-    (96, 0, 0),
-    (0, 96, 0),
-    (0, 0, 96),
-    (96, 96, 0),
-    (96, 0, 96),
-    (0, 96, 96),
-    (96, 96, 96),
-    (160, 0, 0),
-    (0, 160, 0),
-    (0, 0, 160),
-    (160, 160, 0),
-    (160, 0, 160),
-    (0, 160, 160),
-    (160, 160, 160),
-    (224, 0, 0),
-    (0, 224, 0),
-    (0, 0, 224),
-    (224, 224, 0),
-    (224, 0, 224),
-    (0, 224, 224),
-    (224, 224, 224),
-]
+tableau = {
+    -1: (1.00, 1.00, 1.00), 0: (0.12, 0.46, 0.70), 1: (0.68, 0.78, 0.91),
+    2: (1.00, 0.50, 0.05), 3: (1.00, 0.73, 0.47), 4: (0.17, 0.63, 0.17),
+    5: (0.59, 0.87, 0.54), 6: (0.84, 0.15, 0.16), 7: (1.00, 0.59, 0.59),
+    8: (0.58, 0.40, 0.74), 9: (0.77, 0.69, 0.83), 10: (0.55, 0.34, 0.29),
+    11: (0.77, 0.61, 0.58), 12: (0.89, 0.46, 0.76), 13: (0.96, 0.71, 0.82),
+    14: (0.50, 0.50, 0.50), 15: (0.78, 0.78, 0.78), 16: (0.73, 0.74, 0.13),
+    17: (0.86, 0.86, 0.55), 18: (0.09, 0.74, 0.81), 19: (0.62, 0.85, 0.89)
+}
+
+colorful = {
+    -1: (1.00, 1.00, 1.00), 0: (1.00, 0.00, 0.00), 1: (0.00, 1.00, 0.00),
+    2: (0.00, 0.00, 1.00), 3: (1.00, 1.00, 0.00), 4: (1.00, 0.00, 1.00),
+    5: (0.00, 1.00, 1.00), 6: (0.00, 0.00, 0.00), 7: (0.50, 0.00, 0.00),
+    8: (0.00, 0.50, 0.00), 9: (0.00, 0.00, 0.50), 10: (0.50, 0.50, 0.00),
+    11: (0.50, 0.00, 0.50), 12: (0.00, 0.50, 0.50), 13: (0.50, 0.50, 0.50),
+    14: (0.75, 0.00, 0.00), 15: (0.00, 0.75, 0.00), 16: (0.00, 0.00, 0.75),
+    17: (0.75, 0.75, 0.00), 18: (0.75, 0.00, 0.75), 19: (0.00, 0.75, 0.75),
+    20: (0.75, 0.75, 0.75), 21: (0.25, 0.00, 0.00), 22: (0.00, 0.25, 0.00),
+    23: (0.00, 0.00, 0.25), 24: (0.25, 0.25, 0.00), 25: (0.25, 0.00, 0.25),
+    26: (0.00, 0.25, 0.25), 27: (0.25, 0.25, 0.25), 28: (0.13, 0.00, 0.00),
+    29: (0.00, 0.13, 0.00), 30: (0.00, 0.00, 0.13), 31: (0.13, 0.13, 0.00),
+    32: (0.13, 0.00, 0.13), 33: (0.00, 0.13, 0.13), 34: (0.13, 0.13, 0.13),
+    35: (0.38, 0.00, 0.00), 36: (0.00, 0.38, 0.00), 37: (0.00, 0.00, 0.38),
+    38: (0.38, 0.38, 0.00), 39: (0.38, 0.00, 0.38), 40: (0.00, 0.38, 0.38),
+    41: (0.38, 0.38, 0.38), 42: (0.63, 0.00, 0.00), 43: (0.00, 0.63, 0.00),
+    44: (0.00, 0.00, 0.63), 45: (0.63, 0.63, 0.00), 46: (0.63, 0.00, 0.63),
+    47: (0.00, 0.63, 0.63), 48: (0.63, 0.63, 0.63), 49: (0.88, 0.00, 0.00),
+    50: (0.00, 0.88, 0.00), 51: (0.00, 0.00, 0.88), 52: (0.88, 0.88, 0.00),
+    53: (0.88, 0.00, 0.88), 54: (0.00, 0.88, 0.88), 55: (0.88, 0.88, 0.88)
+}
+
+colorblind = {
+    -1: (1.00, 1.00, 1.00), 0: (0.00, 0.42, 0.64), 1: (1.00, 0.50, 0.05),
+    2: (0.67, 0.67, 0.67), 3: (0.35, 0.35, 0.35), 4: (0.37, 0.62, 0.82),
+    5: (0.78, 0.32, 0.00), 6: (0.54, 0.54, 0.54), 7: (0.64, 0.78, 0.93),
+    8: (1.00, 0.74, 0.47), 9: (0.81, 0.81, 0.81)
+}
 
 
 def _check_params(G, strategy, opt_alg, it_limit):
@@ -76,14 +60,19 @@ def _check_params(G, strategy, opt_alg, it_limit):
         raise ValueError(
             "Error, chosen optimisation method must be one of", opt_methods
         )
+    if not isinstance(it_limit, int) or it_limit < 0:
+        raise ValueError(
+            "Error, it_limit parameter must be a non-negative integer"
+        )
     if G.is_directed() or G.is_multigraph():
         raise NotImplementedError(
             "Error, this method cannot be used with directed graphs or ",
             "multigraphs"
         )
-    if not isinstance(it_limit, int) or it_limit < 0:
-        raise ValueError(
-            "Error, it_limit parameter must be a non-negative integer"
+    if nx.number_of_selfloops(G) != 0:
+        raise NotImplementedError(
+            "Error, this method cannot be used with graphs featuring ",
+            "self-loops (edges of the form {u, u})"
         )
 
 
@@ -286,13 +275,14 @@ def multipartite_layout(G, c):
     return nx.multipartite_layout(GCopy, subset_key="layer")
 
 
-def get_node_colors(G, c):
+def get_node_colors(G, c, palette=None):
     """Generate an RGB color for each node in the graph ``G``.
 
-    This is based on its color label in ``c``. This method is designed to be
-    used with the ``node_color`` argument in the drawing functions of NetworkX
-    (see example below). If a node is marked as uncolored (i.e., assigned a
-    negative value, or not present in ``c``), it is painted white.
+    The RGB color of a node is determined by its color label in ``c`` and the
+    chosen palette. This method is designed to be used with the ``node_color``
+    argument in the drawing functions of NetworkX (see example below). If a
+    node is marked as uncolored (i.e., assigned a value of ``-1``, or is not
+    present in ``c``), it is painted white.
 
     Parameters
     ----------
@@ -303,10 +293,21 @@ def get_node_colors(G, c):
         A dictionary with keys representing nodes and values representing their
         colors. Colors are identified by the integers $0,1,2,\\ldots$.
 
+    palette : None or dict, optional (default=None)
+        A dictionary that maps the integers $-1,0,1,\\ldots$ to RGB values.
+        The in-built options are as follows
+
+        * ``gcol.tableau`` : A collection of 21 colors provided by Tableau.
+        * ``gcol.colorful`` : A collection of 57 bright colors that are
+          chosen to contrast each other as much as possible.
+        * ``gcol.colorblind`` : A collection of 11 colors, provided by
+          Tableau, that are intended to help colorblind users.
+        * If ``None``, then ``gcol.tableau`` is used.
+
     Returns
     -------
     list
-        A list specifying the RGB color that each node should be painted with.
+        A sequence of RGB colors in node order.
 
     Examples
     --------
@@ -322,48 +323,45 @@ def get_node_colors(G, c):
     Raises
     ------
     ValueError
-        If ``c`` uses more than 56 colors.
+        If ``c`` uses more colors than available in the palette.
 
     Notes
     -----
-    Color 0 is set to red; color 1, green; and color, 2 blue. Beyond this, a
-    sequence of RGB values are generated for each integer, aiming to keep the
-    presented colors as distict as possible.
+    User generated palettes can also be passed into this method. In such cases
+    it is good practice to map the value ``-1`` to the color white.
+    Descriptions on how to specify valid colors can be found at [1]_.
 
     See Also
     --------
     get_set_colors
     get_edge_colors
+    get_face_colors
+
+    References
+    ----------
+    .. [1] Matplotlib: Specifying colors
+      <https://matplotlib.org/stable/users/explain/colors/colors.html>
 
     """
+    if palette is None:
+        palette = tableau
     if len(c) == 0:
-        return []
-    if max(c.values()) + 1 > len(_RGBList):
+        return [palette[-1] for v in G]
+    if max(c.values()) + 1 > len(palette) - 1:
         raise ValueError(
-            "Error too many colors to create a color map that can be ",
-            "usefully visualized"
+            "Error, insufficient colors are available in the chosen palette"
         )
-    return [
-        (
-            (
-                _RGBList[c[v]][0] / 255.0,
-                _RGBList[c[v]][1] / 255.0,
-                _RGBList[c[v]][2] / 255.0,
-            )
-            if v in c and c[v] >= 0
-            else (1, 1, 1)
-        )
-        for v in G
-    ]
+    return [palette[c[v]] if v in c else palette[-1] for v in G]
 
 
-def get_edge_colors(G, c):
+def get_edge_colors(G, c, palette=None):
     """Generate an RGB color for each edge in the graph ``G``.
 
-    This is based on its color label in ``c``. This method is designed to be
-    used with the ``edge_color`` argument in the drawing functions of NetworkX
-    (see example below). If an edge is marked as uncolored (i.e., assigned a
-    negative value, or not present in ``c``), it is painted light grey.
+    The RGB color of an edge is determined by its color label in ``c`` and the
+    chosen palette. This method is designed to be used with the ``edge_color``
+    argument in the drawing functions of NetworkX (see example below). If an
+    edge is marked as uncolored (i.e., assigned a value of ``-1`` , or not
+    present in ``c``), it is painted light grey.
 
     Parameters
     ----------
@@ -374,10 +372,22 @@ def get_edge_colors(G, c):
         A dictionary with keys representing edges and values representing
         their colors. Colors are identified by the integers $0,1,2,\\ldots$.
 
+    palette : None or dict, optional (default=None)
+        A dictionary that maps the integers $-1,0,1,\\ldots$ to RGB values.
+        The in-built options are as follows
+
+        * ``gcol.tableau`` : A collection of 21 colors provided by Tableau.
+        * ``gcol.colorful`` : A collection of 57 bright colors that are
+          chosen to contrast each other as much as possible.
+        * ``gcol.colorblind`` : A collection of 11 colors, provided by
+          Tableau, that are intended to help colorblind users.
+        * If ``None``, then ``gcol.tableau`` is used.
+
     Returns
     -------
-    list
-        A list specifying the RGB color that each edge should be painted with.
+    dict
+        list
+            A sequence of RGB colors in edge order.
 
     Examples
     --------
@@ -393,37 +403,36 @@ def get_edge_colors(G, c):
     Raises
     ------
     ValueError
-        If ``c`` uses more than 56 colors.
+        If ``c`` uses more colors than available in the palette.
 
     Notes
     -----
-    Color 0 is set to red; color 1, green; and color, 2 blue. Beyond this, a
-    sequence of RGB values are generated for each integer, aiming to keep the
-    presented colors as distict as possible.
+    User generated palettes can also be passed into this method. Descriptions
+    on how to specify valid colors can be found at [1]_.
 
     See Also
     --------
     get_set_colors
     get_node_colors
+    get_face_colors
+
+    References
+    ----------
+    .. [1] Matplotlib: Specifying colors
+      <https://matplotlib.org/stable/users/explain/colors/colors.html>
 
     """
+    if palette is None:
+        palette = tableau
     if len(c) == 0:
-        return []
-    if max(c.values()) + 1 > len(_RGBList):
+        return [palette[-1] for e in G.edges()]
+    if max(c.values()) + 1 > len(palette) - 1:
         raise ValueError(
-            "Error too many colors to create a color map that can be ",
-            "usefully visualized"
+            "Error, insufficient colors are available in the chosen palette"
         )
     return [
-        (
-            (
-                _RGBList[c[e]][0] / 255.0,
-                _RGBList[c[e]][1] / 255.0,
-                _RGBList[c[e]][2] / 255.0,
-            )
-            if e in c and c[e] >= 0
-            else (211 / 255.0, 211 / 255.0, 211 / 255.0)
-        )
+        palette[c[e]] if e in c and c[e] >= 0
+        else (0.83, 0.83, 0.83)
         for e in G.edges
     ]
 
@@ -454,7 +463,7 @@ def get_set_colors(G, S, S_color="yellow", other_color="grey"):
     Returns
     -------
     list
-        A list specifying the RGB color that each node should be painted with.
+        A sequence of RGB colors, in node order
 
     Examples
     --------
@@ -471,10 +480,121 @@ def get_set_colors(G, S, S_color="yellow", other_color="grey"):
     --------
     get_node_colors
     get_edge_colors
+    get_face_colors
+
+    Notes
+    -----
+    Descriptions on how to specify valid colors can be found at [1]_.
+
+    References
+    ----------
+    .. [1] Matplotlib: Specifying colors
+      <https://matplotlib.org/stable/users/explain/colors/colors.html>
 
     """
     X = set(S)
     return [S_color if u in X else other_color for u in G]
+
+
+def draw_face_coloring(c, pos, external=False, palette=None):
+    """
+    Draw the face coloring defined by ``c`` and ``pos``
+
+    The RGB color of each face is determined by its color label in ``c`` and
+    the chosen palette. If a face is marked as uncolored (i.e., assigned a
+    value of ``-1``) it is painted white.
+
+    Parameters
+    ----------
+    c : dict
+        A dictionary where keys represent the sequence of nodes occurring
+        in each face (polygon), and values represent the face's color.
+        Colors are identified by the integers $0,1,2,\\ldots$. The first
+        element in ``c`` defines the external face of the embedding; the
+        remaining elements define the internal faces.
+
+    pos : dict
+        A dict specifying the (x,y) coordinates of each node in the embedding.
+
+    external : bool, optional (default=False)
+        If set to ``True``, the background (corresponding to the external face
+        of the embedding) is also colored, else it is left blank.
+
+    palette : None or dict, optional (default=None)
+        A dictionary that maps the integers $-1,0,1,\\ldots$ to RGB values.
+        The in-built options are as follows
+
+        * ``gcol.tableau`` : A collection of 21 colors provided by Tableau.
+        * ``gcol.colorful`` : A collection of 57 bright colors that are
+          chosen to contrast each other as much as possible.
+        * ``gcol.colorblind`` : A collection of 11 colors, provided by
+          Tableau, that are intended to help colorblind users.
+        * If ``None``, then ``gcol.tableau`` is used.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import gcol
+    >>> import matplotlib.pyplot as plt
+    >>>
+    >>> # Construct a small planar graph with defined node positions
+    >>> G = nx.Graph()
+    >>> G.add_node(0, pos=(0,0))
+    >>> G.add_node(1, pos=(1,0))
+    >>> G.add_node(2, pos=(0,1))
+    >>> G.add_node(3, pos=(1,1))
+    >>> G.add_edges_from([(0,1),(0,2),(0,3),(1,3),(2,3)])
+    >>>
+    >>> # Color the faces of the embedding and draw to the screen
+    >>> pos = nx.get_node_attributes(G, "pos")
+    >>> c = face_coloring(G, pos)
+    >>> draw_face_coloring(c, pos)
+    >>> plt.show()
+
+    Raises
+    ------
+    ValueError
+        If ``c`` uses more colors than available in the palette.
+
+    Notes
+    -----
+    User generated palettes can also be passed into this method. In such cases
+    it is good practice to map the value ``-1`` to the color white.
+    Descriptions on how to specify valid colors can be found at [1]_.
+
+    See Also
+    --------
+    get_set_colors
+    get_edge_colors
+    get_node_colors
+
+    References
+    ----------
+    .. [1] Matplotlib: Specifying colors
+      <https://matplotlib.org/stable/users/explain/colors/colors.html>
+
+    """
+    if palette is None:
+        palette = tableau
+    if len(c) == 0:
+        return []
+    if max(c.values()) + 1 > len(palette) - 1:
+        raise ValueError(
+            "Error, insufficient colors are available in the chosen palette"
+        )
+    fig, ax = plt.subplots()
+    ax.autoscale()
+    faceList = list(c.keys())
+    if external:
+        ax.set_facecolor(palette[c[faceList[0]]])
+    for i in range(1, len(faceList)):
+        coords = [[pos[u][0], pos[u][1]] for u in faceList[i]]
+        p = Polygon(coords, facecolor=(palette[c[faceList[i]]]))
+        ax.add_patch(p)
 
 
 def kempe_chain(G, c, s, j):
@@ -531,6 +651,8 @@ def kempe_chain(G, c, s, j):
     NotImplementedError
         If ``G`` is a directed graph or a multigraph.
 
+        If ``G`` contains any self-loops.
+
     ValueError
         If ``c`` contains a pair of adjacent nodes assigned to the same color.
 
@@ -556,10 +678,10 @@ def kempe_chain(G, c, s, j):
       <https://graphcoloringmethods.com/>
 
     """
-    if G.is_directed() or G.is_multigraph():
+    if G.is_directed() or G.is_multigraph() or nx.number_of_selfloops(G) > 0:
         raise NotImplementedError(
-            "Error, this method cannot be used with directed graphs or",
-            "multigraphs"
+            "Error, this method cannot be used with directed graphs,",
+            "multigraphs, or graphs with self-loops"
         )
     for u in G:
         for v in G[u]:
@@ -659,6 +781,8 @@ def max_independent_set(G, weight=None, it_limit=0):
     ------
     NotImplementedError
         If ``G`` is a directed graph or a multigraph.
+
+        If ``G`` contains any self-loops.
 
     ValueError
         If ``it_limit`` is not a nonnegative integer.
@@ -811,6 +935,8 @@ def min_cost_k_coloring(G, k, weight=None, weights_at="nodes", it_limit=0):
     ------
     NotImplementedError
         If ``G`` is a directed graph or a multigraph.
+
+        If ``G`` contains any self-loops.
 
     ValueError
         If ``weights_at`` is not among the supported options.
@@ -990,6 +1116,8 @@ def equitable_node_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
     NotImplementedError
         If ``G`` is a directed graph or a multigraph.
 
+        If ``G`` contains any self-loops.
+
     ValueError
         If ``opt_alg`` is not among the supported options.
 
@@ -1151,6 +1279,8 @@ def node_k_coloring(G, k, opt_alg=None, it_limit=0):
     ------
     NotImplementedError
         If ``G`` is a directed graph or a multigraph.
+
+        If ``G`` contains any self-loops.
 
     ValueError
         If ``opt_alg`` is not among the supported options.
@@ -1329,6 +1459,8 @@ def equitable_edge_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
     NotImplementedError
         If ``G`` is a directed graph or a multigraph.
 
+        If ``G`` contains any self-loops.
+
     ValueError
         If ``opt_alg`` is not among the supported options.
 
@@ -1494,6 +1626,8 @@ def edge_k_coloring(G, k, opt_alg=None, it_limit=0):
     NotImplementedError
         If ``G`` is a directed graph or a multigraph.
 
+        If ``G`` contains any self-loops.
+
     ValueError
         If ``opt_alg`` is not among the supported options.
 
@@ -1532,7 +1666,7 @@ def edge_k_coloring(G, k, opt_alg=None, it_limit=0):
     .. [2] Lewis, R. (2021) A Guide to Graph Colouring: Algorithms and
       Applications (second ed.). Springer. ISBN: 978-3-030-81053-5.
       <https://link.springer.com/book/10.1007/978-3-030-81054-2>.
-    .. [3] Lewis, R: Graph Colouring Algorithm User Guid
+    .. [3] Lewis, R: Graph Colouring Algorithm User Guide
       <https://rhydlewis.eu/gcol/>
 
     """
@@ -1647,6 +1781,8 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
     ------
     NotImplementedError
         If ``G`` is a directed graph or a multigraph.
+
+        If ``G`` contains any self-loops.
 
     ValueError
         If ``strategy`` is not among the supported options.
@@ -1807,7 +1943,7 @@ def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
     G : NetworkX graph
         The edges of this graph will be colored.
 
-    strategy: string, optional (default='dsatur')
+    strategy : string, optional (default='dsatur')
         A string specifying the method used to generate the initial solution.
         It must be one of the following:
 
@@ -1873,6 +2009,8 @@ def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
     NotImplementedError
         If ``G`` is a directed graph or a multigraph.
 
+        If ``G`` contains any self-loops.
+
     ValueError
         If ``strategy`` is not among the supported options.
 
@@ -1909,7 +2047,7 @@ def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
     .. [5] Lewis, R. (2021) A Guide to Graph Colouring: Algorithms and
       Applications (second ed.). Springer. ISBN: 978-3-030-81053-5.
       <https://link.springer.com/book/10.1007/978-3-030-81054-2>.
-    .. [6] Lewis, R: Graph Colouring Algorithm User Guid
+    .. [6] Lewis, R: Graph Colouring Algorithm User Guide
       <https://rhydlewis.eu/gcol/>
 
     """
@@ -1979,6 +2117,8 @@ def chromatic_number(G):
     NotImplementedError
         If ``G`` is a directed graph or a multigraph.
 
+        If ``G`` contains any self-loops.
+
     Notes
     -----
     The backtracking approach used here is an implementation of the exact
@@ -2003,10 +2143,10 @@ def chromatic_number(G):
       <https://rhydlewis.eu/gcol/>
 
     """
-    if G.is_directed() or G.is_multigraph():
+    if G.is_directed() or G.is_multigraph() or nx.number_of_selfloops(G) > 0:
         raise NotImplementedError(
-            "Error, this method cannot be used with directed graphs or "
-            "multigraphs"
+            "Error, this method cannot be used with directed graphs, "
+            "multigraphs, or graphs containing self-loops."
         )
     if len(G) == 0:
         return 0
@@ -2061,6 +2201,8 @@ def chromatic_index(G):
     NotImplementedError
         If ``G`` is a directed graph or a multigraph.
 
+        If ``G`` contains any self-loops.
+
     Notes
     -----
     The backtracking approach used here is an implementation of the exact
@@ -2087,10 +2229,10 @@ def chromatic_index(G):
       <https://rhydlewis.eu/gcol/>
 
     """
-    if G.is_directed() or G.is_multigraph():
+    if G.is_directed() or G.is_multigraph() or nx.number_of_selfloops(G) > 0:
         raise NotImplementedError(
             "Error, this method cannot be used with directed graphs "
-            "or multigraphs"
+            "multigraphs, or graphs with self-loops."
         )
     if len(G) == 0 or G.number_of_edges() == 0:
         return 0
@@ -2204,6 +2346,8 @@ def node_precoloring(
     NotImplementedError
         If ``G`` is a directed graph or a multigraph.
 
+        If ``G`` contains any self-loops.
+
     ValueError
         If ``strategy`` is not among the supported options.
 
@@ -2261,20 +2405,19 @@ def node_precoloring(
         )
     if not isinstance(precol, dict):
         raise TypeError(
-            "Error, the precoloring should be a dict that assigns a subset of "
-            "the graph's nodes to colors"
+            "Error, the precoloring should be a dict"
         )
     for u in G:
         if isinstance(u, tuple) and u[0] == "super":
             raise ValueError(
-                "Error, for this method, the node name 'super' is reserved. "
-                "Please use another node name"
+                "Error, for this method, the name 'super' is reserved. "
+                "Please use another name"
             )
     cols = set()
     for u in precol:
         if u not in G:
             raise ValueError(
-                "Error, a node is defined in the precoloring that is not in "
+                "Error, an entity is defined in the precoloring that's not in "
                 "the graph"
             )
         if not isinstance(precol[u], int):
@@ -2285,16 +2428,16 @@ def node_precoloring(
         for v in G[u]:
             if v in precol and precol[u] == precol[v]:
                 raise ValueError(
-                    "Error, there are adjacent nodes in the precoloring with "
-                    "the same color"
+                    "Error, there are adjacent entities in the precoloring "
+                    "with the same color"
                 )
     k = max(precol.values()) + 1
     for i in range(k):
         if i not in cols:
             raise ValueError(
                 "Error, the color labels in the precoloring should be in "
-                "{0,1,2,...} and each color should be being used by at least "
-                "one node"
+                "{0,1,2,...} and each color should be being used at least "
+                "once"
             )
     # V[i] holds the set of nodes assigned to each color i
     V = defaultdict(set)
@@ -2446,6 +2589,8 @@ def edge_precoloring(
     NotImplementedError
         If ``G`` is a directed graph or a multigraph.
 
+        If ``G`` contains any self-loops.
+
     ValueError
         If ``strategy`` is not among the supported options.
 
@@ -2546,7 +2691,752 @@ def edge_precoloring(
     )
 
 
-# Alternative spellings of the above methods
+def face_coloring(G, pos, strategy="dsatur", opt_alg=None, it_limit=0):
+    """Return a coloring of a planar graph's faces.
+
+    A face coloring is an assignment of colors to the faces of a graph's planar
+    embedding so that adjacent faces have different colors (a pair of faces is
+    adjacent if and only if they share a bordering edge). The aim is to use as
+    few colors as possible. Face colorings are only possible in planar
+    embeddings; hence the graph ``G`` must be planar, and ``pos`` should give
+    valid $(x,y)$ coordinates for all nodes.
+
+    The smallest number of colors needed to face color a graph is known as its
+    face chromatic number. According to the four color theorem [1]_, face
+    colorings never require more than four colors. In this implementation, face
+    colorings of a graph $G$ are determined by forming $G$'s dual graph, and
+    then coloring the dual's nodes using the :meth:`node_coloring` method. All
+    parameters are therefore the same as the latter. If $G$ has $n$ nodes and
+    $m$ edges, its embedding has exactly $m-n+2$ faces, including the external
+    face.
+
+    Parameters
+    ----------
+    G : NetworkX graph
+        The faces of this graph will be colored.
+
+    pos : dict
+        A dictionary of positions keyed by node. All positions should be
+        $(x,y)$ coordinates, and none of the edges in the resultant embedding
+        should be crossing.
+
+    strategy : string, optional (default='dsatur')
+        A string specifying the method used to generate the initial solution.
+        It must be one of the following:
+
+        * ``'random'`` : Randomly orders the dual's nodes and then applies the
+          greedy algorithm for graph node coloring [2]_.
+        * ``'welsh-powell'`` : Orders the dual's nodes by decreasing degree,
+          then applies the greedy algorithm.
+        * ``'dsatur'`` : Uses the DSatur algorithm for graph node coloring on
+          the dual [3]_.
+        * ``'rlf'`` : Uses the recursive largest first (RLF) algorithm for
+          graph node coloring on the dual [4]_.
+
+    opt_alg : None or int, optional (default=None)
+        An integer specifying the optimization method that will be used to try
+        to reduce the number of colors. It must be one of the following
+
+        * ``1`` : An exact, exponential-time algorithm based on backtracking.
+          The algorithm halts only when an optimal solution has been found.
+        * ``2`` : A local search algorithm that seeks to reduce the number of
+          colors by temporarily allowing adjacent nodes in the dual to have the
+          same color. Each iteration has a complexity $O(m + kn)$, where $n$ is
+          the number of nodes in the dual, $m$ is the number of edges in the
+          dual, and $k$ is the number of colors in the current solution.
+        * ``3`` : A local search algorithm that seeks to reduce the number of
+          colors by temporarily allowing nodes in the dual to be uncolored.
+          Each iteration has a complexity $O(m + kn)$, as above.
+        * ``None`` : No optimization is performed.
+
+    it_limit : int, optional (default=0)
+        Number of iterations of the local search procedure. Only applicable
+        when using ``opt_alg=2`` or ``opt_alg=3``.
+
+    Returns
+    -------
+    dict
+        A dictionary with keys representing faces and values representing their
+        colors. Colors are identified by the integers $0,1,2,\\ldots$. The
+        number of colors being used in a solution ``c`` is therefore
+        ``max(c.values()) + 1``. Each face (key) is a tuple that gives the
+        sequence of nodes that surround it. These correspond to cycles in
+        ``G``. The first element in ``c`` defines the external face; the
+        remainder defines the internal faces. For internal faces, the nodes
+        are listed in a counterclockwise order; for the external face, the
+        nodes are listed in a clockwise order.
+
+    Examples
+    --------
+    >>> import gcol
+    >>> import networkx as nx
+    >>>
+    >>> G = nx.dodecahedral_graph()
+    >>> pos = nx.planar_layout(G)
+    >>> c = gcol.face_coloring(G, pos)
+    >>> print(c)
+    {(1, 0, 10, 9, 8): 0, (10, 0, 19, 18, 11): 2, (19, 0, 1, 2, 3): 1, (2, 1, 8, 7, 6): 2, (3, 2, 6, 5, 4): 3, (19, 3, 4, 17, 18): 0, (17, 4, 5, 15, 16): 1, (15, 5, 6, 7, 14): 0, (14, 7, 8, 9, 13): 3, (13, 9, 10, 11, 12): 1, (12, 11, 18, 17, 16): 3, (13, 12, 16, 15, 14): 2}
+
+    Raises
+    ------
+    NotImplementedError
+        If ``G`` is a directed graph or a multigraph.
+
+        If ``G`` contains any self-loops.
+
+    TypeError
+        If ``pos`` is not a dictionary.
+
+    ValueError
+        If ``strategy`` is not among the supported options.
+
+        If ``opt_alg`` is not among the supported options.
+
+        If ``it_limit`` is not a nonnegative integer.
+
+        If ``pos`` has missing or invalid entries.
+
+        If ``pos`` does not specify a valid planar embedding of ``G``.
+
+        If ``G`` is not planar or contains bridges.
+
+    Notes
+    -----
+    As mentioned, in this implementation face colorings of a graph $G$ are
+    determined by forming its dual and then passing this to the
+    :meth:`node_coloring` method. All details are therefore the same as those
+    in the latter method, where they are documented more fully.
+
+    All the above algorithms and bounds are described in detail in [5]_. The
+    c++ code used in [5]_ and [6]_ forms the basis of this library's Python
+    implementations.
+
+    See Also
+    --------
+    node_coloring
+    edge_coloring
+    face_chromatic_number
+
+    References
+    ----------
+    .. [1] Wikipedia: Four Color Theorem
+      <https://en.wikipedia.org/wiki/Four_color_theorem>
+    .. [2] Wikipedia: Greedy Coloring
+      <https://en.wikipedia.org/wiki/Greedy_coloring>
+    .. [3] Wikipedia: DSatur <https://en.wikipedia.org/wiki/DSatur>
+    .. [4] Wikipedia: Recursive largest first (RLF) algorithm
+      <https://en.wikipedia.org/wiki/Recursive_largest_first_algorithm>
+    .. [5] Lewis, R. (2021) A Guide to Graph Colouring: Algorithms and
+      Applications (second ed.). Springer. ISBN: 978-3-030-81053-5.
+      <https://link.springer.com/book/10.1007/978-3-030-81054-2>.
+    .. [6] Lewis, R: Graph Colouring Algorithm User Guide
+      <https://rhydlewis.eu/gcol/>
+
+    """
+    _check_params(G, strategy, opt_alg, it_limit)
+    if len(G) == 0 or G.number_of_edges() == 0:
+        return {}
+    # Color the nodes of the dual graph H of the emedding defined by G and pos
+    H, faces = fc._get_dual(G, pos)
+    c = node_coloring(H, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit)
+    # Return the face coloring of G.
+    return {tuple(faces[i]): c[i] for i in range(len(H))}
+
+
+def face_chromatic_number(G):
+    """Return the face chromatic number of the planar graph ``G``.
+
+    The face chromatic number of a planar graph $G$ is the minimum number of
+    colors needed to color its faces so that no two adjacent faces have the
+    same color (a pair of faces is considered adjacent if and only if they
+    share a common bordering edge). According to the four color theorem [1]_,
+    it will never exceed four.
+
+    The approach used here is based on the backtracking algorithm of [2]_. This
+    is exact but operates in exponential time in the worst case. In this
+    implementation, the solution is found for $G$ by determining a planar
+    embedding, forming the dual graph, and then passing this to the
+    :meth:`chromatic_number` method.
+
+    Parameters
+    ----------
+    G : NetworkX graph
+        The face chromatic number for this graph will be calculated.
+
+    Returns
+    -------
+    int
+        A nonnegative integer that gives the face chromatic number of ``G``.
+
+    Examples
+    --------
+    >>> import gcol
+    >>> import networkx as nx
+    >>>
+    >>> G = nx.dodecahedral_graph()
+    >>> print(gcol.face_chromatic_number(G))
+    4
+
+    Raises
+    ------
+    NotImplementedError
+        If ``G`` is a directed graph or a multigraph.
+
+        If ``G`` contains any self-loops.
+
+    ValueError
+        If ``G`` is not planar or has bridges.
+
+    Notes
+    -----
+    The backtracking approach used here is an implementation of the exact
+    algorithm described in [2]_. It has exponential runtime and halts only when
+    the face chromatic number has been determined. Further details of this
+    algorithm are given in the notes section of the :meth:`node_coloring`
+    method.
+
+    The above algorithm is described in detail in [2]_. The c++ code used in
+    [2]_ and [3]_ forms the basis of this library's Python implementations.
+
+    See Also
+    --------
+    chromatic_number
+    face_coloring
+
+    References
+    ----------
+    .. [1] Wikipedia: Four Color Theorem
+      <https://en.wikipedia.org/wiki/Four_color_theorem>
+    .. [2] Lewis, R. (2021) A Guide to Graph Colouring: Algorithms and
+      Applications (second ed.). Springer. ISBN: 978-3-030-81053-5.
+      <https://link.springer.com/book/10.1007/978-3-030-81054-2>.
+    .. [3] Lewis, R: Graph Colouring Algorithm User Guide
+      <https://rhydlewis.eu/gcol/>
+
+    """
+    if G.is_directed() or G.is_multigraph() or nx.number_of_selfloops(G) > 0:
+        raise NotImplementedError(
+            "Error, this method cannot be used with directed graphs "
+            "multigraphs, or graphs with self-loops."
+        )
+    if nx.has_bridges(G):
+        raise ValueError("Supplied graph is not bridge-free")
+    if len(G) == 0 or G.number_of_edges() == 0:
+        return 0
+    H, faces = fc._get_dual(G, nx.planar_layout(G))
+    cliqueNum = nx.approximation.large_clique_size(H)
+    c = nc._backtrackcol(H, cliqueNum)
+    return max(c.values()) + 1
+
+
+def face_k_coloring(G, pos, k, opt_alg=None, it_limit=0):
+    """Attempt to color the faces of a planar graph ``G`` using ``k`` colors.
+
+    This is done so that adjacent faces have different colors (a pair of faces
+    is adjacent if and only if they share a bordering edge). The graph ``G``
+    must be planar, and ``pos`` should give valid $(x,y)$ coordinates for all
+    nodes.
+
+    According to the four color theorem [1]_, face colorings never require
+    more than four colors. In this implementation, face colorings of a graph
+    $G$ are determined by forming $G$'s dual graph, and then coloring the
+    dual's nodes using the :meth:`node_k_coloring` method. All parameters are
+    therefore the same as the latter. If $G$ has $n$ nodes and $m$ edges, its
+    embedding has exactly $m-n+2$ faces, including the external face.
+
+    If a face $k$-coloring cannot be determined by the algorithm, a
+    ``ValueError`` exception is raised. Otherwise, a face $k$-coloring is
+    returned.
+
+    Parameters
+    ----------
+    G : NetworkX graph
+        The faces of this graph will be colored.
+
+    k : int
+        The number of colors to use.
+
+    pos : dict
+        A dictionary of positions keyed by node. All positions should be
+        $(x,y)$ coordinates, and none of the edges in the resultant embedding
+        should be crossing.
+
+    opt_alg : None or int, optional (default=None)
+        An integer specifying the optimization method that will be used to try
+        to reduce the number of colors. It must be one of the following
+
+        * ``1`` : An exact, exponential-time algorithm based on backtracking.
+          The algorithm halts only when an optimal solution has been found.
+        * ``2`` : A local search algorithm that seeks to reduce the number of
+          colors by temporarily allowing adjacent nodes in the dual to have the
+          same color. Each iteration has a complexity $O(m + kn)$, where $n$ is
+          the number of nodes in the dual, $m$ is the number of edges in the
+          dual, and $k$ is the number of colors in the current solution.
+        * ``3`` : A local search algorithm that seeks to reduce the number of
+          colors by temporarily allowing nodes in the dual to be uncolored.
+          Each iteration has a complexity $O(m + kn)$, as above.
+        * ``None`` : No optimization is performed.
+
+    it_limit : int, optional (default=0)
+        Number of iterations of the local search procedure. Only applicable
+        when using ``opt_alg=2`` or ``opt_alg=3``.
+
+    Returns
+    -------
+    dict
+        A dictionary with keys representing faces and values representing their
+        colors. Colors are identified by the integers $0,1,2,\\ldots$. The
+        number of colors being used in a solution ``c`` is therefore
+        ``max(c.values()) + 1``. Each face (key) is a tuple that gives the
+        sequence of nodes that surround it. These correspond to cycles in
+        ``G``. The first element in ``c`` defines the external face; the
+        remainder defines the internal faces. For internal faces, the nodes
+        are listed in a counterclockwise order; for the external face, the
+        nodes are listed in a clockwise order.
+
+    Examples
+    --------
+    >>> import gcol
+    >>> import networkx as nx
+    >>>
+    >>> G = nx.dodecahedral_graph()
+    >>> pos = nx.planar_layout(G)
+    >>> c = gcol.face_k_coloring(G, pos, 5)
+    >>> print(c)
+    {(1, 0, 10, 9, 8): 0, (10, 0, 19, 18, 11): 2, (19, 0, 1, 2, 3): 1, (2, 1, 8, 7, 6): 3, (3, 2, 6, 5, 4): 2, (19, 3, 4, 17, 18): 0, (17, 4, 5, 15, 16): 1, (15, 5, 6, 7, 14): 4, (14, 7, 8, 9, 13): 1, (13, 9, 10, 11, 12): 4, (12, 11, 18, 17, 16): 3, (13, 12, 16, 15, 14): 0}
+
+    Raises
+    ------
+    NotImplementedError
+        If ``G`` is a directed graph or a multigraph.
+
+        If ``G`` contains any self-loops.
+
+    TypeError
+        If ``pos`` is not a dictionary.
+
+    ValueError
+        If ``opt_alg`` is not among the supported options.
+
+        If ``it_limit`` is not a nonnegative integer.
+
+        If ``pos`` has missing or invalid entries.
+
+        If ``pos`` does not specify a valid planar embedding of ``G``.
+
+        If ``G`` is not planar or contains bridges.
+
+        If ``k`` is not a nonnegative integer.
+
+        If a clique larger than ``k`` is observed in the dual graph of $G$.
+
+        If a face $k$-coloring could not be determined.
+
+    Notes
+    -----
+    As mentioned, in this implementation face colorings of a graph $G$ are
+    determined by forming its dual and then passing this to the
+    :meth:`node_k_coloring` method. All details are therefore the same as those
+    in the latter method, where they are documented more fully. The routine
+    halts immediately once a face $k$-coloring has been achieved.
+
+    All the above algorithms and bounds are described in detail in [2]_. The
+    c++ code used in [2]_ and [3]_ forms the basis of this library's Python
+    implementations.
+
+    See Also
+    --------
+    node_coloring
+    face_coloring
+
+    References
+    ----------
+    .. [1] Wikipedia: Four Color Theorem
+      <https://en.wikipedia.org/wiki/Four_color_theorem>
+    .. [2] Lewis, R. (2021) A Guide to Graph Colouring: Algorithms and
+      Applications (second ed.). Springer. ISBN: 978-3-030-81053-5.
+      <https://link.springer.com/book/10.1007/978-3-030-81054-2>.
+    .. [3] Lewis, R: Graph Colouring Algorithm User Guide
+      <https://rhydlewis.eu/gcol/>
+
+    """
+    if k < 0:
+        raise ValueError("Error, positive integer needed for k")
+    _check_params(G, "dsatur", opt_alg, it_limit)
+    if len(G) == 0 or G.number_of_edges() == 0:
+        return {}
+    H, faces = fc._get_dual(G, pos)
+    c = node_k_coloring(H, k, opt_alg=opt_alg, it_limit=it_limit)
+    return {tuple(faces[i]): c[i] for i in range(len(H))}
+
+
+def equitable_face_k_coloring(G, pos, k, opt_alg=None, it_limit=0):
+    """Attempt to color the faces of a planar graph ``G`` using ``k`` colors.
+
+    This is done so that (a) adjacent faces have different colors, and (b) the
+    number of faces with each color is equal. (A pair of faces is adjacent if
+    and only if they share a bordering edge.) The graph ``G`` must be planar,
+    and ``pos`` should give valid $(x,y)$ coordinates for all nodes.
+
+    This method first follows the steps used by the :meth:`face_k_coloring`
+    method. All parameters are therefore the same as the latter. If a face
+    $k$-coloring cannot be determined by the algorithm, a ``ValueError``
+    exception is raised. Otherwise, once a face $k$-coloring has been formed,
+    the algorithm uses a bespoke local search operator to reduce the variance
+    in the number of faces in each color class.
+
+    In solutions returned by this method, adjacent faces always receive
+    different colors; however, the coloring is not guaranteed to be equitable,
+    even if an equitable face $k$-coloring exists.
+
+    According to the four color theorem [1]_, face colorings never require more
+    than four colors. In this implementation, face colorings of a graph $G$ are
+    determined by forming $G$'s dual graph.
+
+    Parameters
+    ----------
+    G : NetworkX graph
+        The faces of this graph will be colored.
+
+    k : int
+        The number of colors to use.
+
+    pos : dict
+        A dictionary of positions keyed by node. All positions should be
+        $(x,y)$ coordinates, and none of the edges in the resultant embedding
+        should be crossing.
+
+    opt_alg : None or int, optional (default=None)
+        An integer specifying the optimization method that will be used to try
+        to reduce the number of colors. It must be one of the following
+
+        * ``1`` : An exact, exponential-time algorithm based on backtracking.
+          The algorithm halts only when an optimal solution has been found.
+        * ``2`` : A local search algorithm that seeks to reduce the number of
+          colors by temporarily allowing adjacent nodes in the dual to have the
+          same color. Each iteration has a complexity $O(m + kn)$, where $n$ is
+          the number of nodes in the dual, $m$ is the number of edges in the
+          dual, and $k$ is the number of colors in the current solution.
+        * ``3`` : A local search algorithm that seeks to reduce the number of
+          colors by temporarily allowing nodes in the dual to be uncolored.
+          Each iteration has a complexity $O(m + kn)$, as above.
+        * ``None`` : No optimization is performed.
+
+    it_limit : int, optional (default=0)
+        Number of iterations of the local search procedure. Only applicable
+        when using ``opt_alg=2`` or ``opt_alg=3``.
+
+    Returns
+    -------
+    dict
+        A dictionary with keys representing faces and values representing their
+        colors. Colors are identified by the integers $0,1,2,\\ldots$. The
+        number of colors being used in a solution ``c`` is therefore
+        ``max(c.values()) + 1``. Each face (key) is a tuple that gives the
+        sequence of nodes that surround it. These correspond to cycles in
+        ``G``. The first element in ``c`` defines the external face; the
+        remainder defines the internal faces. For internal faces, the nodes
+        are listed in a counterclockwise order; for the external face, the
+        nodes are listed in a clockwise order.
+
+    Examples
+    --------
+    >>> import gcol
+    >>> import networkx as nx
+    >>>
+    >>> G = nx.dodecahedral_graph()
+    >>> pos = nx.planar_layout(G)
+    >>> c = gcol.equitable_face_k_coloring(G, pos, 5)
+    >>> print(c)
+    {(1, 0, 10, 9, 8): 0, (10, 0, 19, 18, 11): 2, (19, 0, 1, 2, 3): 1, (2, 1, 8, 7, 6): 3, (3, 2, 6, 5, 4): 2, (19, 3, 4, 17, 18): 0, (17, 4, 5, 15, 16): 1, (15, 5, 6, 7, 14): 4, (14, 7, 8, 9, 13): 1, (13, 9, 10, 11, 12): 4, (12, 11, 18, 17, 16): 3, (13, 12, 16, 15, 14): 0}
+
+    Raises
+    ------
+    NotImplementedError
+        If ``G`` is a directed graph or a multigraph.
+
+        If ``G`` contains any self-loops.
+
+    TypeError
+        If ``pos`` is not a dictionary.
+
+    ValueError
+        If ``opt_alg`` is not among the supported options.
+
+        If ``it_limit`` is not a nonnegative integer.
+
+        If ``pos`` has missing or invalid entries.
+
+        If ``pos`` does not specify a valid planar embedding of ``G``.
+
+        If ``G`` is not planar or contains bridges.
+
+        If ``k`` is not a nonnegative integer.
+
+        If a clique larger than ``k`` is observed in the dual graph of $G$.
+
+        If a face $k$-coloring could not be determined.
+
+    Notes
+    -----
+    As mentioned, in this implementation face colorings of a graph $G$ are
+    determined by forming its dual and then passing this to the
+    :meth:`node_k_coloring` method. If a face $k$-coloring is achieved, a
+    bespoke local search operator (based on steepest descent) is then used to
+    try to reduce the variance in sizes across the $k$ color classes. This
+    follows the same steps as the :meth:`equitable_node_k_coloring` method,
+    using the dual of ``G``. Further details on this optimization method can
+    be found in Chapter 7 of [2]_.
+
+    All the above algorithms and bounds are described in detail in [2]_. The
+    c++ code used in [2]_ and [3]_ forms the basis of this library's Python
+    implementations.
+
+    See Also
+    --------
+    node_coloring
+    face_coloring
+
+    References
+    ----------
+    .. [1] Wikipedia: Four Color Theorem
+      <https://en.wikipedia.org/wiki/Four_color_theorem>
+    .. [2] Lewis, R. (2021) A Guide to Graph Colouring: Algorithms and
+      Applications (second ed.). Springer. ISBN: 978-3-030-81053-5.
+      <https://link.springer.com/book/10.1007/978-3-030-81054-2>.
+    .. [3] Lewis, R: Graph Colouring Algorithm User Guide
+      <https://rhydlewis.eu/gcol/>
+
+    """
+    if k < 0:
+        raise ValueError("Error, nonnegative integer needed for k")
+    _check_params(G, "dsatur", opt_alg, it_limit)
+    if len(G) == 0 or G.number_of_edges() == 0:
+        return {}
+    H, faces = fc._get_dual(G, pos)
+    c = equitable_node_k_coloring(
+        H, k, weight=None, opt_alg=opt_alg, it_limit=it_limit
+    )
+    return {tuple(faces[i]): c[i] for i in range(len(H))}
+
+
+def face_precoloring(
+    G, pos, precol=None, strategy="dsatur", opt_alg=None, it_limit=0
+):
+    """Give a face coloring of a planar graph where some faces are precolored.
+
+    A face coloring is an assignment of colors to the faces of a graph's
+    planar embedding so that adjacent faces have different colors (a pair of
+    faces is adjacent if and only if they share a bordering edge). The aim is
+    to use as few colors as possible. Face colorings are only possible in
+    planar embeddings; hence the graph ``G`` must be planar, and ``pos`` should
+    give valid $(x,y)$ coordinates for all nodes.
+
+    In the face precoloring problem, some of the faces have already been
+    assigned colors. The aim is to allocate colors to the remaining faces so
+    that we get a full face coloring that uses a minimum number of colors.
+
+    In this implementation, face colorings of a graph $G$ are determined by
+    forming $G$'s dual graph, and then passing the dual to the
+    :meth:`node_precoloring` method. All parameters are therefore the same as
+    the latter.
+
+    Parameters
+    ----------
+    G : NetworkX graph
+        The faces of this graph will be colored.
+
+    pos : dict
+        A dictionary of positions keyed by node. All positions should be
+        $(x,y)$ coordinates, and none of the edges in the resultant embedding
+        should be crossing.
+
+    precol : None or dict, optional (default=None)
+        A dictionary that specifies the colors of any precolored faces.
+        Precolored faces are identified by using one or more of their
+        surrounding arcs. Each internal face is characterized by the series
+        of arcs that surround it in a counterclockwise direction. Similarly,
+        the one external face is identified by the series of arcs traveling in
+        a clockwise direction. Including one of these surrounding arcs in the
+        precoloring is sufficient.
+
+    strategy : string, optional (default='dsatur')
+        A string specifying the method used to generate the initial solution.
+        It must be one of the following:
+
+        * ``'random'`` : Randomly orders the dual's nodes and then applies the
+          greedy algorithm for graph node coloring [1]_.
+        * ``'welsh-powell'`` : Orders the dual's nodes by decreasing degree,
+          then applies the greedy algorithm.
+        * ``'dsatur'`` : Uses the DSatur algorithm for graph node coloring on
+          the dual [2]_.
+        * ``'rlf'`` : Uses the recursive largest first (RLF) algorithm for
+          graph node coloring on the dual [3]_.
+
+    opt_alg : None or int, optional (default=None)
+        An integer specifying the optimization method that will be used to try
+        to reduce the number of colors. It must be one of the following
+
+        * ``1`` : An exact, exponential-time algorithm based on backtracking.
+          The algorithm halts only when an optimal solution has been found.
+        * ``2`` : A local search algorithm that seeks to reduce the number of
+          colors by temporarily allowing adjacent nodes in the dual to have the
+          same color. Each iteration has a complexity $O(m + kn)$, where $n$ is
+          the number of nodes in the dual, $m$ is the number of edges in the
+          dual, and $k$ is the number of colors in the current solution.
+        * ``3`` : A local search algorithm that seeks to reduce the number of
+          colors by temporarily allowing nodes in the dual to be uncolored.
+          Each iteration has a complexity $O(m + kn)$, as above.
+        * ``None`` : No optimization is performed.
+
+    it_limit : int, optional (default=0)
+        Number of iterations of the local search procedure. Only applicable
+        when using ``opt_alg=2`` or ``opt_alg=3``.
+
+    Returns
+    -------
+    dict
+        A dictionary with keys representing faces and values representing their
+        colors. Colors are identified by the integers $0,1,2,\\ldots$. The
+        number of colors being used in a solution ``c`` is therefore
+        ``max(c.values()) + 1``. Each face (key) is a tuple that gives the
+        sequence of nodes that surround it. These correspond to cycles in
+        ``G``. The first element in ``c`` defines the external face; the
+        remainder defines the internal faces. For internal faces, the nodes
+        are listed in a counterclockwise order; for the external face, the
+        nodes are listed in a clockwise order.
+
+    Examples
+    --------
+    >>> import gcol
+    >>> import networkx as nx
+    >>>
+    >>> G = nx.dodecahedral_graph()
+    >>> pos = nx.planar_layout(G)
+    >>> P = {(14,15): 0, (15,14): 1, (1,2): 0}
+    >>> c = gcol.face_precoloring(G, pos, P)
+    >>> print(c)
+    {(1, 0, 10, 9, 8): 1, (10, 0, 19, 18, 11): 2, (19, 0, 1, 2, 3): 0, (2, 1, 8, 7, 6): 3, (3, 2, 6, 5, 4): 4, (19, 3, 4, 17, 18): 1, (17, 4, 5, 15, 16): 2, (15, 5, 6, 7, 14): 0, (14, 7, 8, 9, 13): 2, (13, 9, 10, 11, 12): 0, (12, 11, 18, 17, 16): 3, (13, 12, 16, 15, 14): 1}
+
+    Raises
+    ------
+    NotImplementedError
+        If ``G`` is a directed graph or a multigraph.
+
+        If ``G`` contains any self-loops.
+
+    TypeError
+        If ``pos`` is not a dictionary.
+
+    ValueError
+        If ``strategy`` is not among the supported options.
+
+        If ``opt_alg`` is not among the supported options.
+
+        If ``it_limit`` is not a nonnegative integer.
+
+        If ``precol`` contains an arc that is not in the embedding of ``G``.
+
+        If ``precol`` contains a non-integer color label.
+
+        If ``precol`` contains a pair of adjacent faces assigned to the same
+        color.
+
+        If ``precol`` uses an integer color label $j$, but there exists a color
+        label $0 \\leq i < j$ that is not being used.
+
+        If ``pos`` has missing or invalid entries.
+
+        If ``pos`` does not specify a valid planar embedding of ``G``.
+
+        If ``G`` is not planar or contains bridges.
+
+    Notes
+    -----
+    As mentioned, in this implementation face colorings of a graph $G$ are
+    determined by forming its dual and then passing this to the
+    :meth:`node_precoloring` method. All details are therefore the same as
+    those in the latter method, where they are documented more fully.
+
+    All the above algorithms and bounds are described in detail in [4]_. The
+    c++ code used in [4]_ and [5]_ forms the basis of this library's Python
+    implementations.
+
+    See Also
+    --------
+    face_coloring
+    node_precoloring
+    node_coloring
+
+    References
+    ----------
+    .. [1] Wikipedia: Greedy Coloring
+      <https://en.wikipedia.org/wiki/Greedy_coloring>
+    .. [2] Wikipedia: DSatur <https://en.wikipedia.org/wiki/DSatur>
+    .. [3] Wikipedia: Recursive largest first (RLF) algorithm
+      <https://en.wikipedia.org/wiki/Recursive_largest_first_algorithm>
+    .. [4] Lewis, R. (2021) A Guide to Graph Colouring: Algorithms and
+      Applications (second ed.). Springer. ISBN: 978-3-030-81053-5.
+      <https://link.springer.com/book/10.1007/978-3-030-81054-2>.
+    .. [5] Lewis, R: Graph Colouring Algorithm User Guide
+      <https://rhydlewis.eu/gcol/>
+
+    """
+    _check_params(G, strategy, opt_alg, it_limit)
+    if len(G) == 0 or G.number_of_edges() == 0:
+        return {}
+    if precol is None or precol == {}:
+        return face_coloring(
+            G, pos, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit
+        )
+    if not isinstance(precol, dict):
+        raise TypeError(
+            "Error, the precoloring should be a dict that assigns a subset of "
+            "the graph emebdding's faces to colors"
+        )
+    cols = set()
+    for u, v in precol:
+        if not G.has_edge(u, v):
+            raise ValueError(
+                "Error, an edge is defined in the precoloring that is not in "
+                "the graph"
+            )
+        if not isinstance(precol[u, v], int):
+            raise ValueError(
+                "Error, all color labels in the precoloring should be integers"
+            )
+        cols.add(precol[u, v])
+    k = max(precol.values()) + 1
+    for i in range(k):
+        if i not in cols:
+            raise ValueError(
+                "Error, the color labels in the precoloring should be in "
+                "{0,1,2,...} and each color should be being used by at least "
+                "one face"
+            )
+    H, faces = fc._get_dual(G, pos)
+    arcFace = {}
+    for i in range(len(faces)):
+        for j in range(len(faces[i])):
+            arcFace[(faces[i][j], faces[i][(j + 1) % len(faces[i])])] = i
+    arcs = list(precol.keys())
+    for i in range(len(arcs)-1):
+        for j in range(i+1, len(arcs)):
+            if (arcFace[arcs[i]] == arcFace[arcs[j]] and
+                    precol[arcs[i]] != precol[arcs[j]]):
+                raise ValueError(
+                    "Error, arcs specified in precol that belong to the same "
+                    "face but are given different colors. This means that the "
+                    "same face as been preassigned to more than one color"
+                )
+    P = {arcFace[arc]: precol[arc] for arc in precol}
+    c = node_precoloring(
+        H, precol=P, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit
+    )
+    return {tuple(faces[i]): c[i] for i in range(len(H))}
+
+
+# Alternative spellings of the above methods and globals
 colouring_layout = coloring_layout
 edge_colouring = edge_coloring
 edge_k_colouring = edge_k_coloring
@@ -2560,3 +3450,9 @@ min_cost_k_colouring = min_cost_k_coloring
 node_colouring = node_coloring
 node_k_colouring = node_k_coloring
 node_precolouring = node_precoloring
+face_colouring = face_coloring
+face_k_colouring = face_k_coloring
+face_precolouring = face_precoloring
+equitable_face_k_colouring = equitable_face_k_coloring
+colourful = colorful
+colourblind = colorblind

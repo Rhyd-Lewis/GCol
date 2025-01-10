@@ -1,3 +1,4 @@
+"""Equitable node coloring functions for the gcol library."""
 from queue import PriorityQueue
 from collections import deque
 import itertools
