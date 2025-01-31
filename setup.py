@@ -7,7 +7,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='gcol',
-    version='1.3.2',
+    version='1.4.2',
     author='Rhyd Lewis',
     author_email='lewisr9@cardiff.ac.uk',
     url="https://github.com/Rhyd-Lewis/GCol",
