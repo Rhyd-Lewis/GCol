@@ -19,7 +19,7 @@ copyright = '2025, R. Lewis'
 author = 'R. Lewis'
 
 # The full version, including alpha/beta/rc tags
-release = '1.3.2'
+release = '1.4.2'
 
 # -- General configuration ---------------------------------------------------
 # Add any Sphinx extension module names here, as strings. They can be
