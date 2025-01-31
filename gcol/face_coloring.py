@@ -11,14 +11,17 @@ def _get_dual(G, pos):
         b = math.degrees(math.atan2(Q[1]-P[1], Q[0]-P[0]))
         return b + 360 if b < 0 else b
 
-    def intersect(x1, y1, x2, y2, x3, y3, x4, y4):
-        # The lines (x1y1)(x2y2) and (x3y3)(x4y4) are considered to intersect
-        # iff they intersect and do not share exactly one endpoint. Epsilon
-        # is used for rounding issues
+    def intersect(L1, L2):
+
         def getArea(x1, y1, x2, y2, x3, y3):
             return (x2-x1)*(y3-y1)-(x3-x1)*(y2-y1)
 
-        epsilon = 0.000001
+        x1, y1, x2, y2 = L1[0][0], L1[0][1], L1[1][0], L1[1][1]
+        x3, y3, x4, y4 = L2[0][0], L2[0][1], L2[1][0], L2[1][1]
+        epsilon = 0.000000001
+        # The lines (x1y1)(x2y2) and (x3y3)(x4y4) are considered to intersect
+        # iff they intersect and do not share exactly one endpoint. Epsilon
+        # is used for rounding issues
         common_endpoints = {(x1, y1), (x2, y2)} & {(x3, y3), (x4, y4)}
         if len(common_endpoints) == 1:
             return False
@@ -54,19 +57,30 @@ def _get_dual(G, pos):
 
     def embeddingIsPlanar(G, pos):
         # Return true iff none of the lines/edges in the embedding cross
-        # This is an O(n + m^2) operation
         for u in G:
             if u not in pos:
                 raise ValueError("Error, node in G that is not in pos")
-        E = list(G.edges())
-        for i in range(len(E) - 1):
-            for j in range(i+1, len(E)):
-                if intersect(pos[E[i][0]][0], pos[E[i][0]][1],
-                             pos[E[i][1]][0], pos[E[i][1]][1],
-                             pos[E[j][0]][0], pos[E[j][0]][1],
-                             pos[E[j][1]][0], pos[E[j][1]][1]
-                             ):
-                    return False
+        # Create a line for each edge in G, ensuring the left endpoint is first
+        Lines = [(pos[u], pos[v]) if pos[u][0] <= pos[v][0] else
+                 (pos[v], pos[u])
+                 for u, v in G.edges()]
+        # Make sorted list L of all endpoints. Each element is a tuple
+        # indicating (x-coord, isRight, y-coord, index)
+        L = []
+        for i, ((x1, y1), (x2, y2)) in enumerate(Lines):
+            L.append((x1, 0, y1, i))
+            L.append((x2, 1, y2, i))
+        L.sort()
+        # Run a sweep algorithm using L.
+        activeLines = set()
+        for _, isRight, _, i in L:
+            if isRight == 0:
+                for j in activeLines:
+                    if intersect(Lines[i], Lines[j]):
+                        return False
+                activeLines.add(i)
+            else:
+                activeLines.remove(i)
         return True
 
     def isClockwise(P):
@@ -100,7 +114,10 @@ def _get_dual(G, pos):
     if nx.is_planar is False or nx.has_bridges(G):
         raise ValueError("Error, supplied graph is not bridge-free and planar")
     if embeddingIsPlanar(G, pos) is False:
-        raise ValueError("Error, supplied embedding has crossing edges")
+        raise ValueError(
+            "Error, supplied embedding has crossing edges. This could be due ",
+            "to rounding errors when performing calculations on the node ",
+            "coordinates")
     # Get the adjacency list of the embedding such that neighbours appear in
     # order of angle in an anticlockwise direction (zero degrees points 'East')
     adj = {}
