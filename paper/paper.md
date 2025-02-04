@@ -32,7 +32,7 @@ Examples of graph colouring are shown in \autoref{fig:demo}, which help to demon
 ![A node colouring, edge colouring, and face colouring (respectively), of a
 fifteen-node planar graph. Each of these examples uses the minimum number of
 colours and was generated using GCol's colouring and visualisation
-routines.\label{fig:demo}](output_00_01_02_combined.png){width="200pt"}
+routines.\label{fig:demo}](output_00_01_02_combined.png){width="350pt"}
 
 - A *node colouring* is an assignment of colours to the nodes of a graph so that
   all adjacent nodes have different colours. The smallest number of colours
@@ -79,7 +79,7 @@ Node coloring of G = {0: 0, 1: 1, 19: 1, 10: 1, 2: 0, 3: 2, 8: 0, 9: 2, 18: 0, 1
 >>> plt.show() # See Figure 2
 ```
 
-![Output from the code snippet.\label{fig:snippet}](Figure_2.png){width="150pt"}
+![Output from the code snippet.\label{fig:snippet}](Figure_2.png){width="300pt"}
 
 
 # Statement of need
