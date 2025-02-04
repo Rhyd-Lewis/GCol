@@ -20,7 +20,7 @@ date: 4 February 2025
 bibliography: paper.bib
 ---
 
-# Summary \label{sec:intro}
+# Summary
 
 Graph colouring is the computational problem of assigning colours to entities of
 a graph so that adjacent entities receive different colours. The aim is to use
@@ -32,7 +32,7 @@ Examples of graph colouring are shown in \autoref{fig:demo}, which help to demon
 ![A node colouring, edge colouring, and face colouring (respectively), of a
 fifteen-node planar graph. Each of these examples uses the minimum number of
 colours and was generated using GCol's colouring and visualisation
-routines.\label{fig:demo}](output_00_01_02_combined.png)
+routines.\label{fig:demo}](output_00_01_02_combined.png){width="200pt"}
 
 - A *node colouring* is an assignment of colours to the nodes of a graph so that
   all adjacent nodes have different colours. The smallest number of colours
@@ -79,18 +79,17 @@ Node coloring of G = {0: 0, 1: 1, 19: 1, 10: 1, 2: 0, 3: 2, 8: 0, 9: 2, 18: 0, 1
 >>> plt.show() # See Figure 2
 ```
 
-![Output from the code snippet given in
-Section~\ref{sec:intro}.\label{fig:snippet}](Figure_2.png)
+![Output from the code snippet.\label{fig:snippet}](Figure_2.png){width="150pt"}
 
 
 # Statement of need
 
 Open-source resources for graph colouring have existed for some time, primarily
 for node colouring. An early example is the PL/I code for node colouring
-included in the 1979 paper of [@Leighton1979]. Stand-alone C-based resources
-were also made available online in the mid-1990s [@Culberson1994], [@Trick1994].
-A Java-based package implementing the methods of [@Culberson1994] is now also
-available [@Shah2020].
+included in the 1979 paper of Leighton [@Leighton1979]. Stand-alone C-based
+resources were also made available online in the mid-1990s
+[@Culberson1994, @Trick1994]. A Java-based package implementing the methods of
+[@Culberson1994] is now also available [@Shah2020].
   
 Graph colouring functionality is also included in some popular open-source C++
 libraries. The Boost graph library [@Boost] uses a simple constructive heuristic
@@ -113,9 +112,9 @@ colours, the problem is NP-hard and no functionality is available.
   
 Further specialised methods for node colouring are also provided by the ColPack
 package [@colpack] and in the algorithm suite of Lewis [@Lewis2021BookWeb], both
-in C++. The algorithms of ColPack are ''greedy heuristics in the sense that the algorithms progressively extend a partial colouring by processing one vertex at
+in C++. The algorithms of ColPack are "greedy heuristics in the sense that the algorithms progressively extend a partial colouring by processing one vertex at
 a time, in some order, in each step assigning a vertex the smallest allowable
-colour'' [@colpack]. In contrast, the suite of Lewis [@Lewis2021BookWeb]
+colour" [@colpack]. In contrast, the suite of Lewis [@Lewis2021BookWeb]
 features several contrasting algorithms, including constructive heuristics, an
 exact algorithm based on backtracking, and bespoke metaheuristics. 
   
@@ -131,7 +130,7 @@ performed by a choice of node-colouring algorithms that include an exact,
 heuristically-guided, exponential-time backtracking algorithm, and several
 high-performance polynomial-time heuristics. The latter methods combine fast
 constructive methods with contemporary local search heuristics that extend the
-C++ implementations of Lewis~\cite{Lewis2021BookWeb}, allowing high-quality
+C++ implementations of Lewis [@Lewis2021BookWeb], allowing high-quality
 solutions to be generated in reasonable run times, even for very large graphs.
 Edge colourings and face colourings are also determined by these algorithms by
 colouring, respectively, the nodes of the corresponding line graphs and dual
@@ -152,7 +151,7 @@ these means. All results were found by executing the code on a 3.0 GHtz Windows
 
 To give an indication of performance, \autoref{fig:performace} compares two of
 GCol's local search routines (`opt_alg=2` and `opt_alg=3`) to NetworkX’s
-''interchange'' operator and the well-known DSatur heuristic [@DSatur]. For
+"interchange" operator and the well-known DSatur heuristic [@DSatur]. For
 comparative purposes, both local search algorithms use a fixed iteration limit
 equal to the number of nodes $n$ in the graph, though the user is free to use
 different values. Trials were conducted on randomly generated Erdos-Renyi
