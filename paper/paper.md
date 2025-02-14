@@ -140,7 +140,7 @@ graphs.
 # Performance
 
 The various optimisation algorithms available in the GCol library are described
-in detail in its official documentation [@GColDocs] and in the book of Lewis
+in detail in its official documentation [@GColDocs] and in the book of
 [@Lewis2021Book]. These resources include detailed information on the asymptotic
 complexity of all algorithms used.
 
@@ -160,7 +160,7 @@ graphs, commonly denoted by $G(n,p)$. These graphs are constructed by taking $n$
 nodes and adding an edge between each node pair at random with probability $p$.
 The expected number of edges in a $G(n,p)$ graph is therefore $\binom{n}{2}p$
 and expected node degrees are $p(n-1)$. For these tests, we use $p=0.5$ and
-differing values for $n$. This is due to the result of Wormald [@Wormald1987],
+differing values for $n$. This is due to the result of [@Wormald1987],
 who has established that for $n\gtrapprox 30$, a set of randomly constructed
 $G(n,0.5)$ graphs can be considered equivalent to a random sample from the
 population of all unlabelled $n$-node graphs. This allows us to make general
@@ -177,6 +177,6 @@ iteration limit of the local search algorithms.
   
 Results concerning the performance of GCol's exact algorithms, equitable
 colouring functionality, and other associated optimisation problems are reported
-as part of GCol's documentation [@GColDocs].
+as part of GCol's documentation, [@GColDocs].
 
 # References
