@@ -35,7 +35,7 @@ colours and was generated using GCol's colouring and visualisation
 routines.\label{fig:demo}](output_00_01_02_combined.png){width="350pt"}
 
 - A *node colouring* is an assignment of colours to the nodes of a graph so that
-  all adjacent nodes have different colours. The smallest number of colours
+  adjacent nodes have different colours. The smallest number of colours
   needed for the nodes of a graph $G$ is known as its chromatic number, denoted
   by $\chi(G)$. Identification of $\chi(G)$ is an NP-hard problem.
 - An *edge colouring* is an assignment of colours to the edges of a graph so
@@ -64,7 +64,7 @@ high-performance algorithms for the above three problems, as well as routines
 for equitable colouring, weighted colouring, pre-colouring, maximum independent
 set identification, and solution visualisation. The following code snippet shows
 how to use the library to create a dodecahedral graph $G$, colour its nodes
-using $\chi(G)$ colours, and then output the solution in textual and
+using $\chi(G) = 3$ colours, and then output the solution in textual and
 diagrammatic form (see \autoref{fig:snippet}):
 
 ```python
@@ -74,7 +74,8 @@ diagrammatic form (see \autoref{fig:snippet}):
 >>> G = nx.dodecahedral_graph()
 >>> c = gcol.node_coloring(G)
 >>> print("Node coloring of G =", c)
-Node coloring of G = {0: 0, 1: 1, 19: 1, 10: 1, 2: 0, 3: 2, 8: 0, 9: 2, 18: 0, 11: 2, 6: 1, 7: 2, 4: 0, 5: 2, 13: 0, 12: 1, 14: 1, 15: 0, 16: 2, 17: 1}
+Node coloring of G = {0: 0, 1: 1, 19: 1, 10: 1, 2: 0, 3: 2, 8: 0, 9: 2, 18: 0,
+11: 2, 6: 1, 7: 2, 4: 0, 5: 2, 13: 0, 12: 1, 14: 1, 15: 0, 16: 2, 17: 1}
 >>> nx.draw_networkx(G, node_color=gcol.get_node_colors(G, c))
 >>> plt.show() # See Figure 2
 ```
@@ -86,21 +87,21 @@ Node coloring of G = {0: 0, 1: 1, 19: 1, 10: 1, 2: 0, 3: 2, 8: 0, 9: 2, 18: 0, 1
 
 Open-source resources for graph colouring have existed for some time, primarily
 for node colouring. An early example is the PL/I code for node colouring
-included in the 1979 paper of Leighton [@Leighton1979]. Stand-alone C-based
+included in the 1979 paper of [@Leighton1979]. Stand-alone C-based
 resources were also made available online in the mid-1990s
 [@Culberson1994, @Trick1994]. A Java-based package implementing the methods of
 [@Culberson1994] is now also available [@Shah2020].
   
 Graph colouring functionality is also included in some popular open-source C++
-libraries. The Boost graph library [@Boost] uses a simple constructive heuristic
-for node colouring, while the Lemon library [@Lemon] includes a method for
-colouring the nodes of planar graphs using at most five colours. The Goblin
-graph library [@Goblin], features a similar method to Lemon and, in addition,
+libraries. [@Boost] uses a simple constructive heuristic
+for node colouring, while [@Lemon] includes a method for
+colouring the nodes of planar graphs using at most five colours.
+[@Goblin], features a similar method to Lemon and, in addition,
 includes a mixed integer linear programming approach for exactly solving the
 node and edge colouring problems. This algorithm has an exponential time
 complexity and, consequently, is unsuitable for larger problem instances. 
   
-An option that also includes visualisation tools is provided by SageMath
+An option that also includes visualisation tools is provided by
 [@SageMath]. This has methods for both node and edge colouring, and can also
 enumerate *all* node colourings of a graph. Like Goblin, however, its algorithms
 are based on integer programming and operate in exponential time. NetworkX
@@ -110,11 +111,11 @@ number of nodes per colour (equitable node colouring); however, this can only be
 applied when the number of available colours exceeds $\Delta(G)$---for fewer
 colours, the problem is NP-hard and no functionality is available. 
   
-Further specialised methods for node colouring are also provided by the ColPack
-package [@colpack] and in the algorithm suite of Lewis [@Lewis2021BookWeb], both
+Further specialised methods for node colouring are also provided by [@colpack]
+and in the algorithm suite of [@Lewis2021BookWeb], both
 in C++. The algorithms of ColPack are "greedy heuristics in the sense that the algorithms progressively extend a partial colouring by processing one vertex at
 a time, in some order, in each step assigning a vertex the smallest allowable
-colour" [@colpack]. In contrast, the suite of Lewis [@Lewis2021BookWeb]
+colour" [@colpack]. In contrast, the suite of [@Lewis2021BookWeb]
 features several contrasting algorithms, including constructive heuristics, an
 exact algorithm based on backtracking, and bespoke metaheuristics. 
   
@@ -130,7 +131,7 @@ performed by a choice of node-colouring algorithms that include an exact,
 heuristically-guided, exponential-time backtracking algorithm, and several
 high-performance polynomial-time heuristics. The latter methods combine fast
 constructive methods with contemporary local search heuristics that extend the
-C++ implementations of Lewis [@Lewis2021BookWeb], allowing high-quality
+C++ implementations of [@Lewis2021BookWeb], allowing high-quality
 solutions to be generated in reasonable run times, even for very large graphs.
 Edge colourings and face colourings are also determined by these algorithms by
 colouring, respectively, the nodes of the corresponding line graphs and dual
