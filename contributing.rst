@@ -19,7 +19,7 @@ Make sure the tests pass::
 
 Add tests for your change. Make your change and make the tests pass. 
 
-Please update the documentation too.
+Please update the documentation too::
 
     cd docs
     make html
