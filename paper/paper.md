@@ -16,7 +16,7 @@ authors:
 affiliations:
  - name: School of Mathematics, Cardiff University, Wales, United Kingdom
    index: 1
-date: 4 February 2025
+date: 21 March 2025
 bibliography: paper.bib
 ---
 
@@ -41,11 +41,11 @@ routines.\label{fig:demo}](output_00_01_02_combined.png){width="350pt"}
 - An *edge colouring* is an assignment of colours to the edges of a graph so
   that all adjacent edges have different colours. The smallest number of colours
   needed for the edges of a graph $G$ is known at the chromatic index, denoted
-  by $\chi'(G)$. According to Vizing's theorem [@VizingsTheorem], $\chi'(G)$ is
+  by $\chi'(G)$. According to Vizing's theorem, $\chi'(G)$ is
   either $\Delta(G)$ or $\Delta(G)+1$, where $\Delta(G)$ is the maximum degree
-  in $G$. Identifying $\chi'(G)$ is also NP-hard. 
+  in $G$. Identifying $\chi'(G)$ is also NP-hard [@Toft2021]. 
 - A *face colouring* is an assignment of colours to the faces of a planar
-  embedding so that all adjacent faces have different colours. Note, that planar
+  embedding so that all adjacent faces have different colours. Note that planar
   embeddings only exist for planar graphs. The smallest number of colours needed
   to colour the faces of a planar embedding is known as its face chromatic
   number. Due to the Four Colour Theorem, this number never exceeds four and,
@@ -54,18 +54,18 @@ routines.\label{fig:demo}](output_00_01_02_combined.png){width="350pt"}
 
 Graph colouring has applications in many practical areas including timetabling,
 sports league scheduling, designing seating plans, code optimisation, and
-solving Sudoku puzzles [@Lewis2021Book]. It is also a topic of great theoretical
+solving Sudoku puzzles [@Lewis2021Book]. It is also a topic of theoretical
 interest [@Cranston2024] that often appears in university-level courses on graph
 theory, algorithms, and combinatorics.
   
-GCol is a new, open-source Python library for graph colouring built on top of
-the well-known NetworkX library [@networkx]. It provides easy-to-use,
+GCol is a new, open-source Python library for graph colouring that is built on top of
+the well-known NetworkX library [@Hagberg2008]. It provides easy-to-use,
 high-performance algorithms for the above three problems, as well as routines
 for equitable colouring, weighted colouring, pre-colouring, maximum independent
 set identification, and solution visualisation. The following code snippet shows
 how to use the library to create a dodecahedral graph $G$, colour its nodes
 using $\chi(G) = 3$ colours, and then output the solution in textual and
-diagrammatic form (see \autoref{fig:snippet}):
+diagrammatic form (see \autoref{fig:snippet}).
 
 ```python
 >>> import networkx as nx
@@ -88,41 +88,47 @@ Node coloring of G = {0: 0, 1: 1, 19: 1, 10: 1, 2: 0, 3: 2, 8: 0, 9: 2, 18: 0,
 Open-source resources for graph colouring have existed for some time, primarily
 for node colouring. An early example is the PL/I code for node colouring
 included in the 1979 paper of [@Leighton1979]. Stand-alone C-based
-resources were also made available online in the mid-1990s
-[@Culberson1994, @Trick1994]. A Java-based package implementing the methods of
+resources were also made available online in the mid-1990s due to 
+[@Culberson1994] and [@Trick1994]. A Java-based package implementing the methods of
 [@Culberson1994] is now also available [@Shah2020].
   
 Graph colouring functionality is also included in some popular open-source C++
 libraries. [@Boost] uses a simple constructive heuristic
-for node colouring, while [@Lemon] includes a method for
+for node colouring, while the Lemon library [@Dezso2011] includes a method for
 colouring the nodes of planar graphs using at most five colours.
-[@Goblin], features a similar method to Lemon and, in addition,
+[@Goblin] features a similar method to Lemon and, in addition,
 includes a mixed integer linear programming approach for exactly solving the
 node and edge colouring problems. This algorithm has an exponential time
 complexity and, consequently, is unsuitable for larger problem instances. 
   
-An option that also includes visualisation tools is provided by
-[@SageMath]. This has methods for both node and edge colouring, and can also
+A further open-source option that, in addition, includes visualisation tools is provided by
+SageMath [@SageMath]. This has methods for both node and edge colouring, and can also
 enumerate *all* node colourings of a graph. Like Goblin, however, its algorithms
 are based on integer programming and operate in exponential time. NetworkX
-itself also includes some simple greedy heuristics for node colouring. In
-addition, it features an exact polynomial-time algorithm for balancing the
+itself also includes some simple greedy heuristics for node colouring [@Hagberg2008]
+as does the alternative Python library Graph-Tool [@Peixoto2014]. In addition, NetworkX
+features an exact polynomial-time algorithm for balancing the
 number of nodes per colour (equitable node colouring); however, this can only be
 applied when the number of available colours exceeds $\Delta(G)$---for fewer
-colours, the problem is NP-hard and no functionality is available. 
+colours, where the problem is NP-hard, no functionality is available. 
   
-Further specialised methods for node colouring are also provided by [@colpack]
+Further specialised methods for node colouring are also provided by the ColPack software [@Gebremedhin2013]
 and in the algorithm suite of [@Lewis2021BookWeb], both
-in C++. The algorithms of ColPack are "greedy heuristics in the sense that the algorithms progressively extend a partial colouring by processing one vertex at
+in C++. The algorithms of ColPack are described as "greedy heuristics in the sense that 
+the algorithms progressively extend a partial colouring by processing one vertex at
 a time, in some order, in each step assigning a vertex the smallest allowable
-colour" [@colpack]. In contrast, the suite of [@Lewis2021BookWeb]
+colour". On the other hand, the suite of [@Lewis2021BookWeb]
 features several contrasting algorithms, including constructive heuristics, an
-exact algorithm based on backtracking, and bespoke metaheuristics. 
+exact algorithm based on backtracking, and bespoke metaheuristics. Finally, 
+graph colouring functionality is also provided by the igraph library [@Csardi2005].
+The open-source C- and R-based versions of this library use similar greedy heuristics 
+to ColPack, whereas the (proprietary) Mathematica version also includes tools for 
+edge and face colouring. 
   
 The above survey suggests that existing open-source options for graph colouring
 are limited. Current resources tend to either use simple constructive heuristics
 that lead to low-quality solutions, or exponential-time exact algorithms that
-cannot cope with larger graphs. There are also few options for edge colouring,
+cannot cope with larger graphs. There are also few open-source options for edge colouring,
 equitable colouring, and solution visualisation, and, to our knowledge, no
 options for face colouring, weighted colouring, or pre-colouring.
   
@@ -137,46 +143,11 @@ Edge colourings and face colourings are also determined by these algorithms by
 colouring, respectively, the nodes of the corresponding line graphs and dual
 graphs. 
 
-# Performance
-
 The various optimisation algorithms available in the GCol library are described
 in detail in its official documentation [@GColDocs] and in the book of
 [@Lewis2021Book]. These resources include detailed information on the asymptotic
-complexity of all algorithms used.
-
-![Number of colours (left) and run times (right) of different node colouring
-algorithms with $G(n,0.5)$ graphs. Each point in the charts is a mean across
-fifty graphs. Shaded areas indicate one standard deviation on either side of
-these means. All results were found by executing the code on a 3.0 GHtz Windows
-11 PC with 16 GB of RAM.\label{fig:performace}](output_30_31_combined)
-
-To give an indication of performance, \autoref{fig:performace} compares two of
-GCol's local search routines (`opt_alg=2` and `opt_alg=3`) to NetworkX’s
-"interchange" operator and the well-known DSatur heuristic [@DSatur]. For
-comparative purposes, both local search algorithms use a fixed iteration limit
-equal to the number of nodes $n$ in the graph, though the user is free to use
-different values. Trials were conducted on randomly generated Erdos-Renyi
-graphs, commonly denoted by $G(n,p)$. These graphs are constructed by taking $n$
-nodes and adding an edge between each node pair at random with probability $p$.
-The expected number of edges in a $G(n,p)$ graph is therefore $\binom{n}{2}p$
-and expected node degrees are $p(n-1)$. For these tests, we use $p=0.5$ and
-differing values for $n$. This is due to the result of [@Wormald1987],
-who has established that for $n\gtrapprox 30$, a set of randomly constructed
-$G(n,0.5)$ graphs can be considered equivalent to a random sample from the
-population of all unlabelled $n$-node graphs. This allows us to make general
-statistical statements about the performance of an algorithm across the set of
-all $n$-node graphs, though different observations are likely when executing
-these algorithms on particular topologies.
-  
-\autoref{fig:performace} clearly shows that GCol's local search algorithms make
-significant improvements to the solutions provided by the DSatur strategy,
-albeit with additional time requirements. The solutions and run times of the
-local search algorithms are also superior to NetworkX’s node colouring routines.
-Further improvements in solution quality will also be achieved by increasing the
-iteration limit of the local search algorithms. 
-  
-Results concerning the performance of GCol's exact algorithms, equitable
-colouring functionality, and other associated optimisation problems are reported
-as part of GCol's documentation, [@GColDocs].
+complexity of all methods used. Results concerning the runtimes and accuracy 
+of GCol's algorithms, equitable colouring functionality, and other 
+associated optimisation problems are also reported in the documentation.
 
 # References
