@@ -21,6 +21,9 @@ setup(
         'Operating System :: OS Independent',
         ],
     python_requires='>=3.7',
-    install_requires=['networkx>=3.0', 'matplotlib>=3.8']
+    install_requires=['networkx>=3.0', 'matplotlib>=3.8'],
+    extras_require = {
+        'testing': ["pytest"],
+        'documentation': ["pandas"],
+    }
 )
-
