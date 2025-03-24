@@ -102,7 +102,7 @@ node and edge colouring problems. This algorithm has an exponential time
 complexity and, consequently, is unsuitable for larger problem instances. 
   
 A further open-source option that, in addition, includes visualisation tools is provided by
-SageMath [@SageMath]. This has methods for both node and edge colouring, and can also
+SageMath [@sagemath]. This has methods for both node and edge colouring, and can also
 enumerate *all* node colourings of a graph. Like Goblin, however, its algorithms
 are based on integer programming and operate in exponential time. NetworkX
 itself also includes some simple greedy heuristics for node colouring [@Hagberg2008]
