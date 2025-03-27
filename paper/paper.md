@@ -55,8 +55,8 @@ routines.\label{fig:demo}](output_00_01_02_combined.png){width="350pt"}
 Graph colouring has applications in many practical areas including timetabling,
 sports league scheduling, designing seating plans, code optimisation, and
 solving Sudoku puzzles [@Lewis2021Book]. It is also a topic of theoretical
-interest [@Cranston2024] that often appears in university-level courses on graph
-theory, algorithms, and combinatorics.
+interest that often appears in university-level courses on graph
+theory, algorithms, and combinatorics [@Cranston2024].
   
 GCol is a new, open-source Python library for graph colouring that is built on top of
 the well-known NetworkX library [@Hagberg2008]. It provides easy-to-use,
@@ -87,16 +87,16 @@ Node coloring of G = {0: 0, 1: 1, 19: 1, 10: 1, 2: 0, 3: 2, 8: 0, 9: 2, 18: 0,
 
 Open-source resources for graph colouring have existed for some time, primarily
 for node colouring. An early example is the PL/I code for node colouring
-included in the 1979 paper of [@Leighton1979]. Stand-alone C-based
+included in the paper of @Leighton1979. Stand-alone C-based
 resources were also made available online in the mid-1990s due to 
-[@Culberson1994] and [@Trick1994]. A Java-based package implementing the methods of
-[@Culberson1994] is now also available [@Shah2020].
+@Culberson1994 and @Trick1994. A Java-based package implementing the methods of
+Culberson is now also available [@Shah2020].
   
 Graph colouring functionality is also included in some popular open-source C++
-libraries. [@Boost] uses a simple constructive heuristic
+libraries. @Boost uses a simple constructive heuristic
 for node colouring, while the Lemon library [@Dezso2011] includes a method for
 colouring the nodes of planar graphs using at most five colours.
-[@Goblin] features a similar method to Lemon and, in addition,
+@Goblin features a similar method to Lemon and, in addition,
 includes a mixed integer linear programming approach for exactly solving the
 node and edge colouring problems. This algorithm has an exponential time
 complexity and, consequently, is unsuitable for larger problem instances. 
@@ -113,11 +113,11 @@ applied when the number of available colours exceeds $\Delta(G)$---for fewer
 colours, where the problem is NP-hard, no functionality is available. 
   
 Further specialised methods for node colouring are also provided by the ColPack software [@Gebremedhin2013]
-and in the algorithm suite of [@Lewis2021BookWeb], both
+and in the algorithm suite of @Lewis2021BookWeb, both
 in C++. The algorithms of ColPack are described as "greedy heuristics in the sense that 
 the algorithms progressively extend a partial colouring by processing one vertex at
 a time, in some order, in each step assigning a vertex the smallest allowable
-colour". On the other hand, the suite of [@Lewis2021BookWeb]
+colour". On the other hand, the suite of @Lewis2021BookWeb
 features several contrasting algorithms, including constructive heuristics, an
 exact algorithm based on backtracking, and bespoke metaheuristics. Finally, 
 graph colouring functionality is also provided by the igraph library [@Csardi2005].
@@ -137,7 +137,7 @@ performed by a choice of node-colouring algorithms that include an exact,
 heuristically-guided, exponential-time backtracking algorithm, and several
 high-performance polynomial-time heuristics. The latter methods combine fast
 constructive methods with contemporary local search heuristics that extend the
-C++ implementations of [@Lewis2021BookWeb], allowing high-quality
+C++ implementations of @Lewis2021BookWeb, allowing high-quality
 solutions to be generated in reasonable run times, even for very large graphs.
 Edge colourings and face colourings are also determined by these algorithms by
 colouring, respectively, the nodes of the corresponding line graphs and dual
@@ -145,7 +145,7 @@ graphs.
 
 The various optimisation algorithms available in the GCol library are described
 in detail in its official documentation [@GColDocs] and in the book of
-[@Lewis2021Book]. These resources include detailed information on the asymptotic
+@Lewis2021Book. These resources include detailed information on the asymptotic
 complexity of all methods used. Results concerning the runtimes and accuracy 
 of GCol's algorithms, equitable colouring functionality, and other 
 associated optimisation problems are also reported in the documentation.
