@@ -1,5 +1,7 @@
 # GCol
 
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.07871/status.svg)](https://doi.org/10.21105/joss.07871)
+
 GCol is an open-source Python library for graph coloring, built on top
 of NetworkX. It provides easy-to-use, high-performance algorithms for
 node coloring, edge coloring, face coloring, equitable coloring, 
