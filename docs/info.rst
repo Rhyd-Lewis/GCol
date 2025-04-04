@@ -44,6 +44,9 @@ The algorithms and techniques used in this library are based on the 2021 textboo
       edition = {2nd}
     }
 
+.. image:: https://joss.theoj.org/papers/10.21105/joss.07871/status.svg
+   :target: https://doi.org/10.21105/joss.07871
+
 Support
 -------
 The GCol repository is hosted on `github <https://github.com/Rhyd-Lewis/GCol>`_. If you have any questions, please ask them on `stackoverflow <https://stackoverflow.com>`_ adding the tag ``graph-coloring``. All documentation is listed `on this website <https://gcol.readthedocs.io/en/latest/>`_ or, if you prefer, `in this pdf document <https://readthedocs.org/projects/gcol/downloads/pdf/latest/>`_. If you have any suggestions for this library or notice any bugs, please contact the author using the contact details at `www.rhydlewis.eu <https://www.rhydlewis.eu>`_.
