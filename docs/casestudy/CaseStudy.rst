@@ -155,21 +155,21 @@ uses ``gcol``\ ’s precoloring routines to emulate this process.
     Exam 28 has 90 students. Assigning to timeslot 13
     Exam 132 has 89 students. Assigning to timeslot 14
     Here are the exams assigned to each timeslot
-    Timeslot 0 : [71, 111, 112, 113, 114, 115, 116, 117, 118, 131]
-    Timeslot 1 : [133, 135, 137]
-    Timeslot 2 : [85, 86, 87, 89, 90, 91, 92, 93, 108, 110, 123, 134]
-    Timeslot 3 : [0, 1, 17, 18, 19, 21, 22, 23, 24, 25, 41, 96, 119]
-    Timeslot 4 : [3, 16, 70, 102, 103]
-    Timeslot 5 : [2]
-    Timeslot 6 : [94, 95, 99, 104, 107]
-    Timeslot 7 : [4, 5, 6, 7, 29, 30, 31, 32, 33, 34, 35, 36, 37, 138]
-    Timeslot 8 : [109, 120, 121, 122, 124, 125, 126, 127, 128]
-    Timeslot 9 : [38, 39, 40, 42, 43, 44, 45, 46, 61, 105, 129]
-    Timeslot 10 : [72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 97, 98, 100, 101]
-    Timeslot 11 : [106]
-    Timeslot 12 : [58, 59, 60, 62, 63, 64, 65, 66, 67, 68, 69, 88]
-    Timeslot 13 : [20, 26, 27, 28, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57]
-    Timeslot 14 : [8, 9, 10, 11, 12, 13, 14, 15, 130, 132, 136]
+    Timeslot 0 : [8, 9, 10, 11, 12, 13, 14, 15, 71, 133]
+    Timeslot 1 : [58, 59, 60, 62, 63, 64, 65, 66, 74, 88, 137]
+    Timeslot 2 : [84, 94, 95, 97, 98, 99, 100, 101, 134]
+    Timeslot 3 : [3, 16, 96, 130, 136]
+    Timeslot 4 : [70, 120, 121, 122, 124, 125, 126, 127, 128]
+    Timeslot 5 : [0, 1, 2, 17, 18, 19, 21, 22, 23, 24, 25, 41, 119]
+    Timeslot 6 : [47, 49, 50, 51, 52, 53, 54, 55, 56, 107, 131]
+    Timeslot 7 : [5, 85, 86, 87, 89, 90, 91, 92, 93, 123]
+    Timeslot 8 : [38, 39, 40, 42, 43, 44, 45, 46, 61, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118]
+    Timeslot 9 : [37, 102, 103, 104, 105, 138]
+    Timeslot 10 : [73]
+    Timeslot 11 : [6, 7, 72, 106]
+    Timeslot 12 : [20, 26, 27, 57, 67, 68, 69, 76, 77, 78, 79, 80, 81, 82, 83]
+    Timeslot 13 : [4, 28, 29, 30, 31, 32, 33, 34, 35, 36, 48, 135]
+    Timeslot 14 : [75, 129, 132]
     
 
 Balancing Exams
@@ -263,30 +263,32 @@ solution:
 .. code:: ipython3
 
     c = gcol.min_cost_k_coloring(G, 12, weight="weight", weights_at="nodes", it_limit=10000)
-    U = list(G.nodes[u]["weight"] for u in c if c[u] <= -1)
+    P = gcol.partition(c)
+    U = list(u for u in c if c[u] <= -1)
     print("Here are the exams assigned to each timeslot")
     for i in range(len(P)):
         print("Timeslot", i, ":", P[i])
-    print("The", len(U), "unscheduled exams have the following sizes", sorted(U), ", which totals", sum(U))
+    print("The unscheduled exams are", U)
+    print("They have the following sizes", [G.nodes[u]["weight"] for u in U])
 
 
 .. parsed-literal::
 
     Here are the exams assigned to each timeslot
-    Timeslot 0 : [3, 72, 73, 74, 134]
-    Timeslot 1 : [0, 1, 8, 13, 14, 17, 18, 19, 21, 22, 23, 24, 25, 33, 41, 51, 56]
-    Timeslot 2 : [67, 68, 69, 104, 105, 132]
-    Timeslot 3 : [5, 6, 7, 96, 135]
-    Timeslot 4 : [20, 26, 70, 102, 103]
-    Timeslot 5 : [12, 32, 47, 75, 78, 106, 107, 111, 117, 118, 129]
-    Timeslot 6 : [2, 108, 109, 110, 138]
-    Timeslot 7 : [4, 28, 97, 98, 100, 101, 137]
-    Timeslot 8 : [9, 11, 15, 29, 35, 71, 133]
-    Timeslot 9 : [36, 38, 39, 40, 42, 43, 44, 45, 46, 53, 79, 82, 112, 116, 131]
-    Timeslot 10 : [10, 52, 58, 59, 60, 62, 63, 64, 65, 66, 76, 77, 80, 81, 83, 88, 136]
-    Timeslot 11 : [30, 31, 48, 54, 55, 61, 85, 86, 87, 89, 90, 91, 92, 93, 115]
-    Timeslot 12 : [34, 49, 50, 94, 95, 99, 113, 114, 120, 121, 122, 123, 124, 125, 126, 127, 128]
-    The 8 unscheduled exams have the following sizes [19, 19, 20, 29, 32, 32, 34, 34] , which totals 219
+    Timeslot 0 : [2, 3, 133]
+    Timeslot 1 : [70, 71, 136]
+    Timeslot 2 : [96, 102, 103, 132]
+    Timeslot 3 : [47, 131, 134, 135]
+    Timeslot 4 : [0, 1, 137, 138]
+    Timeslot 5 : [94, 95, 99, 104, 105, 106, 107]
+    Timeslot 6 : [4, 8, 9, 10, 11, 12, 13, 14, 15, 20, 26, 28, 48]
+    Timeslot 7 : [29, 30, 31, 32, 33, 34, 35, 36, 75, 97, 98, 100, 101, 129]
+    Timeslot 8 : [17, 18, 19, 21, 22, 23, 24, 25, 41, 49, 50, 51, 52, 53, 54, 55, 56, 67, 68, 69]
+    Timeslot 9 : [38, 39, 40, 42, 43, 44, 45, 46, 61, 76, 77, 78, 79, 80, 81, 82, 83, 108, 109, 110]
+    Timeslot 10 : [5, 6, 7, 58, 59, 60, 62, 63, 64, 65, 66, 88, 111, 112, 113, 114, 115, 116, 117, 118]
+    Timeslot 11 : [72, 73, 74, 85, 86, 87, 89, 90, 91, 92, 93, 123]
+    The unscheduled exams are [120, 121, 124, 126, 127, 128, 122, 125]
+    They have the following sizes [29, 32, 19, 32, 34, 34, 20, 19]
     
 
 As shown, this gives a 12-timeslot solution but leaves 8 unscheduled
@@ -309,6 +311,7 @@ has a weight equal to :math:`X_{ij}`.
                 G.add_edge(i, j, weight=X[i][j])
     
     c = gcol.min_cost_k_coloring(G, 12, weight="weight", weights_at="edges", it_limit=10000)
+    P = gcol.partition(c)
     print("Here are the exams assigned to each timeslot")
     for i in range(len(P)):
         print("Timeslot", i, ":", P[i])
@@ -321,19 +324,18 @@ has a weight equal to :math:`X_{ij}`.
 .. parsed-literal::
 
     Here are the exams assigned to each timeslot
-    Timeslot 0 : [3, 72, 73, 74, 134]
-    Timeslot 1 : [0, 1, 8, 13, 14, 17, 18, 19, 21, 22, 23, 24, 25, 33, 41, 51, 56]
-    Timeslot 2 : [67, 68, 69, 104, 105, 132]
-    Timeslot 3 : [5, 6, 7, 96, 135]
-    Timeslot 4 : [20, 26, 70, 102, 103]
-    Timeslot 5 : [12, 32, 47, 75, 78, 106, 107, 111, 117, 118, 129]
-    Timeslot 6 : [2, 108, 109, 110, 138]
-    Timeslot 7 : [4, 28, 97, 98, 100, 101, 137]
-    Timeslot 8 : [9, 11, 15, 29, 35, 71, 133]
-    Timeslot 9 : [36, 38, 39, 40, 42, 43, 44, 45, 46, 53, 79, 82, 112, 116, 131]
-    Timeslot 10 : [10, 52, 58, 59, 60, 62, 63, 64, 65, 66, 76, 77, 80, 81, 83, 88, 136]
-    Timeslot 11 : [30, 31, 48, 54, 55, 61, 85, 86, 87, 89, 90, 91, 92, 93, 115]
-    Timeslot 12 : [34, 49, 50, 94, 95, 99, 113, 114, 120, 121, 122, 123, 124, 125, 126, 127, 128]
+    Timeslot 0 : [2, 3, 133]
+    Timeslot 1 : [70, 71, 136]
+    Timeslot 2 : [96, 102, 103, 132]
+    Timeslot 3 : [47, 131, 134, 135]
+    Timeslot 4 : [0, 1, 26, 137, 138]
+    Timeslot 5 : [94, 95, 99, 104, 105, 106, 107]
+    Timeslot 6 : [4, 8, 9, 10, 11, 12, 13, 14, 15, 19, 20, 24, 28, 48, 120, 121, 124, 125, 126, 128]
+    Timeslot 7 : [29, 30, 31, 32, 33, 34, 35, 36, 75, 97, 98, 100, 101, 129]
+    Timeslot 8 : [17, 18, 21, 22, 23, 25, 41, 49, 50, 51, 52, 53, 54, 55, 56, 67, 68, 69, 122, 127]
+    Timeslot 9 : [38, 39, 40, 42, 43, 44, 45, 46, 61, 76, 77, 78, 79, 80, 81, 82, 83, 108, 109, 110]
+    Timeslot 10 : [5, 6, 7, 58, 59, 60, 62, 63, 64, 65, 66, 88, 111, 112, 113, 114, 115, 116, 117, 118]
+    Timeslot 11 : [72, 73, 74, 85, 86, 87, 89, 90, 91, 92, 93, 123]
     Here are the clashes in this timetable:
     Exams 26 and 138 assigned to timeslot 4 but have 1 common student(s)
     
