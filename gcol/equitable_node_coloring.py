@@ -4,7 +4,7 @@ from collections import deque
 import itertools
 
 
-def _LS_equitable(G, c, k, W):
+def _LS_equitable(G, c, k, W, verbose):
     def getKempeChain(A, c, s, i, j):
         status = {s: 1}
         Q = deque([s])
@@ -84,6 +84,8 @@ def _LS_equitable(G, c, k, W):
     mean = sum(x for x in ColWeight) / len(ColWeight)
     currentCost = (sum((x - mean) ** 2 for x in ColWeight) /
                    len(ColWeight)) ** 0.5
+    if verbose > 0:
+        print("Running equitable local search algorithm using", k, "colors:")
     V = list(G)
     while True:
         # Initialise data structures. KCRec[v,j] holds the size of the Kempe
@@ -96,6 +98,8 @@ def _LS_equitable(G, c, k, W):
             for v in G[u]:
                 A[u, c[v]].append(v)
         bestVal = currentCost
+        if verbose > 0:
+            print("    Found solution with cost (std. dev.)", currentCost)
         for v in G:
             i = c[v]
             for j in range(k):
@@ -141,6 +145,9 @@ def _LS_equitable(G, c, k, W):
         else:
             doSwapMove(c, bestu, bestv)
         currentCost = bestVal
+    if verbose > 0:
+        print("Ending equitable local search algorithm - local optimum",
+              "achieved.")
     return c
 
 

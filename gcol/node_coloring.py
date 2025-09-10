@@ -130,10 +130,10 @@ def _rlf(G):
         while X:
             # Identify and color the node u in X that has the largest number
             # of neighbors in Y. Break ties according to the min neighbors in X
-            maxVal, minVal = -1, n
+            mxVal, mnVal = -1, n
             for v in X:
-                if NInY[v] > maxVal or (NInY[v] == maxVal and NInX[v] < minVal):
-                    maxVal, minVal, u = NInY[v], NInX[v], v
+                if NInY[v] > mxVal or (NInY[v] == mxVal and NInX[v] < mnVal):
+                    mxVal, mnVal, u = NInY[v], NInX[v], v
             c[u] = i
             update_rlf(u)
         # Have finished constructing color class i
@@ -142,7 +142,7 @@ def _rlf(G):
     return c
 
 
-def _backtrackcol(G, targetcols):
+def _backtrackcol(G, targetcols, verbose):
     def is_feasible(u, i):
         # Returns true iff node u can be feasibly assigned to color i in c
         for v in G[u]:
@@ -153,6 +153,7 @@ def _backtrackcol(G, targetcols):
     def color(uPos):
         # Recursive function used for backtracking. Attempts to color node at
         # position uPos in V
+        its[0] += 1
         if len(colsize) > numcols[0]:
             # Current (partial) solution is using too many colors, so backtrack
             return False
@@ -162,8 +163,11 @@ def _backtrackcol(G, targetcols):
             bestc.clear()
             for v in c:
                 bestc[v] = c[v]
+            if verbose > 0:
+                print("    Found solution with", len(colsize),
+                      "colors. Total backtracking iterations =", its[0])
             if len(colsize) == targetcols:
-                # Optimum solution has been constructed
+                # Optimum solution has been constructed or target reached
                 return True
             else:
                 # Reduce number of available colors and continue
@@ -185,29 +189,36 @@ def _backtrackcol(G, targetcols):
     # Find a large clique C in G
     C = list(nx.approximation.max_clique(G))
     targetcols = max(targetcols, len(C))
+    if verbose > 0:
+        print("Running backtracking algorithm:")
     # Generate an initial solution. Do this by assigning the nodes in C
     # to different colors, then get a starting number of colors (numcols) using
     # dsatur. V holds the order in which the vetices were colored
-    bestc = {}
-    for i in range(len(C)):
-        bestc[C[i]] = i
+    bestc = {C[i]: i for i in range(len(C))}
     bestc = _dsatur(G, bestc)
-    numcols = [max(bestc.values())]
+    numcols = [max(bestc.values()) + 1]
+    if verbose > 0:
+        print("    Found solution with",
+              numcols[0], "colors. Total backtracking iterations = 0")
+    numcols[0] -= 1
     V = list(bestc)
     # Now assign the nodes in C to c and run the backtracking algorithm
     # from the next node in V. Here, bestc holds the best solution seen so far
     # and colsize holds the size of all nonempty color classes in c.
     # len(colsize) therefore gives the number of colors (cost) being used by
     # the (sub-)solution c
-    c, colsize = {}, defaultdict(int)
+    c, colsize, its = {}, defaultdict(int), [0]
     for i in range(len(C)):
         c[C[i]] = i
         colsize[i] += 1
     color(len(C))
+    if verbose > 0:
+        print("Ending backtracking at iteration",
+              its[0], "- optimal solution achieved.")
     return bestc
 
 
-def _partialcol(G, k, c, W, it_limit):
+def _partialcol(G, k, c, W, it_limit, verbose):
     def domovepartialcol(v, j):
         # Used by partialcol to move node v to color j and update relevant
         # data structures
@@ -244,9 +255,14 @@ def _partialcol(G, k, c, W, it_limit):
                 C[v, c[u]] += W[u]
     currentcost = sum(W[u] for u in U)
     bestcost, bestsol, t = float("inf"), {}, 1
+    if verbose > 0:
+        print("    Running PartialCol algorithm using", k, "colors")
     while True:
         # Keep track of best solution and halt when appropriate
         if currentcost < bestcost:
+            if verbose > 0:
+                print("        Solution with", k, "colors and cost",
+                      currentcost, "found by PartialCol at iteration", its)
             bestcost = currentcost
             bestsol = dict(c)
         if bestcost <= 0 or its >= it_limit:
@@ -276,10 +292,12 @@ def _partialcol(G, k, c, W, it_limit):
         domovepartialcol(vbest, jbest)
         currentcost = bestval
         t = int(0.6 * len(U)) + random.randint(0, 9)
+    if verbose > 0:
+        print("    Ending PartialCol")
     return bestcost, bestsol, its
 
 
-def _tabucol(G, k, c, W, it_limit):
+def _tabucol(G, k, c, W, it_limit, verbose):
     def domovetabucol(v, j):
         # Used by tabucol to move node v to a new color j and update relevant
         # data structures
@@ -323,9 +341,14 @@ def _tabucol(G, k, c, W, it_limit):
             U.add(v)
     currentcost //= 2
     bestcost, bestsol, t = float("inf"), {}, 1
+    if verbose > 0:
+        print("    Running TabuCol algorithm using", k, "colors")
     while True:
         # Keep track of best solution and halt when appropriate
         if currentcost < bestcost:
+            if verbose > 0:
+                print("        Solution with", k, "colors and cost",
+                      currentcost, "found by TabuCol at iteration", its)
             bestcost = currentcost
             bestsol = dict(c)
         if bestcost <= 0 or its >= it_limit:
@@ -358,6 +381,8 @@ def _tabucol(G, k, c, W, it_limit):
         domovetabucol(vbest, jbest)
         currentcost = bestval
         t = int(0.6 * len(U)) + random.randint(0, 9)
+    if verbose > 0:
+        print("    Ending TabuCol")
     return bestcost, bestsol, its
 
 
@@ -377,23 +402,41 @@ def _removeColor(c, j, alg):
                 c[v] = random.randint(0, maxcol - 1)
 
 
-def _reducecolors(G, c, target, W, opt_alg, it_limit):
+def _reducecolors(G, c, target, W, opt_alg, it_limit, verbose):
     # Uses specified optimisation algorithm to try to reduce the number of
     # colors in c to the target value. The observed proper solution with the
     # fewest colors is returned (which may be using more colors than the
     # target)
+    k = max(c.values()) + 1
     if opt_alg == 1:
-        return _backtrackcol(G, target)
-    k, bestc, totalits = max(c.values()) + 1, dict(c), 0
+        return _backtrackcol(G, target, verbose)
+    bestc, totalits = dict(c), 0
+    if verbose > 0:
+        print("Running local search algorithm:")
+        print("    Found solution with", k,
+              "colors. Total local search iterations = 0 /", it_limit)
     while k > target and totalits < it_limit:
         k -= 1
         j = random.randint(0, k - 1)
         _removeColor(c, j, opt_alg)
         if opt_alg == 2:
-            cost, c, its = _tabucol(G, k, c, W, it_limit - totalits)
+            cost, c, its = _tabucol(
+                G, k, c, W, it_limit - totalits, verbose - 1)
         else:
-            cost, c, its = _partialcol(G, k, c, W, it_limit - totalits)
+            cost, c, its = _partialcol(
+                G, k, c, W, it_limit - totalits, verbose - 1)
         totalits += its
         if cost == 0:
             bestc = dict(c)
+            if verbose > 0:
+                print("    Found solution with", k,
+                      "colors. Total local search iterations =", totalits,
+                      "/", it_limit)
+    if verbose > 0:
+        if totalits >= it_limit:
+            print("Ending local search. Iteration limit of",
+                  it_limit, "has been reached.")
+        else:
+            print("Ending local search at iteration", totalits,
+                  "- optimal solution achieved.")
     return bestc

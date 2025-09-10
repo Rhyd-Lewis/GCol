@@ -48,7 +48,7 @@ colorblind = {
 }
 
 
-def _check_params(G, strategy, opt_alg, it_limit):
+def _check_params(G, strategy, opt_alg, it_limit, verbose):
     greedy_methods = {"random", "welsh_powell", "dsatur", "rlf"}
     opt_methods = {1, 2, 3, None}
     if strategy not in greedy_methods:
@@ -63,14 +63,18 @@ def _check_params(G, strategy, opt_alg, it_limit):
         raise ValueError(
             "Error, it_limit parameter must be a non-negative integer"
         )
+    if not isinstance(verbose, int) or verbose < 0:
+        raise ValueError(
+            "Error, verbose parameter must be a non-negative integer"
+        )
     if G.is_directed() or G.is_multigraph():
         raise NotImplementedError(
-            "Error, this method cannot be used with directed graphs or ",
+            "Error, this method cannot be used with directed graphs or "
             "multigraphs"
         )
     if nx.number_of_selfloops(G) != 0:
         raise NotImplementedError(
-            "Error, this method cannot be used with graphs featuring ",
+            "Error, this method cannot be used with graphs featuring "
             "self-loops (edges of the form {u, u})"
         )
 
@@ -143,11 +147,11 @@ def partition(c):
     >>> G = nx.dodecahedral_graph()
     >>> c = gcol.node_coloring(G)
     >>> print(gcol.partition(c))
-    [[0, 2, 8, 18, 4, 13, 15], [1, 19, 10, 6, 12, 14, 17], [3, 9, 11, 7, 5, 16]]
+    [[0, 2, 8, 18, 4, 13, 15], ..., [3, 9, 11, 7, 5, 16]]
     >>>
     >>> c = gcol.edge_coloring(G)
     >>> print(gcol.partition(c))
-    [[(11, 12), (18, 19), (16, 17), (0, 10), (9, 13), (14, 15), (3, 4), (1, 2), (5, 6), (7, 8)], [(11, 18), (12, 16), (4, 17), (9, 10), (13, 14), (5, 15), (0, 19), (2, 3), (1, 8), (6, 7)], [(10, 11), (12, 13), (17, 18), (15, 16), (8, 9), (7, 14), (3, 19), (0, 1), (2, 6), (4, 5)]]
+    [[(11, 12), (18, 19), (16, 17), ..., (2, 6), (4, 5)]]
 
     Notes
     -----
@@ -206,7 +210,10 @@ def coloring_layout(G, c):
     >>>
     >>> G = nx.dodecahedral_graph()
     >>> c = gcol.node_coloring(G)
-    >>> nx.draw_networkx(G, pos=gcol.coloring_layout(G, c), node_color=gcol.get_node_colors(G, c))
+    >>> nx.draw_networkx(
+    ...     G, pos=gcol.coloring_layout(G, c),
+    ...     node_color=gcol.get_node_colors(G, c)
+    ... )
     >>> plt.show()
 
     See Also
@@ -255,7 +262,10 @@ def multipartite_layout(G, c):
     >>>
     >>> G = nx.dodecahedral_graph()
     >>> c = gcol.node_coloring(G)
-    >>> nx.draw_networkx(G, pos=gcol.multipartite_layout(G, c), node_color=gcol.get_node_colors(G, c))
+    >>> nx.draw_networkx(
+    ...     G, pos=gcol.multipartite_layout(G, c),
+    ...     node_color=gcol.get_node_colors(G, c)
+    ... )
     >>> plt.show()
 
     See Also
@@ -316,7 +326,9 @@ def get_node_colors(G, c, palette=None):
     >>>
     >>> G = nx.dodecahedral_graph()
     >>> c = gcol.node_coloring(G)
-    >>> nx.draw_networkx(G, pos=nx.spring_layout(G), node_color=gcol.get_node_colors(G, c))
+    >>> nx.draw_networkx(
+    ...     G, pos=nx.spring_layout(G), node_color=gcol.get_node_colors(G, c)
+    ... )
     >>> plt.show()
 
     Raises
@@ -396,7 +408,9 @@ def get_edge_colors(G, c, palette=None):
     >>>
     >>> G = nx.dodecahedral_graph()
     >>> c = gcol.edge_coloring(G)
-    >>> nx.draw_networkx(G, pos=nx.spring_layout(G), edge_color=gcol.get_edge_colors(G, c))
+    >>> nx.draw_networkx(
+    ...    G, pos=nx.spring_layout(G), edge_color=gcol.get_edge_colors(G, c)
+    ... )
     >>> plt.show()
 
     Raises
@@ -472,7 +486,9 @@ def get_set_colors(G, S, S_color="yellow", other_color="grey"):
     >>>
     >>> G = nx.dodecahedral_graph()
     >>> S = gcol.max_independent_set(G, it_limit=1000)
-    >>> nx.draw_networkx(G, pos=nx.spring_layout(G), node_color=gcol.get_set_colors(G, S))
+    >>> nx.draw_networkx(
+    ...     G, pos=nx.spring_layout(G), node_color=gcol.get_set_colors(G, S)
+    ... )
     >>> plt.show()
 
     See Also
@@ -713,7 +729,7 @@ def kempe_chain(G, c, s, j):
     return Chain
 
 
-def max_independent_set(G, weight=None, it_limit=0):
+def max_independent_set(G, weight=None, it_limit=0, verbose=0):
     """Attempt to identify the largest independent set of nodes in a graph.
 
     Here, nodes can also be allocated weights if desired.
@@ -749,6 +765,11 @@ def max_independent_set(G, weight=None, it_limit=0):
         Number of iterations of the local search procedure. Each iteration has
         a complexity $O(m + n)$, where $n$ is the number of nodes and $m$ is
         the number of edges.
+
+    verbose : int, optional (default=0)
+        If set to a positive value, information is output during the
+        optimization process. In this output, the cost refers to the number
+        of nodes not in the independent set.
 
     Returns
     -------
@@ -786,6 +807,8 @@ def max_independent_set(G, weight=None, it_limit=0):
     ValueError
         If ``it_limit`` is not a nonnegative integer.
 
+        If ``verbose`` is not a nonnegative integer.
+
         If a node with a non-positive weight is specified.
 
     KeyError
@@ -816,7 +839,7 @@ def max_independent_set(G, weight=None, it_limit=0):
       <https://rhydlewis.eu/gcol/>
 
     """
-    _check_params(G, "dsatur", 3, it_limit)
+    _check_params(G, "dsatur", 3, it_limit, verbose)
     if len(G) == 0:
         return {}
     elif G.number_of_edges() == 0:
@@ -828,11 +851,12 @@ def max_independent_set(G, weight=None, it_limit=0):
     for v in c:
         if c[v] > 0:
             c[v] = -1
-    cost, c, its = nc._partialcol(G, 1, c, W, it_limit)
+    cost, c, its = nc._partialcol(G, 1, c, W, it_limit, verbose)
     return [v for v in c if c[v] == 0]
 
 
-def min_cost_k_coloring(G, k, weight=None, weights_at="nodes", it_limit=0):
+def min_cost_k_coloring(G, k, weight=None, weights_at="nodes", it_limit=0,
+                        verbose=0):
     """Color the nodes of the graph using ``k`` colors.
 
     This is done so that a cost function is minimized. Equivalently, this
@@ -885,6 +909,10 @@ def min_cost_k_coloring(G, k, weight=None, weights_at="nodes", it_limit=0):
         a complexity $O(m + kn)$, where $n$ is the number of nodes, $m$ is the
         number of edges, and $k$ is the number of colors.
 
+    verbose : int, optional (default=0)
+        If set to a positive value, information is output during the
+        optimization process.
+
     Returns
     -------
     dict
@@ -922,13 +950,13 @@ def min_cost_k_coloring(G, k, weight=None, weights_at="nodes", it_limit=0):
     [[0, 2, 8, 18, 11, 7, 4, 13, 15, 16], [1, 19, 10, 3, 9, 6, 5, 12, 14, 17]]
     >>> for u, v in G.edges():
     >>>     if c[u] == c[v]:
-    >>>         print("Edge", u, v, "( cost =", G[u][v]["weight"], ") is clashing")
-    Edge 3 19 ( cost = 16 ) is clashing
-    Edge 5 6 ( cost = 1 ) is clashing
-    Edge 7 8 ( cost = 1 ) is clashing
-    Edge 9 10 ( cost = 1 ) is clashing
-    Edge 11 18 ( cost = 7 ) is clashing
-    Edge 15 16 ( cost = 1 ) is clashing
+    >>>         print("Edge", u, v, "( cost =", G[u][v]["weight"], ") clashes")
+    Edge 3 19 ( cost = 16 ) clashes
+    Edge 5 6 ( cost = 1 ) clashes
+    Edge 7 8 ( cost = 1 ) clashes
+    Edge 9 10 ( cost = 1 ) clashes
+    Edge 11 18 ( cost = 7 ) clashes
+    Edge 15 16 ( cost = 1 ) clashes
 
     Raises
     ------
@@ -941,6 +969,8 @@ def min_cost_k_coloring(G, k, weight=None, weights_at="nodes", it_limit=0):
         If ``weights_at`` is not among the supported options.
 
         If ``it_limit`` is not a nonnegative integer.
+
+        If ``verbose`` is not a nonnegative integer.
 
         If ``k`` is not a nonnegative integer.
 
@@ -993,7 +1023,7 @@ def min_cost_k_coloring(G, k, weight=None, weights_at="nodes", it_limit=0):
         raise ValueError(
             "Error, weights_at should be either 'nodes' or 'edges'"
         )
-    _check_params(G, "dsatur", 3, it_limit)
+    _check_params(G, "dsatur", 3, it_limit, verbose)
     if len(G) == 0:
         return {}
     c = nc._dsatur(G)
@@ -1002,17 +1032,18 @@ def min_cost_k_coloring(G, k, weight=None, weights_at="nodes", it_limit=0):
         for v in c:
             if c[v] >= k:
                 c[v] = -1
-        cost, c, its = nc._partialcol(G, k, c, W, it_limit)
+        cost, c, its = nc._partialcol(G, k, c, W, it_limit, verbose)
     else:
         W = _getEdgeWeights(G, weight)
         for v in c:
             if c[v] >= k:
                 c[v] = random.randint(0, k - 1)
-        cost, c, its = nc._tabucol(G, k, c, W, it_limit)
+        cost, c, its = nc._tabucol(G, k, c, W, it_limit, verbose)
     return c
 
 
-def equitable_node_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
+def equitable_node_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0,
+                              verbose=0):
     """Attempt to color the nodes of a graph using ``k`` colors.
 
     This is done so that (a) all adjacent nodes have different colors, and (b)
@@ -1026,15 +1057,16 @@ def equitable_node_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
     Determining an equitable node $k$-coloring is NP-hard. This method first
     follows the steps used by the :meth:`node_k_coloring` method to try and
     find a node $k$-coloring. If this is achieved, the algorithm then uses a
-    bespoke local search operator to reduce the variance in weights across the
-    $k$ colors.
+    bespoke local search operator to reduce the standard deviation in weights
+    across the $k$ colors.
 
     If a node $k$-coloring cannot be determined by the algorithm, a
     ``ValueError`` exception is raised. Otherwise, a node $k$-coloring is
-    returned in which the variance in weights across the $k$ color classes has
-    been minimized. In solutions returned by this method, neighboring nodes
-    always receive different colors; however, the coloring is not guaranteed
-    to be equitable, even if an equitable node $k$-coloring exists.
+    returned in which the standard deviation in weights across the $k$ color
+    classes has been minimized. In solutions returned by this method,
+    neighboring nodes always receive different colors; however, the coloring
+    is not guaranteed to be equitable, even if an equitable node $k$-coloring
+    exists.
 
     Parameters
     ----------
@@ -1071,6 +1103,10 @@ def equitable_node_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
         Number of iterations of the local search procedure. Only applicable
         when using ``opt_alg=2`` or ``opt_alg=3``.
 
+    verbose : int, optional (default=0)
+        If set to a positive value, information is output during the
+        optimization process. The higher the value, the more information.
+
     Returns
     -------
     dict
@@ -1086,7 +1122,7 @@ def equitable_node_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
     >>> c = gcol.equitable_node_k_coloring(G, 4)
     >>> P = gcol.partition(c)
     >>> print(P)
-    [[0, 2, 9, 5, 14], [1, 3, 11, 7, 17], [19, 8, 6, 13, 16], [10, 18, 4, 12, 15]]
+    [[0, 2, 9, 5, 14], [1, 3, 11, 7, 17], ..., [10, 18, 4, 12, 15]]
     >>> print("Size of smallest color class =", min(len(j) for j in P))
     Size of smallest color class = 5
     >>> print("Size of biggest color class =", max(len(j) for j in P))
@@ -1104,10 +1140,16 @@ def equitable_node_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
     >>> print(P)
     [[2], [0], [1, 3]]
     >>>
-    >>> print("Weight of lightest color class =", min(sum(G.nodes[v]['weight'] for v in j) for j in P))
+    >>> print(
+    ...     "Weight of lightest color class =",
+    ...     min(sum(G.nodes[v]['weight'] for v in j) for j in P)
+    ... )
     Weight of lightest color class = 19
     >>>
-    >>> print("Weight of heaviest color class =", max(sum(G.nodes[v]['weight'] for v in j) for j in P))
+    >>> print(
+    ...     "Weight of heaviest color class =",
+    ...     max(sum(G.nodes[v]['weight'] for v in j) for j in P)
+    ... )
     Weight of heaviest color class = 25
 
     Raises
@@ -1121,6 +1163,8 @@ def equitable_node_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
         If ``opt_alg`` is not among the supported options.
 
         If ``it_limit`` is not a nonnegative integer.
+
+        If ``verbose`` is not a nonnegative integer.
 
         If ``k`` is not a nonnegative integer.
 
@@ -1139,13 +1183,13 @@ def equitable_node_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
     method to try and find a node $k$-coloring; however, it also takes node
     weights into account if needed. If a node $k$-coloring is achieved, a
     bespoke local search operator (based on steepest descent) is then used to
-    try to reduce the variance in weights across the $k$ color classes. This
-    process involves evaluating each Kempe-chain interchange in the current
-    solution [1]_ and performing the interchange that results in the largest
-    reduction in variance. This process repeats until there are no interchanges
-    that reduce the variance. Each iteration of this local search process
-    takes $O(n^2)$ time. Further details on this optimization method can be
-    found in Chapter 7 of [2], or in [3]_.
+    try to reduce the standard deviation in weights across the $k$ color
+    classes. This process involves evaluating each Kempe-chain interchange in
+    the current solution [1]_ and performing the interchange that results in
+    the largest reduction in standard deviation. This process repeats until
+    there are no interchanges that reduce the standard deviation. Each
+    iteration of this local search process takes $O(n^2)$ time. Further details
+    on this optimization method can be found in Chapter 7 of [2], or in [3]_.
 
     All the above algorithms are described in detail in [2]_. The c++ code used
     in [2]_ and [4]_ forms the basis of this library's Python implementations.
@@ -1171,7 +1215,7 @@ def equitable_node_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
     """
     if k < 0:
         raise ValueError("Error, nonnegative integer needed for k")
-    _check_params(G, "dsatur", opt_alg, it_limit)
+    _check_params(G, "dsatur", opt_alg, it_limit, verbose)
     if len(G) == 0:
         return {}
     cliqueNum = nx.approximation.large_clique_size(G)
@@ -1193,18 +1237,18 @@ def equitable_node_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
             WPrime = _getEdgeWeights(G, None)
         else:
             WPrime = _getNodeWeights(G, None)
-        c = nc._reducecolors(G, c, k, WPrime, opt_alg, it_limit)
+        c = nc._reducecolors(G, c, k, WPrime, opt_alg, it_limit, verbose)
         if max(c.values()) + 1 > k:
             raise ValueError(
                 "Error, could not construct a k-coloring of this graph. Try "
                 "increasing k or using more optimisation"
             )
-    # If we are here we have a k-coloring. Attempt to decrease the variance
+    # If we are here we have a k-coloring. Attempt to decrease the SD
     # across the color classes using a steepest descent heuristic
-    return enc._LS_equitable(G, c, k, W)
+    return enc._LS_equitable(G, c, k, W, verbose)
 
 
-def node_k_coloring(G, k, opt_alg=None, it_limit=0):
+def node_k_coloring(G, k, opt_alg=None, it_limit=0, verbose=0):
     """Attempt to color the nodes of a graph using ``k`` colors.
 
     This is done so that adjacent nodes have different colors. A set of nodes
@@ -1254,6 +1298,10 @@ def node_k_coloring(G, k, opt_alg=None, it_limit=0):
         Number of iterations of the local search procedure. Only applicable
         when using ``opt_alg=2`` or ``opt_alg=3``.
 
+    verbose : int, optional (default=0)
+        If set to a positive value, information is output during the
+        optimization process. The higher the value, the more information.
+
     Returns
     -------
     dict
@@ -1268,11 +1316,11 @@ def node_k_coloring(G, k, opt_alg=None, it_limit=0):
     >>> G = nx.dodecahedral_graph()
     >>> c = gcol.node_k_coloring(G, 4)
     >>> print(c)
-    {0: 0, 1: 1, 19: 2, 10: 3, 2: 0, 3: 1, 8: 2, 9: 0, 18: 3, 11: 1, 6: 2, 4: 3, 5: 0, 7: 1, 13: 2, 12: 3, 14: 0, 17: 1, 16: 2, 15: 3}
+    {0: 0, 1: 1, 19: 2, 10: 3, 2: 0, ..., 15: 3}
     >>>
     >>> c = gcol.node_k_coloring(G, 3)
     >>> print(c)
-    {0: 0, 1: 1, 19: 2, 10: 1, 2: 0, 3: 1, 8: 2, 9: 0, 18: 0, 11: 2, 6: 1, 7: 0, 4: 2, 5: 0, 17: 1, 13: 2, 14: 1, 15: 2, 16: 0, 12: 1}
+    {0: 0, 1: 1, 19: 2, 10: 1, 2: 0, ..., 12: 1}
 
     Raises
     ------
@@ -1285,6 +1333,8 @@ def node_k_coloring(G, k, opt_alg=None, it_limit=0):
         If ``opt_alg`` is not among the supported options.
 
         If ``it_limit`` is not a nonnegative integer.
+
+        If ``verbose`` is not a nonnegative integer.
 
         If ``k`` is not a nonnegative integer.
 
@@ -1325,7 +1375,7 @@ def node_k_coloring(G, k, opt_alg=None, it_limit=0):
     """
     if k < 0:
         raise ValueError("Error, nonnegative integer needed for k")
-    _check_params(G, "dsatur", opt_alg, it_limit)
+    _check_params(G, "dsatur", opt_alg, it_limit, verbose)
     if len(G) == 0:
         return {}
     cliqueNum = nx.approximation.large_clique_size(G)
@@ -1345,7 +1395,7 @@ def node_k_coloring(G, k, opt_alg=None, it_limit=0):
         c = nc._dsatur(G)
         if opt_alg == 2:
             W = _getEdgeWeights(G, None)
-        c = nc._reducecolors(G, c, k, W, opt_alg, it_limit)
+        c = nc._reducecolors(G, c, k, W, opt_alg, it_limit, verbose)
         if max(c.values()) + 1 > k:
             raise ValueError(
                 "Error, could not construct a k-coloring of this graph. Try "
@@ -1355,7 +1405,8 @@ def node_k_coloring(G, k, opt_alg=None, it_limit=0):
     return c
 
 
-def equitable_edge_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
+def equitable_edge_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0,
+                              verbose=0):
     """Attempt to color the edges of a graph using ``k`` colors.
 
     This is done so that (a) adjacent edges have different colors, and (b) the
@@ -1379,10 +1430,10 @@ def equitable_edge_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
     If an edge $k$-coloring cannot be determined by the algorithm, a
     ``ValueError`` exception is raised. Otherwise, once an edge $k$-coloring
     has been formed, the algorithm uses a bespoke local search operator to
-    reduce the variance in weights across the $k$ colors. In solutions returned
-    by this method, adjacent edges always receive different colors; however,
-    the coloring is not guaranteed to be equitable, even if an equitable edge
-    $k$-coloring exists.
+    reduce the standard deviation in weights across the $k$ colors.
+    In solutions returned by this method, adjacent edges always receive
+    different colors; however, the coloring is not guaranteed to be equitable,
+    even if an equitable edge $k$-coloring exists.
 
     Parameters
     ----------
@@ -1419,6 +1470,10 @@ def equitable_edge_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
         Number of iterations of the local search procedure. Only applicable
         when using ``opt_alg=2`` or ``opt_alg=3``.
 
+    verbose : int, optional (default=0)
+        If set to a positive value, information is output during the
+        optimization process. The higher the value, the more information.
+
     Returns
     -------
     dict
@@ -1435,7 +1490,7 @@ def equitable_edge_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
     >>> c = gcol.equitable_edge_k_coloring(G, 4)
     >>> P = gcol.partition(c)
     >>> print(P)
-    [[(11, 12), (18, 19), (16, 17), (9, 10), (0, 1), (14, 15), (7, 8), (2, 6)], [(11, 18), (12, 13), (15, 16), (3, 19), (1, 8), (4, 5), (7, 14)], [(10, 11), (17, 18), (0, 19), (9, 13), (3, 4), (1, 2), (5, 15), (6, 7)], [(12, 16), (4, 17), (0, 10), (8, 9), (13, 14), (2, 3), (5, 6)]]
+    [[(11, 12), (18, 19), (16, 17), (9, 10), ..., (5, 6)]]
     >>> print("Size of smallest color class =", min(len(j) for j in P))
     Size of smallest color class = 7
     >>> print("Size of biggest color class =", max(len(j) for j in P))
@@ -1447,10 +1502,16 @@ def equitable_edge_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
     >>> c = gcol.equitable_edge_k_coloring(G, 5, weight="weight")
     >>> P = gcol.partition(c)
     >>> print(P)
-    [[(11, 12), (18, 19), (4, 17), (13, 14), (1, 8), (2, 3)], [(11, 18), (9, 13), (0, 1), (3, 4), (5, 15), (7, 8)], [(10, 11), (17, 18), (15, 16), (0, 19), (1, 2), (6, 7)], [(12, 16), (9, 10), (3, 19), (14, 15), (5, 6)], [(12, 13), (16, 17), (0, 10), (8, 9), (4, 5), (7, 14), (2, 6)]]
-    >>> print("Weight of lightest color class =", min(sum(G[u][v]["weight"] for u, v in j) for j in P))
+    [[(11, 12), (18, 19), (4, 17), (13, 14), ..., (2, 6)]]
+    >>> print(
+    ...     "Weight of lightest color class =",
+    ...     min(sum(G[u][v]["weight"] for u, v in j) for j in P)
+    ... )
     Weight of lightest color class = 23
-    >>> print("Weight of heaviest color class =", max(sum(G[u][v]["weight"] for u, v in j) for j in P))
+    >>> print(
+    ...     "Weight of heaviest color class =",
+    ...     max(sum(G[u][v]["weight"] for u, v in j) for j in P)
+    ... )
     Weight of heaviest color class = 25
 
     Raises
@@ -1464,6 +1525,8 @@ def equitable_edge_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
         If ``opt_alg`` is not among the supported options.
 
         If ``it_limit`` is not a nonnegative integer.
+
+        If ``verbose`` is not a nonnegative integer.
 
         If ``k`` is not a nonnegative integer.
 
@@ -1486,10 +1549,10 @@ def equitable_edge_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
     $k$-coloring of $L(G)$; however, it also takes edge weights into account
     if needed. If an edge $k$-coloring is achieved, a bespoke local search
     operator (based on steepest descent) is then used to try to reduce the
-    variance in weights across the $k$ color classes. This follows the same
-    steps as the :meth:`equitable_node_k_coloring` method, using $L(G)$.
-    Further details on this optimization method can be found in Chapter 7 of
-    [2]_, or in [3]_.
+    standard deviation in weights across the $k$ color classes. This follows
+    the same steps as the :meth:`equitable_node_k_coloring` method, using
+    $L(G)$. Further details on this optimization method can be found in Chapter
+    7 of [2]_, or in [3]_.
 
     All the above algorithms are described in detail in [2]_. The c++ code used
     in [2]_ and [4]_ forms the basis of this library's Python implementations.
@@ -1517,7 +1580,7 @@ def equitable_edge_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
     """
     if k < 0:
         raise ValueError("Error, nonnegative integer needed for k")
-    _check_params(G, "dsatur", opt_alg, it_limit)
+    _check_params(G, "dsatur", opt_alg, it_limit, verbose)
     if len(G) == 0 or G.number_of_edges() == 0:
         return {}
     maxdeg = max(d for v, d in G.degree())
@@ -1529,11 +1592,12 @@ def equitable_edge_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0):
     H = nx.line_graph(G)
     H.add_nodes_from((v, G.edges[v]) for v in H)
     return equitable_node_k_coloring(
-        H, k, weight=weight, opt_alg=opt_alg, it_limit=it_limit
+        H, k, weight=weight, opt_alg=opt_alg, it_limit=it_limit,
+        verbose=verbose
     )
 
 
-def edge_k_coloring(G, k, opt_alg=None, it_limit=0):
+def edge_k_coloring(G, k, opt_alg=None, it_limit=0, verbose=0):
     """Attempt to color the edges of a graph ``G`` using ``k`` colors.
 
     This is done so that adjacent edges have different colors (a pair of edges
@@ -1599,6 +1663,10 @@ def edge_k_coloring(G, k, opt_alg=None, it_limit=0):
         Number of iterations of the local search procedure. Only applicable
         when using ``opt_alg=2`` or ``opt_alg=3``.
 
+    verbose : int, optional (default=0)
+        If set to a positive value, information is output during the
+        optimization process. The higher the value, the more information.
+
     Returns
     -------
     dict
@@ -1614,11 +1682,11 @@ def edge_k_coloring(G, k, opt_alg=None, it_limit=0):
     >>> G = nx.dodecahedral_graph()
     >>> c = gcol.edge_k_coloring(G, 4)
     >>> print(c)
-    {(11, 12): 0, (11, 18): 1, (10, 11): 2, (12, 16): 3, (12, 13): 1, (18, 19): 0, (17, 18): 2, (16, 17): 0, (4, 17): 3, (15, 16): 1, (0, 10): 3, (9, 10): 0, (0, 19): 2, (9, 13): 2, (3, 19): 1, (0, 1): 0, (8, 9): 3, (13, 14): 3, (3, 4): 2, (1, 8): 1, (14, 15): 0, (4, 5): 1, (2, 3): 3, (1, 2): 2, (7, 8): 0, (5, 15): 2, (7, 14): 1, (2, 6): 0, (5, 6): 3, (6, 7): 2}
+    {(11, 12): 0, (11, 18): 1, (10, 11): 2, ..., (6, 7): 2}
     >>>
     >>> c = gcol.edge_k_coloring(G, 3)
     >>> print(c)
-    {(11, 12): 0, (11, 18): 1, (10, 11): 2, (12, 16): 1, (12, 13): 2, (18, 19): 0, (17, 18): 2, (16, 17): 0, (4, 17): 1, (15, 16): 2, (0, 10): 0, (9, 10): 1, (9, 13): 0, (8, 9): 2, (13, 14): 1, (14, 15): 0, (5, 15): 1, (7, 14): 2, (0, 19): 1, (3, 19): 2, (0, 1): 2, (3, 4): 0, (2, 3): 1, (1, 2): 0, (2, 6): 2, (5, 6): 0, (4, 5): 2, (1, 8): 1, (6, 7): 1, (7, 8): 0}
+    {(11, 12): 0, (11, 18): 1, (10, 11): 2, ..., (7, 8): 0}
 
     Raises
     ------
@@ -1631,6 +1699,8 @@ def edge_k_coloring(G, k, opt_alg=None, it_limit=0):
         If ``opt_alg`` is not among the supported options.
 
         If ``it_limit`` is not a nonnegative integer.
+
+        If ``verbose`` is not a nonnegative integer.
 
         If ``k`` is not a nonnegative integer.
 
@@ -1671,7 +1741,7 @@ def edge_k_coloring(G, k, opt_alg=None, it_limit=0):
     """
     if k < 0:
         raise ValueError("Error, positive integer needed for k")
-    _check_params(G, "dsatur", opt_alg, it_limit)
+    _check_params(G, "dsatur", opt_alg, it_limit, verbose)
     if len(G) == 0 or G.number_of_edges() == 0:
         return {}
     maxdeg = max(d for v, d in G.degree())
@@ -1681,10 +1751,11 @@ def edge_k_coloring(G, k, opt_alg=None, it_limit=0):
             "Try increasing k"
         )
     H = nx.line_graph(G)
-    return node_k_coloring(H, k, opt_alg=opt_alg, it_limit=it_limit)
+    return node_k_coloring(H, k, opt_alg=opt_alg, it_limit=it_limit,
+                           verbose=verbose)
 
 
-def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
+def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
     """Return a coloring of a graph's nodes.
 
     A node coloring of a graph is an assignment of colors to nodes so that
@@ -1744,6 +1815,10 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
         Number of iterations of the local search procedure. Only applicable
         when using ``opt_alg=2`` or ``opt_alg=3``.
 
+    verbose : int, optional (default=0)
+        If set to a positive value, information is output during the
+        optimization process. The higher the value, the more information.
+
     Returns
     -------
     dict
@@ -1760,18 +1835,18 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
     >>> G = nx.dodecahedral_graph()
     >>> c = gcol.node_coloring(G)
     >>> print("Coloring is", c)
-    Coloring is {0: 0, 1: 1, 19: 1, 10: 1, 2: 0, 3: 2, 8: 0, 9: 2, 18: 0, 11: 2, 6: 1, 7: 2, 4: 0, 5: 2, 13: 0, 12: 1, 14: 1, 15: 0, 16: 2, 17: 1}
+    Coloring is {0: 0, 1: 1, 19: 1, 10: 1, 2: 0, ..., 17: 1}
     >>> print("Number of colors =", max(c.values()) + 1)
     Number of colors = 3
     >>>
     >>> print("Partition view =", gcol.partition(c))
-    Partition view = [[0, 2, 8, 18, 4, 13, 15], [1, 19, 10, 6, 12, 14, 17], [3, 9, 11, 7, 5, 16]]
+    Partition view = [[0, 2, 8, 18, 4, 13, 15], ..., [3, 9, 11, 7, 5, 16]]
     >>>
     >>> # Example with a larger graph and different parameters
     >>> G = nx.gnp_random_graph(50, 0.2, seed=1)
     >>> c = gcol.node_coloring(G, strategy="dsatur", opt_alg=2, it_limit=1000)
     >>> print("Coloring is", c)
-    Coloring is {18: 0, 31: 2, 2: 4, 20: 1, 10: 3, 46: 0, 49: 1, 29: 3, 37: 2, 9: 1, 7: 2, 33: 0, 21: 4, 26: 2, 5: 4, 16: 0, 41: 1, 39: 0, 13: 3, 14: 4, 17: 3, 28: 0, 35: 1, 42: 4, 4: 4, 11: 3, 3: 2, 48: 3, 40: 3, 0: 0, 30: 0, 6: 2, 8: 3, 25: 1, 34: 0, 44: 3, 24: 1, 1: 4, 47: 4, 15: 1, 23: 4, 32: 4, 45: 0, 22: 1, 43: 4, 36: 2, 19: 3, 12: 3, 38: 1, 27: 2}
+    Coloring is {18: 0, 31: 2, 2: 4, 20: 1, 10: 3, ..., 27: 2}
     >>>
     >>> print("Number of colors =", max(c.values()) + 1)
     Number of colors = 5
@@ -1789,6 +1864,8 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
         If ``opt_alg`` is not among the supported options.
 
         If ``it_limit`` is not a nonnegative integer.
+
+        If ``verbose`` is not a nonnegative integer.
 
     Notes
     -----
@@ -1853,6 +1930,13 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
     TabuCol, each iteration of PartialCol has complexity $O(nk +m)$ and uses
     $O(nk + m)$ memory.
 
+    As stated above, if ``verbose`` is set to a positive integer, output is
+    produced during the execution of the chosen optimzation algorithm. If the
+    backtracking algorithm is being used, the stated iterations refer to the
+    number of calls to its recursive function. Otherwise, iterations refer to
+    the $O(nk +m)$ processes mentioned above. If no optimization is performed,
+    no output is produced.
+
     All the above algorithms and bounds are described in detail in [4]_. The
     c++ code used in [4]_ and [5]_ forms the basis of this library's Python
     implementations.
@@ -1877,7 +1961,7 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
       <https://rhydlewis.eu/gcol/>
 
     """
-    _check_params(G, strategy, opt_alg, it_limit)
+    _check_params(G, strategy, opt_alg, it_limit, verbose)
     if len(G) == 0:
         return {}
     elif G.number_of_edges() == 0:
@@ -1902,10 +1986,10 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
     else:
         W = _getNodeWeights(G, None)
     cliqueNum = nx.approximation.large_clique_size(G)
-    return nc._reducecolors(G, c, cliqueNum, W, opt_alg, it_limit)
+    return nc._reducecolors(G, c, cliqueNum, W, opt_alg, it_limit, verbose)
 
 
-def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
+def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
     """Return a coloring of a graph's edges.
 
     An edge coloring of a graph is an assignment of colors to edges so that
@@ -1975,6 +2059,10 @@ def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
         Number of iterations of the local search procedure. Only applicable
         when using ``opt_alg=2`` or ``opt_alg=3``.
 
+    verbose : int, optional (default=0)
+        If set to a positive value, information is output during the
+        optimization process. The higher the value, the more information.
+
     Returns
     -------
     dict
@@ -1991,14 +2079,14 @@ def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
     >>> G = nx.dodecahedral_graph()
     >>> c = gcol.edge_coloring(G)
     >>> print("Coloring is", c)
-    Coloring is {(11, 12): 0, (11, 18): 1, (10, 11): 2, (12, 16): 1, (12, 13): 2, (18, 19): 0, (17, 18): 2, (16, 17): 0, (4, 17): 1, (15, 16): 2, (0, 10): 0, (9, 10): 1, (9, 13): 0, (8, 9): 2, (13, 14): 1, (14, 15): 0, (5, 15): 1, (7, 14): 2, (0, 19): 1, (3, 19): 2, (0, 1): 2, (3, 4): 0, (2, 3): 1, (1, 2): 0, (2, 6): 2, (5, 6): 0, (4, 5): 2, (1, 8): 1, (6, 7): 1, (7, 8): 0}
+    Coloring is {(11, 12): 0, (11, 18): 1, ..., (7, 8): 0}
     >>>
     >>> print("Number of colors =", max(c.values()) + 1)
     Number of colors = 3
     >>>
     >>> c = gcol.edge_coloring(G, strategy="rlf", opt_alg=2, it_limit=1000)
     >>> print("Coloring is", c)
-    Coloring is {(3, 4): 0, (17, 18): 0, (0, 19): 0, (10, 11): 0, (12, 16): 0, (5, 15): 0, (13, 14): 0, (8, 9): 0, (1, 2): 0, (6, 7): 0, (16, 17): 1, (4, 5): 1, (14, 15): 1, (2, 6): 1, (3, 19): 1, (11, 18): 1, (12, 13): 1, (9, 10): 1, (0, 1): 1, (7, 8): 1, (18, 19): 2, (5, 6): 2, (4, 17): 2, (0, 10): 2, (9, 13): 2, (1, 8): 2, (15, 16): 2, (11, 12): 2, (2, 3): 2, (7, 14): 2}
+    Coloring is {(3, 4): 0, (17, 18): 0, ..., (7, 14): 2}
     >>>
     >>> print("Number of colors =", max(c.values()) + 1)
     Number of colors = 3
@@ -2016,6 +2104,8 @@ def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
         If ``opt_alg`` is not among the supported options.
 
         If ``it_limit`` is not a nonnegative integer.
+
+        If ``verbose`` is not a nonnegative integer.
 
     Notes
     -----
@@ -2050,7 +2140,7 @@ def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
       <https://rhydlewis.eu/gcol/>
 
     """
-    _check_params(G, strategy, opt_alg, it_limit)
+    _check_params(G, strategy, opt_alg, it_limit, verbose)
     if len(G) == 0 or G.number_of_edges() == 0:
         return {}
     # Now simply color the nodes of the line graph H of G
@@ -2075,7 +2165,8 @@ def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0):
     else:
         W = _getNodeWeights(H, None)
     cliqueNum = nx.approximation.large_clique_size(H)
-    return nc._reducecolors(H, c, max(cliqueNum, maxdeg), W, opt_alg, it_limit)
+    return nc._reducecolors(H, c, max(cliqueNum, maxdeg), W, opt_alg, it_limit,
+                            verbose)
 
 
 def chromatic_number(G):
@@ -2150,7 +2241,7 @@ def chromatic_number(G):
     if len(G) == 0:
         return 0
     cliqueNum = nx.approximation.large_clique_size(G)
-    c = nc._backtrackcol(G, cliqueNum)
+    c = nc._backtrackcol(G, cliqueNum, 0)
     return max(c.values()) + 1
 
 
@@ -2238,12 +2329,12 @@ def chromatic_index(G):
     maxdeg = max(d for v, d in G.degree())
     H = nx.line_graph(G)
     cliqueNum = nx.approximation.large_clique_size(H)
-    c = nc._backtrackcol(H, max(cliqueNum, maxdeg))
+    c = nc._backtrackcol(H, max(cliqueNum, maxdeg), 0)
     return max(c.values()) + 1
 
 
 def node_precoloring(
-    G, precol=None, strategy="dsatur", opt_alg=None, it_limit=0
+    G, precol=None, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0
 ):
     """Return a coloring of a graph's nodes where some nodes are precolored.
 
@@ -2316,6 +2407,10 @@ def node_precoloring(
         Number of iterations of the local search procedure. Only applicable
         when using ``opt_alg=2`` or ``opt_alg=3``.
 
+    verbose : int, optional (default=0)
+        If set to a positive value, information is output during the
+        optimization process. The higher the value, the more information.
+
     Returns
     -------
     dict
@@ -2333,12 +2428,14 @@ def node_precoloring(
     >>> p = {0:1, 8:0, 9:1}
     >>> c = gcol.node_precoloring(G, precol=p)
     >>> print("Coloring is", c)
-    Coloring is {0: 1, 9: 1, 1: 2, 8: 0, 19: 2, 13: 2, 2: 1, 3: 0, 7: 1, 14: 0, 18: 1, 12: 1, 6: 2, 4: 1, 5: 0, 15: 1, 11: 2, 10: 0, 17: 2, 16: 0}
+    Coloring is {0: 1, 9: 1, 1: 2, 8: 0, 19: 2, ..., 16: 0}
     >>>
     >>> p = {i:i for i in range(5)}
-    >>> c = gcol.node_precoloring(G, precol=p, strategy="dsatur", opt_alg=2, it_limit=1000)
+    >>> c = gcol.node_precoloring(
+    ...     G, precol=p, strategy="dsatur", opt_alg=2, it_limit=1000
+    ... )
     >>> print(c)
-    {0: 0, 4: 4, 1: 1, 2: 2, 3: 3, 19: 4, 10: 4, 5: 0, 6: 4, 17: 0, 18: 1, 11: 0, 8: 0, 7: 1, 9: 1, 15: 4, 14: 0, 16: 1, 13: 4, 12: 2}
+    {0: 0, 4: 4, 1: 1, 2: 2, 3: 3, ..., 12: 2}
 
     Raises
     ------
@@ -2353,6 +2450,8 @@ def node_precoloring(
         If ``opt_alg`` is not among the supported options.
 
         If ``it_limit`` is not a nonnegative integer.
+
+        If ``verbose`` is not a nonnegative integer.
 
         If ``G`` contains a node with the name ``'super'``.
 
@@ -2395,12 +2494,13 @@ def node_precoloring(
       <https://rhydlewis.eu/gcol/>
 
     """
-    _check_params(G, strategy, opt_alg, it_limit)
+    _check_params(G, strategy, opt_alg, it_limit, verbose)
     if len(G) == 0:
         return {}
     if precol is None or precol == {}:
         return node_coloring(
-            G, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit
+            G, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit,
+            verbose=verbose
         )
     if not isinstance(precol, dict):
         raise TypeError(
@@ -2465,7 +2565,8 @@ def node_precoloring(
                 GPrime.add_edge(("super", i), ("super", j))
     # Now color GPrime and use this solution to gain a coloring c for G
     cPrime = node_coloring(
-        GPrime, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit
+        GPrime, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit,
+        verbose=verbose
     )
     k = max(cPrime.values()) + 1
     c = {}
@@ -2490,7 +2591,7 @@ def node_precoloring(
 
 
 def edge_precoloring(
-    G, precol=None, strategy="dsatur", opt_alg=None, it_limit=0
+    G, precol=None, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0
 ):
     """Return a coloring of a graph's edges where some edges are precolored.
 
@@ -2561,6 +2662,10 @@ def edge_precoloring(
         Number of iterations of the local search procedure. Only applicable
         when using ``opt_alg=2`` or ``opt_alg=3``.
 
+    verbose : int, optional (default=0)
+        If set to a positive value, information is output during the
+        optimization process. The higher the value, the more information.
+
     Returns
     -------
     dict
@@ -2578,7 +2683,7 @@ def edge_precoloring(
     >>> p = {(0, 1):0, (8, 9): 1, (10, 11): 2, (11, 12): 3}
     >>> c = gcol.edge_precoloring(G, precol=p)
     >>> print("Coloring is",c)
-    Coloring is {(0, 1): 0, (8, 9): 1, (10, 11): 2, (11, 12): 3, (1, 8): 2, (0, 10): 1, (9, 10): 0, (11, 18): 0, (7, 8): 0, (1, 2): 1, (0, 19): 2, (9, 13): 2, (18, 19): 1, (12, 13): 0, (17, 18): 2, (3, 19): 0, (12, 16): 1, (13, 14): 1, (2, 3): 2, (16, 17): 0, (7, 14): 2, (3, 4): 1, (4, 17): 3, (2, 6): 0, (15, 16): 2, (14, 15): 0, (6, 7): 1, (4, 5): 0, (5, 15): 1, (5, 6): 2}
+    Coloring is {(0, 1): 0, (8, 9): 1, ..., (5, 6): 2}
     >>>
     >>> print("Number of colors =", max(c.values()) + 1)
     Number of colors = 4
@@ -2596,6 +2701,8 @@ def edge_precoloring(
         If ``opt_alg`` is not among the supported options.
 
         If ``it_limit`` is not a nonnegative integer.
+
+        If ``verbose`` is not a nonnegative integer.
 
         If ``precol`` contains an edge that is not in ``G``.
 
@@ -2638,12 +2745,13 @@ def edge_precoloring(
       <https://rhydlewis.eu/gcol/>
 
     """
-    _check_params(G, strategy, opt_alg, it_limit)
+    _check_params(G, strategy, opt_alg, it_limit, verbose)
     if len(G) == 0 or G.number_of_edges() == 0:
         return {}
     if precol is None or precol == {}:
         return edge_coloring(
-            G, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit
+            G, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit,
+            verbose=verbose
         )
     if not isinstance(precol, dict):
         raise TypeError(
@@ -2686,11 +2794,13 @@ def edge_precoloring(
             )
     H = nx.line_graph(G)
     return node_precoloring(
-        H, precol=precol, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit
+        H, precol=precol, strategy=strategy, opt_alg=opt_alg,
+        it_limit=it_limit, verbose=verbose
     )
 
 
-def face_coloring(G, pos, strategy="dsatur", opt_alg=None, it_limit=0):
+def face_coloring(G, pos, strategy="dsatur", opt_alg=None, it_limit=0,
+                  verbose=0):
     """Return a coloring of a planar graph's faces.
 
     A face coloring is an assignment of colors to the faces of a graph's planar
@@ -2752,6 +2862,10 @@ def face_coloring(G, pos, strategy="dsatur", opt_alg=None, it_limit=0):
         Number of iterations of the local search procedure. Only applicable
         when using ``opt_alg=2`` or ``opt_alg=3``.
 
+    verbose : int, optional (default=0)
+        If set to a positive value, information is output during the
+        optimization process. The higher the value, the more information.
+
     Returns
     -------
     dict
@@ -2774,7 +2888,7 @@ def face_coloring(G, pos, strategy="dsatur", opt_alg=None, it_limit=0):
     >>> pos = nx.planar_layout(G)
     >>> c = gcol.face_coloring(G, pos)
     >>> print(c)
-    {(1, 0, 10, 9, 8): 0, (10, 0, 19, 18, 11): 2, (19, 0, 1, 2, 3): 1, (2, 1, 8, 7, 6): 2, (3, 2, 6, 5, 4): 3, (19, 3, 4, 17, 18): 0, (17, 4, 5, 15, 16): 1, (15, 5, 6, 7, 14): 0, (14, 7, 8, 9, 13): 3, (13, 9, 10, 11, 12): 1, (12, 11, 18, 17, 16): 3, (13, 12, 16, 15, 14): 2}
+    {(1, 0, 10, 9, 8): 0, (10, 0, 19, 18, 11): 2, ..., (13, 12, 16, 15, 14): 2}
 
     Raises
     ------
@@ -2792,6 +2906,8 @@ def face_coloring(G, pos, strategy="dsatur", opt_alg=None, it_limit=0):
         If ``opt_alg`` is not among the supported options.
 
         If ``it_limit`` is not a nonnegative integer.
+
+        If ``verbose`` is not a nonnegative integer.
 
         If ``pos`` has missing or invalid entries.
 
@@ -2832,12 +2948,13 @@ def face_coloring(G, pos, strategy="dsatur", opt_alg=None, it_limit=0):
       <https://rhydlewis.eu/gcol/>
 
     """
-    _check_params(G, strategy, opt_alg, it_limit)
+    _check_params(G, strategy, opt_alg, it_limit, verbose)
     if len(G) == 0 or G.number_of_edges() == 0:
         return {}
     # Color the nodes of the dual graph H of the emedding defined by G and pos
     H, faces = fc._get_dual(G, pos)
-    c = node_coloring(H, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit)
+    c = node_coloring(H, strategy=strategy, opt_alg=opt_alg,
+                      it_limit=it_limit, verbose=verbose)
     # Return the face coloring of G.
     return {tuple(faces[i]): c[i] for i in range(len(H))}
 
@@ -2924,11 +3041,11 @@ def face_chromatic_number(G):
         return 0
     H, faces = fc._get_dual(G, nx.planar_layout(G))
     cliqueNum = nx.approximation.large_clique_size(H)
-    c = nc._backtrackcol(H, cliqueNum)
+    c = nc._backtrackcol(H, cliqueNum, 0)
     return max(c.values()) + 1
 
 
-def face_k_coloring(G, pos, k, opt_alg=None, it_limit=0):
+def face_k_coloring(G, pos, k, opt_alg=None, it_limit=0, verbose=0):
     """Attempt to color the faces of a planar graph ``G`` using ``k`` colors.
 
     This is done so that adjacent faces have different colors (a pair of faces
@@ -2980,6 +3097,10 @@ def face_k_coloring(G, pos, k, opt_alg=None, it_limit=0):
         Number of iterations of the local search procedure. Only applicable
         when using ``opt_alg=2`` or ``opt_alg=3``.
 
+    verbose : int, optional (default=0)
+        If set to a positive value, information is output during the
+        optimization process. The higher the value, the more information.
+
     Returns
     -------
     dict
@@ -3002,7 +3123,7 @@ def face_k_coloring(G, pos, k, opt_alg=None, it_limit=0):
     >>> pos = nx.planar_layout(G)
     >>> c = gcol.face_k_coloring(G, pos, 5)
     >>> print(c)
-    {(1, 0, 10, 9, 8): 0, (10, 0, 19, 18, 11): 2, (19, 0, 1, 2, 3): 1, (2, 1, 8, 7, 6): 3, (3, 2, 6, 5, 4): 2, (19, 3, 4, 17, 18): 0, (17, 4, 5, 15, 16): 1, (15, 5, 6, 7, 14): 4, (14, 7, 8, 9, 13): 1, (13, 9, 10, 11, 12): 4, (12, 11, 18, 17, 16): 3, (13, 12, 16, 15, 14): 0}
+    {(1, 0, 10, 9, 8): 0, (10, 0, 19, 18, 11): 2, ..., (13, 12, 16, 15, 14): 0}
 
     Raises
     ------
@@ -3018,6 +3139,8 @@ def face_k_coloring(G, pos, k, opt_alg=None, it_limit=0):
         If ``opt_alg`` is not among the supported options.
 
         If ``it_limit`` is not a nonnegative integer.
+
+        If ``verbose`` is not a nonnegative integer.
 
         If ``pos`` has missing or invalid entries.
 
@@ -3061,15 +3184,16 @@ def face_k_coloring(G, pos, k, opt_alg=None, it_limit=0):
     """
     if k < 0:
         raise ValueError("Error, positive integer needed for k")
-    _check_params(G, "dsatur", opt_alg, it_limit)
+    _check_params(G, "dsatur", opt_alg, it_limit, verbose)
     if len(G) == 0 or G.number_of_edges() == 0:
         return {}
     H, faces = fc._get_dual(G, pos)
-    c = node_k_coloring(H, k, opt_alg=opt_alg, it_limit=it_limit)
+    c = node_k_coloring(H, k, opt_alg=opt_alg,
+                        it_limit=it_limit, verbose=verbose)
     return {tuple(faces[i]): c[i] for i in range(len(H))}
 
 
-def equitable_face_k_coloring(G, pos, k, opt_alg=None, it_limit=0):
+def equitable_face_k_coloring(G, pos, k, opt_alg=None, it_limit=0, verbose=0):
     """Attempt to color the faces of a planar graph ``G`` using ``k`` colors.
 
     This is done so that (a) adjacent faces have different colors, and (b) the
@@ -3081,8 +3205,8 @@ def equitable_face_k_coloring(G, pos, k, opt_alg=None, it_limit=0):
     method. All parameters are therefore the same as the latter. If a face
     $k$-coloring cannot be determined by the algorithm, a ``ValueError``
     exception is raised. Otherwise, once a face $k$-coloring has been formed,
-    the algorithm uses a bespoke local search operator to reduce the variance
-    in the number of faces in each color class.
+    the algorithm uses a bespoke local search operator to reduce the standard
+    deviation in the number of faces in each color class.
 
     In solutions returned by this method, adjacent faces always receive
     different colors; however, the coloring is not guaranteed to be equitable,
@@ -3125,6 +3249,10 @@ def equitable_face_k_coloring(G, pos, k, opt_alg=None, it_limit=0):
         Number of iterations of the local search procedure. Only applicable
         when using ``opt_alg=2`` or ``opt_alg=3``.
 
+    verbose : int, optional (default=0)
+        If set to a positive value, information is output during the
+        optimization process. The higher the value, the more information.
+
     Returns
     -------
     dict
@@ -3147,7 +3275,7 @@ def equitable_face_k_coloring(G, pos, k, opt_alg=None, it_limit=0):
     >>> pos = nx.planar_layout(G)
     >>> c = gcol.equitable_face_k_coloring(G, pos, 5)
     >>> print(c)
-    {(1, 0, 10, 9, 8): 0, (10, 0, 19, 18, 11): 2, (19, 0, 1, 2, 3): 1, (2, 1, 8, 7, 6): 3, (3, 2, 6, 5, 4): 2, (19, 3, 4, 17, 18): 0, (17, 4, 5, 15, 16): 1, (15, 5, 6, 7, 14): 4, (14, 7, 8, 9, 13): 1, (13, 9, 10, 11, 12): 4, (12, 11, 18, 17, 16): 3, (13, 12, 16, 15, 14): 0}
+    {(1, 0, 10, 9, 8): 0, (10, 0, 19, 18, 11): 2, ..., (13, 12, 16, 15, 14): 0}
 
     Raises
     ------
@@ -3163,6 +3291,8 @@ def equitable_face_k_coloring(G, pos, k, opt_alg=None, it_limit=0):
         If ``opt_alg`` is not among the supported options.
 
         If ``it_limit`` is not a nonnegative integer.
+
+        If ``verbose`` is not a nonnegative integer.
 
         If ``pos`` has missing or invalid entries.
 
@@ -3182,10 +3312,10 @@ def equitable_face_k_coloring(G, pos, k, opt_alg=None, it_limit=0):
     determined by forming its dual and then passing this to the
     :meth:`node_k_coloring` method. If a face $k$-coloring is achieved, a
     bespoke local search operator (based on steepest descent) is then used to
-    try to reduce the variance in sizes across the $k$ color classes. This
-    follows the same steps as the :meth:`equitable_node_k_coloring` method,
-    using the dual of ``G``. Further details on this optimization method can
-    be found in Chapter 7 of [2]_.
+    try to reduce the standard deviation in sizes across the $k$ color classes.
+    This follows the same steps as the :meth:`equitable_node_k_coloring`
+    method, using the dual of ``G``. Further details on this optimization
+    method can be found in Chapter 7 of [2]_.
 
     All the above algorithms and bounds are described in detail in [2]_. The
     c++ code used in [2]_ and [3]_ forms the basis of this library's Python
@@ -3209,18 +3339,18 @@ def equitable_face_k_coloring(G, pos, k, opt_alg=None, it_limit=0):
     """
     if k < 0:
         raise ValueError("Error, nonnegative integer needed for k")
-    _check_params(G, "dsatur", opt_alg, it_limit)
+    _check_params(G, "dsatur", opt_alg, it_limit, verbose)
     if len(G) == 0 or G.number_of_edges() == 0:
         return {}
     H, faces = fc._get_dual(G, pos)
     c = equitable_node_k_coloring(
-        H, k, weight=None, opt_alg=opt_alg, it_limit=it_limit
+        H, k, weight=None, opt_alg=opt_alg, it_limit=it_limit, verbose=verbose
     )
     return {tuple(faces[i]): c[i] for i in range(len(H))}
 
 
 def face_precoloring(
-    G, pos, precol=None, strategy="dsatur", opt_alg=None, it_limit=0
+    G, pos, precol=None, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0
 ):
     """Give a face coloring of a planar graph where some faces are precolored.
 
@@ -3292,6 +3422,10 @@ def face_precoloring(
         Number of iterations of the local search procedure. Only applicable
         when using ``opt_alg=2`` or ``opt_alg=3``.
 
+    verbose : int, optional (default=0)
+        If set to a positive value, information is output during the
+        optimization process. The higher the value, the more information.
+
     Returns
     -------
     dict
@@ -3315,7 +3449,7 @@ def face_precoloring(
     >>> P = {(14,15): 0, (15,14): 1, (1,2): 0}
     >>> c = gcol.face_precoloring(G, pos, P)
     >>> print(c)
-    {(1, 0, 10, 9, 8): 1, (10, 0, 19, 18, 11): 2, (19, 0, 1, 2, 3): 0, (2, 1, 8, 7, 6): 3, (3, 2, 6, 5, 4): 4, (19, 3, 4, 17, 18): 1, (17, 4, 5, 15, 16): 2, (15, 5, 6, 7, 14): 0, (14, 7, 8, 9, 13): 2, (13, 9, 10, 11, 12): 0, (12, 11, 18, 17, 16): 3, (13, 12, 16, 15, 14): 1}
+    {(1, 0, 10, 9, 8): 1, (10, 0, 19, 18, 11): 2, ..., (13, 12, 16, 15, 14): 1}
 
     Raises
     ------
@@ -3333,6 +3467,8 @@ def face_precoloring(
         If ``opt_alg`` is not among the supported options.
 
         If ``it_limit`` is not a nonnegative integer.
+
+        If ``verbose`` is not a nonnegative integer.
 
         If ``precol`` contains an arc that is not in the embedding of ``G``.
 
@@ -3381,12 +3517,13 @@ def face_precoloring(
       <https://rhydlewis.eu/gcol/>
 
     """
-    _check_params(G, strategy, opt_alg, it_limit)
+    _check_params(G, strategy, opt_alg, it_limit, verbose)
     if len(G) == 0 or G.number_of_edges() == 0:
         return {}
     if precol is None or precol == {}:
         return face_coloring(
-            G, pos, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit
+            G, pos, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit,
+            verbose=verbose
         )
     if not isinstance(precol, dict):
         raise TypeError(
@@ -3430,7 +3567,8 @@ def face_precoloring(
                 )
     P = {arcFace[arc]: precol[arc] for arc in precol}
     c = node_precoloring(
-        H, precol=P, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit
+        H, precol=P, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit,
+        verbose=verbose
     )
     return {tuple(faces[i]): c[i] for i in range(len(H))}
 
