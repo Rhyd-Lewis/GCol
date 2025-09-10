@@ -1,7 +1,7 @@
 Documentation
 =============
 
-The following methods are available in the ``gcol`` graph coloring library. All methods containing the word ``color`` in their title can also be invoked using the alternative spelling ``colour``.
+The following methods are available in the ``gcol`` graph coloring library. All methods containing the word ``color`` in their name can also be invoked using the alternative spelling ``colour``.
 
 .. automodule:: gcol.coloring
    :members:

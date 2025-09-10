@@ -19,7 +19,7 @@ copyright = '2025, R. Lewis'
 author = 'R. Lewis'
 
 # The full version, including alpha/beta/rc tags
-release = '1.4.2'
+release = '1.5.2'
 
 # -- General configuration ---------------------------------------------------
 # Add any Sphinx extension module names here, as strings. They can be
@@ -53,4 +53,4 @@ numfig = True
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+#html_static_path = ['_static']
