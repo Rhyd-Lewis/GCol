@@ -8,6 +8,7 @@ import gcol
 GREEDY_METHODS = ["random", "welsh_powell", "dsatur", "rlf"]
 OPT_ALGS = [1, 2, 3, None]
 IT_LIMITS = [0, 100, 1000]
+VERBOSE = [0, 1, 2]
 
 
 class TestColorings:
@@ -17,34 +18,39 @@ class TestColorings:
             for strategy in GREEDY_METHODS:
                 for opt_alg in OPT_ALGS:
                     for it_limit in IT_LIMITS:
-                        c = gcol.node_coloring(
-                            G,
-                            strategy=strategy,
-                            opt_alg=opt_alg,
-                            it_limit=it_limit
-                        )
-                        assert verify_node_coloring(G, c)
-                        c = gcol.node_colouring(
-                            G,
-                            strategy=strategy,
-                            opt_alg=opt_alg,
-                            it_limit=it_limit
-                        )
-                        assert verify_node_coloring(G, c)
-                        c = gcol.edge_coloring(
-                            G,
-                            strategy=strategy,
-                            opt_alg=opt_alg,
-                            it_limit=it_limit
-                        )
-                        assert verify_edge_coloring(G, c)
-                        c = gcol.edge_colouring(
-                            G,
-                            strategy=strategy,
-                            opt_alg=opt_alg,
-                            it_limit=it_limit
-                        )
-                        assert verify_edge_coloring(G, c)
+                        for verbose in VERBOSE:
+                            c = gcol.node_coloring(
+                                G,
+                                strategy=strategy,
+                                opt_alg=opt_alg,
+                                it_limit=it_limit,
+                                verbose=verbose
+                            )
+                            assert verify_node_coloring(G, c)
+                            c = gcol.node_colouring(
+                                G,
+                                strategy=strategy,
+                                opt_alg=opt_alg,
+                                it_limit=it_limit,
+                                verbose=verbose
+                            )
+                            assert verify_node_coloring(G, c)
+                            c = gcol.edge_coloring(
+                                G,
+                                strategy=strategy,
+                                opt_alg=opt_alg,
+                                it_limit=it_limit,
+                                verbose=verbose
+                            )
+                            assert verify_edge_coloring(G, c)
+                            c = gcol.edge_colouring(
+                                G,
+                                strategy=strategy,
+                                opt_alg=opt_alg,
+                                it_limit=it_limit,
+                                verbose=verbose
+                            )
+                            assert verify_edge_coloring(G, c)
 
     def test_bad_strategy(self):
         graph = singleton()
@@ -76,6 +82,20 @@ class TestColorings:
     def test_negative_tabu_parameter(self):
         graph = singleton()
         pytest.raises(ValueError, gcol.node_coloring, graph, it_limit=-1)
+
+    def test_bad_verbose_parameter(self):
+        graph = singleton()
+        pytest.raises(
+            ValueError,
+            gcol.node_coloring,
+            graph,
+            opt_alg=1,
+            verbose="this is not an integer"
+        )
+
+    def test_negative_verbose_parameter(self):
+        graph = singleton()
+        pytest.raises(ValueError, gcol.node_coloring, graph, verbose=-1)
 
     def test_directed_graph(self):
         graph = nx.erdos_renyi_graph(10, 0.5, directed=True)
@@ -485,14 +505,14 @@ class TestFaceColorings:
             for strategy in GREEDY_METHODS:
                 for opt_alg in OPT_ALGS:
                     for it_limit in IT_LIMITS:
-                        c = gcol.face_coloring(
+                        gcol.face_coloring(
                             G,
                             pos,
                             strategy=strategy,
                             opt_alg=opt_alg,
                             it_limit=it_limit
                         )
-                        c = gcol.face_colouring(
+                        gcol.face_colouring(
                             G,
                             pos,
                             strategy=strategy,
