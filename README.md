@@ -63,8 +63,3 @@ adding the tag `graph-coloring`. All documentation is listed on
 [this pdf](https://readthedocs.org/projects/gcol/downloads/pdf/latest/).
 If you have any suggestions for this library or notice any bugs, please 
 contact the author using the contact details at [www.rhydlewis.eu](http://www.rhydlewis.eu).
-
-
-
-
-
