@@ -479,7 +479,10 @@ correspond to street segments, and nodes correspond to intersections and
 dead ends. The file used for these images,
 `cardiffstreets.txt <https://github.com/Rhyd-Lewis/GCol/blob/main/docs/gallery/cardiffstreets.txt>`__,
 was generated using the
-`osmnx <https://osmnx.readthedocs.io/en/stable/>`__ library.
+`osmnx <https://osmnx.readthedocs.io/en/stable/>`__ library. An edge
+coloring of a street map is useful in that any path in the graph can be
+described by just two things: the starting node, and a unique sequence
+of colors representing each successive edge along the path.
 
 .. code:: ipython3
 
