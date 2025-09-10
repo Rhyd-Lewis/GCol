@@ -1,7 +1,7 @@
 Performance Analysis
 ====================
 
-In this Chapter we analyze the behavior of the various node coloring
+In this chapter we analyze the behavior of the various node coloring
 algorithms in the ``gcol`` library. Where appropriate, we also make
 comparisons to similar algorithms from the ``networkx`` library.
 
@@ -41,6 +41,16 @@ charts give mean values, while the shaded areas indicate one standard
 deviation on either side of these means. All results below were found by
 executing the code on a 3.0 GHtz Windows 11 PC with 16 GB of RAM.
 
+We start by importing the libraries we need.
+
+.. code:: ipython3
+
+    import pandas as pd
+    import networkx as nx
+    import gcol
+    import matplotlib.pyplot as plt
+    import time
+
 Differing Node Coloring Strategies
 ----------------------------------
 
@@ -53,12 +63,6 @@ on these algorithms can be found in ``gcol``\ ’s documentation.
 
 .. code:: ipython3
 
-    import pandas as pd
-    import networkx as nx
-    import gcol
-    import matplotlib.pyplot as plt
-    import time
-    
     #Carry out the trials and put the results into a list
     results = []
     nVals = range(50,501,50)
@@ -112,11 +116,11 @@ on these algorithms can be found in ``gcol``\ ’s documentation.
 
 
 
-.. image:: output_1_0.png
+.. image:: output_3_0.png
 
 
 
-.. image:: output_1_1.png
+.. image:: output_3_1.png
 
 
 The results above show that the ``random`` and ``welsh-powell``
@@ -128,6 +132,88 @@ chart. This is to be expected because the RLF algorithm has a higher
 complexity than the other options. A good compromise seems to be struck
 by the ``dsatur`` strategy, which features comparatively good solution
 quality and run times.
+
+Optimization Output
+-------------------
+
+The following code demonstrates how the ``verbose`` parameter can be
+used to produce run-time output for the various optimization algorithms.
+This allows us to assess algorithm performance.
+
+.. code:: ipython3
+
+    G = nx.gnp_random_graph(50, 0.5)
+    c = gcol.node_coloring(G, strategy="welsh_powell", opt_alg=1, verbose=1)
+
+
+.. parsed-literal::
+
+    Running backtracking algorithm:
+        Found solution with 13 colors. Total backtracking iterations = 0
+        Found solution with 12 colors. Total backtracking iterations = 52
+        Found solution with 11 colors. Total backtracking iterations = 1293
+        Found solution with 10 colors. Total backtracking iterations = 28972977
+    Ending backtracking at iteration 34324898 - optimal solution achieved.
+    
+
+In the above example, the default optimization algorithm (backtracking)
+has been used. We can do similar things with the other optimization
+algorithms:
+
+.. code:: ipython3
+
+    G = nx.gnp_random_graph(50, 0.5)
+    c = gcol.node_coloring(G, strategy="welsh_powell", opt_alg=2, it_limit=10000, verbose=1)
+
+
+.. parsed-literal::
+
+    Running local search algorithm:
+        Found solution with 12 colors. Total local search iterations = 0 / 10000
+        Found solution with 11 colors. Total local search iterations = 12 / 10000
+        Found solution with 10 colors. Total local search iterations = 241 / 10000
+    Ending local search. Iteration limit of 10000 has been reached.
+    
+
+In some cases, we can also increase the amount of information by using a
+larger value with ``verbose``:
+
+.. code:: ipython3
+
+    G = nx.gnp_random_graph(50, 0.5)
+    c = gcol.node_coloring(G, strategy="welsh_powell", opt_alg=3, it_limit=10000, verbose=2)
+
+
+.. parsed-literal::
+
+    Running local search algorithm:
+        Found solution with 12 colors. Total local search iterations = 0 / 10000
+        Running PartialCol algorithm using 11 colors
+            Solution with 11 colors and cost 5 found by PartialCol at iteration 0
+            Solution with 11 colors and cost 4 found by PartialCol at iteration 1
+            Solution with 11 colors and cost 3 found by PartialCol at iteration 2
+            Solution with 11 colors and cost 2 found by PartialCol at iteration 3
+            Solution with 11 colors and cost 1 found by PartialCol at iteration 4
+            Solution with 11 colors and cost 0 found by PartialCol at iteration 6
+        Ending PartialCol
+        Found solution with 11 colors. Total local search iterations = 6 / 10000
+        Running PartialCol algorithm using 10 colors
+            Solution with 10 colors and cost 5 found by PartialCol at iteration 0
+            Solution with 10 colors and cost 4 found by PartialCol at iteration 1
+            Solution with 10 colors and cost 3 found by PartialCol at iteration 22
+            Solution with 10 colors and cost 2 found by PartialCol at iteration 32
+            Solution with 10 colors and cost 1 found by PartialCol at iteration 155
+            Solution with 10 colors and cost 0 found by PartialCol at iteration 896
+        Ending PartialCol
+        Found solution with 10 colors. Total local search iterations = 902 / 10000
+        Running PartialCol algorithm using 9 colors
+            Solution with 9 colors and cost 5 found by PartialCol at iteration 0
+            Solution with 9 colors and cost 4 found by PartialCol at iteration 6
+            Solution with 9 colors and cost 3 found by PartialCol at iteration 46
+            Solution with 9 colors and cost 2 found by PartialCol at iteration 1498
+        Ending PartialCol
+    Ending local search. Iteration limit of 10000 has been reached.
+    
 
 Comparison to NetworkX
 ----------------------
@@ -205,11 +291,11 @@ example.
 
 
 
-.. image:: output_3_0.png
+.. image:: output_11_0.png
 
 
 
-.. image:: output_3_1.png
+.. image:: output_11_1.png
 
 
 It is clear from the above results that the local search algorithms make
@@ -273,11 +359,11 @@ The following code evaluates the performance of this algorithm on
 
 
 
-.. image:: output_5_0.png
+.. image:: output_13_0.png
 
 
 
-.. image:: output_5_1.png
+.. image:: output_13_1.png
 
 
 The first chart above shows the chromatic numbers from a sample of
@@ -344,11 +430,11 @@ else a cost of one indicates an equitable coloring.
 
 
 
-.. image:: output_7_0.png
+.. image:: output_15_0.png
 
 
 
-.. image:: output_7_1.png
+.. image:: output_15_1.png
 
 
 The first chart above demonstrates that the
@@ -373,7 +459,7 @@ this algorithm can be found in ``gcol``\ ’s documentation.
 Finally, note that NetworkX
 `features <https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.coloring.equitable_color.html>`__
 an exact equitable node :math:`k`-coloring routine, but this can only be
-used for values of :math:`k\geq \Delta(G)`, where :math:`\Delta(G)` is
+used for values of :math:`k\geq \Delta(G)+1`, where :math:`\Delta(G)` is
 the highest node degree in the graph. In the :math:`G(500,0.5)` graphs
 considered here, the minimum valid value for :math:`k` is approximately
 280.
@@ -432,11 +518,11 @@ iteration limit of :math:`n` for the former.
 
 
 
-.. image:: output_9_0.png
+.. image:: output_17_0.png
 
 
 
-.. image:: output_9_1.png
+.. image:: output_17_1.png
 
 
 The results above show quite clearly that the
