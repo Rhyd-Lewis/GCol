@@ -386,6 +386,156 @@ def _tabucol(G, k, c, W, it_limit, verbose):
     return bestcost, bestsol, its
 
 
+def _HEA(G, k, c, W, it_limit, verbose, doTabuCol):
+    def choosecolor(S):
+        # Used in GPX recombination operator. Returns the index of the largest
+        # set (color class) in the partition S, breaking ties randomly
+        maxCard, A = 0, []
+        for i in range(len(S)):
+            if len(S[i]) > 0:
+                if len(S[i]) > maxCard:
+                    A.clear()
+                    A.append(i)
+                    maxCard = len(S[i])
+                elif len(S[i]) == maxCard:
+                    A.append(i)
+        if len(A) == 0:
+            return -1
+        else:
+            return random.choice(A)
+
+    def colornodes(off, i, col, P1, S1, P2, S2):
+        # Used in GPX recombination operator. Removes color class col from P1
+        # and S1, the same nodes from P2 and S2, and, in off, assigns these
+        # nodes to color i
+        for u in S1[col]:
+            P1[u] = -1
+            if P2[u] != -1:
+                S2[P2[u]].remove(u)
+                P2[u] = -1
+            off[u] = i
+        S1[col].clear()
+
+    def GPX(parent1, parent2):
+        # Makes copies (P1 and P2) of the two parents, creates corresponding
+        # partitons S1 and S2, and uses these to create the offspring off
+        P1, P2 = dict(parent1), dict(parent2)
+        S1, S2 = [set() for i in range(k)], [set() for i in range(k)]
+        off = {u: -1 for u in G}
+        for u in G:
+            if P1[u] != -1:
+                S1[P1[u]].add(u)
+            if P2[u] != -1:
+                S2[P2[u]].add(u)
+        for i in range(k):
+            if i % 2 == 0:
+                # Copy a color class from first parent to the offspring
+                col = choosecolor(S1)
+                if col != -1:
+                    colornodes(off, i, col, P1, S1, P2, S2)
+            else:
+                # Copy a color class from second parent to the offspring
+                col = choosecolor(S2)
+                if col != -1:
+                    colornodes(off, i, col, P2, S2, P1, S1)
+        if doTabuCol:
+            # Assign any remaining uncolored nodes randomly
+            for u in P1:
+                if off[u] == -1:
+                    off[u] = random.randint(0, k - 1)
+        return off
+
+    # Implementation of the HEA for graph k-coloring
+    if doTabuCol:
+        for v in G:
+            assert isinstance(c[v], int) and c[v] >= 0 and c[v] < k, (
+                "Error, the coloring defined by c must allocate each node a ",
+                "value from the set {0,...,k-1}"
+                + str(v)
+                + " "
+                + str(c[v])
+            )
+    else:
+        for v in G:
+            assert (
+                isinstance(c[v], int) and c[v] >= -1 and c[v] < k
+            ), ("Error, the coloring defined by c must allocate each node a ",
+                "value from the set {-1,0,...,k-1}, where -1 signifies that ",
+                "a node is uncolored")
+    popsize, itsperindv, totalits = min(10, len(G)), 16 * len(G), 0
+    bestcost, bestsol = float("inf"), {}
+    # Create the initial population. The first individual is found by applying
+    # local search to c; the remainder by applying dsatur with a randomly
+    # selected initial node, then applying local search.
+    if verbose > 0:
+        print("    Making HEA initial solution 1 using", k, "colors")
+    if doTabuCol:
+        cost, c, its = _tabucol(G, k, c, W, min(
+            itsperindv, it_limit - totalits), verbose)
+    else:
+        cost, c, its = _partialcol(G, k, c, W, min(
+            itsperindv, it_limit - totalits), verbose)
+    totalits += its
+    if cost < bestcost:
+        bestcost, bestsol = cost, dict(c)
+    if cost == 0 or totalits >= it_limit:
+        return bestcost, bestsol, totalits
+    pop, popcost = [c], [cost]
+    randomnodes = random.sample(list(G.nodes), popsize - 1)
+    for i in range(0, popsize - 1):
+        if verbose > 0:
+            print("    Making HEA initial solution", i + 2,
+                  "using", k, "colors")
+        sol = {randomnodes[i]: 0}
+        sol = _dsatur(G, sol)
+        if doTabuCol:
+            for u in sol:
+                if sol[u] >= k:
+                    sol[u] = random.randint(0, k - 1)
+            cost, sol, its = _tabucol(G, k, sol, W, min(
+                itsperindv, it_limit - totalits), verbose)
+        else:
+            for u in sol:
+                if sol[u] >= k:
+                    sol[u] = -1
+            cost, sol, its = _partialcol(G, k, sol, W, min(
+                itsperindv, it_limit - totalits), verbose)
+        totalits += its
+        if cost < bestcost:
+            bestcost, bestsol = cost, dict(sol)
+        if cost == 0 or totalits >= it_limit:
+            return bestcost, bestsol, totalits
+        pop.append(sol)
+        popcost.append(cost)
+    # At this point we have not found a zero-cost solution so we apply the main
+    # part of the HEA, evolving the population of individual solutions
+    i = 1
+    while True:
+        # Choose two parents, make the offspring, and apply local search
+        p1, p2 = random.sample(range(popsize), 2)
+        if verbose > 0:
+            print("    Making HEA offspring", i, "using", k, "colors")
+        off = GPX(pop[p1], pop[p2])
+        if doTabuCol:
+            cost, off, its = _tabucol(G, k, off, W, min(
+                itsperindv, it_limit - totalits), verbose)
+        else:
+            cost, off, its = _partialcol(G, k, off, W, min(
+                itsperindv, it_limit - totalits), verbose)
+        totalits += its
+        if cost < bestcost:
+            bestcost, bestsol = cost, dict(off)
+        if cost == 0 or totalits >= it_limit:
+            break
+        # Replace the weaker of the parents with the new offspring solution
+        weaker = p1
+        if popcost[p2] > popcost[p1]:
+            weaker = p2
+        pop[weaker], popcost[weaker] = off, cost
+        i += 1
+    return bestcost, bestsol, totalits
+
+
 def _removeColor(c, j, alg):
     maxcol = max(c.values())
     # Uncolor nodes assigned to color j while maintaining use of colors
@@ -396,14 +546,14 @@ def _removeColor(c, j, alg):
         elif c[v] == maxcol:
             c[v] = j
     # If tabucol is being used, assign uncolored nodes to random colors
-    if alg == 2:
+    if alg in [2, 4]:
         for v in c:
             if c[v] == -1:
                 c[v] = random.randint(0, maxcol - 1)
 
 
 def _reducecolors(G, c, target, W, opt_alg, it_limit, verbose):
-    # Uses specified optimisation algorithm to try to reduce the number of
+    # Uses the specified optimization algorithm to try to reduce the number of
     # colors in c to the target value. The observed proper solution with the
     # fewest colors is returned (which may be using more colors than the
     # target)
@@ -422,9 +572,15 @@ def _reducecolors(G, c, target, W, opt_alg, it_limit, verbose):
         if opt_alg == 2:
             cost, c, its = _tabucol(
                 G, k, c, W, it_limit - totalits, verbose - 1)
-        else:
+        elif opt_alg == 3:
             cost, c, its = _partialcol(
                 G, k, c, W, it_limit - totalits, verbose - 1)
+        elif opt_alg == 4:
+            cost, c, its = _HEA(
+                G, k, c, W, it_limit - totalits, verbose - 1, True)
+        else:
+            cost, c, its = _HEA(
+                G, k, c, W, it_limit - totalits, verbose - 1, False)
         totalits += its
         if cost == 0:
             bestc = dict(c)

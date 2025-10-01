@@ -50,7 +50,7 @@ colorblind = {
 
 def _check_params(G, strategy, opt_alg, it_limit, verbose):
     greedy_methods = {"random", "welsh_powell", "dsatur", "rlf"}
-    opt_methods = {1, 2, 3, None}
+    opt_methods = {1, 2, 3, 4, 5, None}
     if strategy not in greedy_methods:
         raise ValueError(
             "Error, chosen strategy must be one of", greedy_methods
@@ -856,7 +856,7 @@ def max_independent_set(G, weight=None, it_limit=0, verbose=0):
 
 
 def min_cost_k_coloring(G, k, weight=None, weights_at="nodes", it_limit=0,
-                        verbose=0):
+                        HEA=False, verbose=0):
     """Color the nodes of the graph using ``k`` colors.
 
     This is done so that a cost function is minimized. Equivalently, this
@@ -908,6 +908,10 @@ def min_cost_k_coloring(G, k, weight=None, weights_at="nodes", it_limit=0,
         Number of iterations of the local search procedure. Each iteration has
         a complexity $O(m + kn)$, where $n$ is the number of nodes, $m$ is the
         number of edges, and $k$ is the number of colors.
+
+    HEA : bool, optional (default=False)
+        If set to ``True``, a hybrid evolutionary algorithm is used in
+        conjunction with local search; otherwise, only local search is used.
 
     verbose : int, optional (default=0)
         If set to a positive value, information is output during the
@@ -1000,6 +1004,9 @@ def min_cost_k_coloring(G, k, weight=None, weights_at="nodes", it_limit=0,
     PartialCol has complexity $O(nk +m)$. This process also uses $O(nk + m)$
     memory.
 
+    Further details on the local search and hybrid evolutionary algorithms, can
+    be found in the notes section of the :meth:`node_coloring` method.
+
     All the above algorithms are described in detail in [1]_. The c++ code
     used in [1]_ and [2]_ forms the basis of this library's Python
     implementations.
@@ -1032,13 +1039,19 @@ def min_cost_k_coloring(G, k, weight=None, weights_at="nodes", it_limit=0,
         for v in c:
             if c[v] >= k:
                 c[v] = -1
-        cost, c, its = nc._partialcol(G, k, c, W, it_limit, verbose)
+        if HEA is True:
+            cost, c, its = nc._HEA(G, k, c, W, it_limit, verbose, False)
+        else:
+            cost, c, its = nc._partialcol(G, k, c, W, it_limit, verbose)
     else:
         W = _getEdgeWeights(G, weight)
         for v in c:
             if c[v] >= k:
                 c[v] = random.randint(0, k - 1)
-        cost, c, its = nc._tabucol(G, k, c, W, it_limit, verbose)
+        if HEA is True:
+            cost, c, its = nc._HEA(G, k, c, W, it_limit, verbose, True)
+        else:
+            cost, c, its = nc._tabucol(G, k, c, W, it_limit, verbose)
     return c
 
 
@@ -1097,11 +1110,21 @@ def equitable_node_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0,
         * ``3`` : A local search algorithm that seeks to reduce the number of
           colors by temporarily allowing nodes to be uncolored. Each iteration
           has a complexity $O(m + kn)$, as above.
+        * ``4`` : A hybrid evolutionary algorithm (HEA) that evolves a small
+          population of solutions. During execution, when each new solution is
+          created, the local search method used in Option ``2`` above is
+          applied for a fixed number of iterations. Each iteration of this HEA
+          therefore has a complexity of $O(m + kn)$, as above.
+        * ``5`` : A hybrid evolutionary algorithm is applied (as above), using
+          the local search method from Option ``3``.
         * ``None`` : No optimization is performed.
 
+        Further details of these algorithms are given in the notes section of
+        the :meth:`node_coloring` method.
+
     it_limit : int, optional (default=0)
-        Number of iterations of the local search procedure. Only applicable
-        when using ``opt_alg=2`` or ``opt_alg=3``.
+        Number of iterations of the local search procedure. Not applicable
+        when using ``opt_alg=1``.
 
     verbose : int, optional (default=0)
         If set to a positive value, information is output during the
@@ -1233,7 +1256,7 @@ def equitable_node_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0,
                 "optimisation options or increasing k"
             )
         c = nc._dsatur(G)
-        if opt_alg == 2:
+        if opt_alg in [2, 4]:
             WPrime = _getEdgeWeights(G, None)
         else:
             WPrime = _getNodeWeights(G, None)
@@ -1258,7 +1281,7 @@ def node_k_coloring(G, k, opt_alg=None, it_limit=0, verbose=0):
 
     Determining whether a node $k$-coloring exists for $G$ is NP-complete.
     This method therefore includes options for using an exact exponential-time
-    algorithm (based on backtracking), or a choice of two polynomial-time
+    algorithm (based on backtracking), or a choice of four polynomial-time
     heuristic algorithms (based on local search). The exact algorithm is
     generally only suitable for larger values of $k$, for graphs that are
     small, or graphs that have topologies suited to its search strategies. In
@@ -1292,11 +1315,21 @@ def node_k_coloring(G, k, opt_alg=None, it_limit=0, verbose=0):
         * ``3`` : A local search algorithm that seeks to reduce the number of
           colors by temporarily allowing nodes to be uncolored. Each iteration
           has a complexity $O(m + kn)$, as above.
-        * None : No optimization is performed.
+        * ``4`` : A hybrid evolutionary algorithm (HEA) that evolves a small
+          population of solutions. During execution, when each new solution is
+          created, the local search method used in Option ``2`` above is
+          applied for a fixed number of iterations. Each iteration of this HEA
+          therefore has a complexity of $O(m + kn)$, as above.
+        * ``5`` : A hybrid evolutionary algorithm is applied (as above), using
+          the local search method from Option ``3``.
+        * ``None`` : No optimization is performed.
+
+        Further details of these algorithms are given in the notes section of
+        the :meth:`node_coloring` method.
 
     it_limit : int, optional (default=0)
-        Number of iterations of the local search procedure. Only applicable
-        when using ``opt_alg=2`` or ``opt_alg=3``.
+        Number of iterations of the local search procedure. Not applicable
+        when using ``opt_alg=1``.
 
     verbose : int, optional (default=0)
         If set to a positive value, information is output during the
@@ -1393,7 +1426,7 @@ def node_k_coloring(G, k, opt_alg=None, it_limit=0, verbose=0):
                 "optimisation options or increasing k"
             )
         c = nc._dsatur(G)
-        if opt_alg == 2:
+        if opt_alg in [2, 4]:
             W = _getEdgeWeights(G, None)
         c = nc._reducecolors(G, c, k, W, opt_alg, it_limit, verbose)
         if max(c.values()) + 1 > k:
@@ -1464,11 +1497,21 @@ def equitable_edge_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0,
         * ``3`` : A local search algorithm that seeks to reduce the number of
           colors by temporarily allowing nodes in $L(G)$ to be uncolored.
           Each iteration has a complexity $O(m + kn)$, as above.
-        * None : No optimization is performed.
+        * ``4`` : A hybrid evolutionary algorithm (HEA) that evolves a small
+          population of solutions. During execution, when each new solution is
+          created, the local search method used in Option ``2`` above is
+          applied for a fixed number of iterations. Each iteration of this HEA
+          therefore has a complexity of $O(m + kn)$, as above.
+        * ``5`` : A hybrid evolutionary algorithm is applied (as above), using
+          the local search method from Option ``3``.
+        * ``None`` : No optimization is performed.
+
+        Further details of these algorithms are given in the notes section of
+        the :meth:`node_coloring` method.
 
     it_limit : int, optional (default=0)
-        Number of iterations of the local search procedure. Only applicable
-        when using ``opt_alg=2`` or ``opt_alg=3``.
+        Number of iterations of the local search procedure. Not applicable
+        when using ``opt_alg=1``.
 
     verbose : int, optional (default=0)
         If set to a positive value, information is output during the
@@ -1616,7 +1659,7 @@ def edge_k_coloring(G, k, opt_alg=None, it_limit=0, verbose=0):
     For $k = \\Delta(G)$, however, the problem is NP-hard.
 
     This method therefore includes options for using an exact exponential-time
-    algorithm (based on backtracking), or a choice of two polynomial-time
+    algorithm (based on backtracking), or a choice of four polynomial-time
     heuristic algorithms (based on local search). The exact algorithm is
     generally only suitable for larger values of $k$, for graphs that are
     small, or graphs that have topologies suited to its search strategies.
@@ -1657,11 +1700,21 @@ def edge_k_coloring(G, k, opt_alg=None, it_limit=0, verbose=0):
         * ``3`` : A local search algorithm that seeks to reduce the number of
           colors by temporarily allowing nodes in $L(G)$ to be uncolored. Each
           iteration has a complexity $O(m + kn)$, as above.
+        * ``4`` : A hybrid evolutionary algorithm (HEA) that evolves a small
+          population of solutions. During execution, when each new solution is
+          created, the local search method used in Option ``2`` above is
+          applied for a fixed number of iterations. Each iteration of this HEA
+          therefore has a complexity of $O(m + kn)$, as above.
+        * ``5`` : A hybrid evolutionary algorithm is applied (as above), using
+          the local search method from Option ``3``.
         * ``None`` : No optimization is performed.
 
+        Further details of these algorithms are given in the notes section of
+        the :meth:`node_coloring` method.
+
     it_limit : int, optional (default=0)
-        Number of iterations of the local search procedure. Only applicable
-        when using ``opt_alg=2`` or ``opt_alg=3``.
+        Number of iterations of the local search procedure. Not applicable
+        when using ``opt_alg=1``.
 
     verbose : int, optional (default=0)
         If set to a positive value, information is output during the
@@ -1771,7 +1824,7 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
 
     Determining a node coloring that minimizes the number of colors is an
     NP-hard problem. This method therefore includes options for using an exact
-    exponential-time algorithm (based on backtracking), or a choice of two
+    exponential-time algorithm (based on backtracking), or a choice of four
     polynomial-time heuristic algorithms (based on local search). The exact
     algorithm is generally only suitable for graphs that are small, or that
     have topologies suited to its search strategies. In all other cases, the
@@ -1806,14 +1859,23 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
           Each iteration has a complexity $O(m + kn)$, where $n$ is the number
           of nodes in the graph, $m$ is the number of edges, and $k$ is the
           number of colors in the current solution.
-        * 3 : A local search algorithm that seeks to reduce the number of
+        * ``3`` : A local search algorithm that seeks to reduce the number of
           colors by temporarily allowing nodes to be uncolored. Each iteration
           has a complexity $O(m + kn)$, as above.
-        * None : No optimization is performed.
+        * ``4`` : A hybrid evolutionary algorithm (HEA) that evolves a small
+          population of solutions. During execution, when each new solution is
+          created, the local search method used in Option ``2`` above is
+          applied for a fixed number of iterations. Each iteration of this HEA
+          therefore has a complexity of $O(m + kn)$, as above.
+        * ``5`` : A hybrid evolutionary algorithm is applied (as above), using
+          the local search method from Option ``3``.
+        * ``None`` : No optimization is performed.
+
+        Further details of these algorithms are given below.
 
     it_limit : int, optional (default=0)
-        Number of iterations of the local search procedure. Only applicable
-        when using ``opt_alg=2`` or ``opt_alg=3``.
+        Number of iterations of the local search procedure. Not applicable
+        when using ``opt_alg=1``.
 
     verbose : int, optional (default=0)
         If set to a positive value, information is output during the
@@ -1907,11 +1969,11 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
     cases the returned solution will be optimal (that is, will be using
     $\\chi(G)$ colors).
 
-    If local search is used (``opt_alg=2`` or ``opt_alg=3``), the algorithm
-    removes a color class and uses the chosen local search routine to seek a
-    proper coloring using the remaining colors. If this is successful, the
-    process repeats. The algorithm is executed until a solution using $|C|$
-    colors has been identified (as above), or until the iteration limit is
+    If local search is used (``opt_alg`` is set to ``2``, ``3``, ``4``, or
+    ``5``), the algorithm removes a color class and uses the chosen local
+    search routine to seek a proper coloring using the remaining colors. This
+    process repeats until a solution using $|C|$ colors has been identified
+    (as above), or until the iteration limit (defined by ``it_limit``) is
     reached. Fewer colors (but longer run times) occur with larger iteration
     limits.
 
@@ -1919,9 +1981,9 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
     on tabu search and operates by fixing the number of colors but allowing
     clashes to occur (a clash is the occurrence of two adjacent nodes having
     the same color). The aim is to alter the color assignments so that the
-    number of clashes is reduced to zero. Each iteration of TabuCol has
-    complexity $O(nk + m)$, where $k$ is the number of colors currently being
-    used. The process also uses $O(nk + m)$ memory.
+    number of clashes is reduced to zero. Each iteration of TabuCol has a
+    complexity of $O(nk + m)$, where $k$ is the number of colors currently
+    being used. The process also uses $O(nk + m)$ memory.
 
     If ``opt_alg=3``, the PartialCol algorithm is used. This algorithm is also
     based on tabu search and operates by fixing the number of colors but
@@ -1929,6 +1991,21 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
     to the color assignments so that no uncolored nodes remain. As with
     TabuCol, each iteration of PartialCol has complexity $O(nk +m)$ and uses
     $O(nk + m)$ memory.
+
+    If ``opt_alg`` is set to ``4`` or ``5``, a hybrid evolutionary algorithm
+    (HEA) is employed. This method maintains a small population of $k$-colored
+    solutions that is evolved using selection, recombination, local search and
+    replacement. Specifically, in each HEA cycle, two parent solutions are
+    selected from the population, and these are used in conjunction with a
+    specialised recombination operator to produce a new offspring solution.
+    Local search is this applied to the offspring for a fixed number of
+    iterations, and the resultant solution is inserted back into the
+    population, replacing its weaker parent. If ``opt_alg=4``, TabuCol is
+    used as the local search operator; if ``opt_alg=5``, PartialCol is used.
+    Each iteration of the HEA has complexity $O(nk+m)$, as above. Note that
+    the HEA is often able to produce solutions using fewer colors compared to
+    when using ``opt_alg=2`` or ``opt_alg=3``; however, larger iteration
+    limits will usually be needed to see these improvements.
 
     As stated above, if ``verbose`` is set to a positive integer, output is
     produced during the execution of the chosen optimzation algorithm. If the
@@ -1981,7 +2058,7 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
     # If selected, employ the chosen optimisation method
     if opt_alg is None:
         return c
-    if opt_alg == 2:
+    if opt_alg in [2, 4]:
         W = _getEdgeWeights(G, None)
     else:
         W = _getNodeWeights(G, None)
@@ -2009,7 +2086,7 @@ def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
     Determining an edge coloring that minimizes the number of colors is an
     NP-hard problem. This method therefore includes options for using an
     exponential-time exact algorithm (based on backtracking), or a choice of
-    two polynomial-time heuristic algorithms (based on local search). The
+    four polynomial-time heuristic algorithms (based on local search). The
     exact algorithm is generally only suitable for graphs that are small,
     or that have topologies suited to its search strategies. In all other
     cases, the local search algorithms are more appropriate.
@@ -2053,11 +2130,21 @@ def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
         * ``3`` : A local search algorithm that seeks to reduce the number of
           colors by temporarily allowing nodes in $L(G)$ to be uncolored. Each
           iteration has a complexity $O(m + kn)$, as above.
+        * ``4`` : A hybrid evolutionary algorithm (HEA) that evolves a small
+          population of solutions. During execution, when each new solution is
+          created, the local search method used in Option ``2`` above is
+          applied for a fixed number of iterations. Each iteration of this HEA
+          therefore has a complexity of $O(m + kn)$, as above.
+        * ``5`` : A hybrid evolutionary algorithm is applied (as above), using
+          the local search method from Option ``3``.
         * ``None`` : No optimization is performed.
 
+        Further details of these algorithms are given in the notes section of
+        the :meth:`node_coloring` method.
+
     it_limit : int, optional (default=0)
-        Number of iterations of the local search procedure. Only applicable
-        when using ``opt_alg=2`` or ``opt_alg=3``.
+        Number of iterations of the local search procedure. Not applicable
+        when using ``opt_alg=1``.
 
     verbose : int, optional (default=0)
         If set to a positive value, information is output during the
@@ -2160,7 +2247,7 @@ def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
     # If selected, employ the chosen optimisation method
     if opt_alg is None:
         return c
-    if opt_alg == 2:
+    if opt_alg in [2, 4]:
         W = _getEdgeWeights(H, None)
     else:
         W = _getNodeWeights(H, None)
@@ -2352,7 +2439,7 @@ def node_precoloring(
 
     The node precoloring problem is NP-hard. This method therefore includes
     options for using an exponential-time exact algorithm (based on
-    backtracking), or a choice of two polynomial-time heuristic algorithms
+    backtracking), or a choice of four polynomial-time heuristic algorithms
     (based on local search). The exact algorithm is generally only suitable
     for graphs that are small, or that have topologies suited to its search
     strategies. In all other cases, the local search algorithms are more
@@ -2401,11 +2488,21 @@ def node_precoloring(
         * ``3`` : A local search algorithm that seeks to reduce the number of
           colors by temporarily allowing nodes to be uncolored. Each iteration
           has a complexity $O(m + kn)$, as above.
+        * ``4`` : A hybrid evolutionary algorithm (HEA) that evolves a small
+          population of solutions. During execution, when each new solution is
+          created, the local search method used in Option ``2`` above is
+          applied for a fixed number of iterations. Each iteration of this HEA
+          therefore has a complexity of $O(m + kn)$, as above.
+        * ``5`` : A hybrid evolutionary algorithm is applied (as above), using
+          the local search method from Option ``3``.
         * ``None`` : No optimization is performed.
 
+        Further details of these algorithms are given in the notes section of
+        the :meth:`node_coloring` method.
+
     it_limit : int, optional (default=0)
-        Number of iterations of the local search procedure. Only applicable
-        when using ``opt_alg=2`` or ``opt_alg=3``.
+        Number of iterations of the local search procedure. Not applicable
+        when using ``opt_alg=1``.
 
     verbose : int, optional (default=0)
         If set to a positive value, information is output during the
@@ -2608,7 +2705,7 @@ def edge_precoloring(
 
     The edge precoloring problem is NP-hard. This method therefore includes
     options for using an exponential-time exact algorithm (based on
-    backtracking), or a choice of two polynomial-time heuristic algorithms
+    backtracking), or a choice of four polynomial-time heuristic algorithms
     (based on local search). The exact algorithm is generally only suitable
     for graphs that are small, or that have topologies suited to its search
     strategies. In all other cases, the local search algorithms are more
@@ -2656,11 +2753,21 @@ def edge_precoloring(
         * ``3`` : A local search algorithm that seeks to reduce the number of
           colors by temporarily allowing nodes in $L(G)$ to be uncolored. Each
           iteration has a complexity $O(m + kn)$, as above.
+        * ``4`` : A hybrid evolutionary algorithm (HEA) that evolves a small
+          population of solutions. During execution, when each new solution is
+          created, the local search method used in Option ``2`` above is
+          applied for a fixed number of iterations. Each iteration of this HEA
+          therefore has a complexity of $O(m + kn)$, as above.
+        * ``5`` : A hybrid evolutionary algorithm is applied (as above), using
+          the local search method from Option ``3``.
         * ``None`` : No optimization is performed.
 
+        Further details of these algorithms are given in the notes section of
+        the :meth:`node_coloring` method.
+
     it_limit : int, optional (default=0)
-        Number of iterations of the local search procedure. Only applicable
-        when using ``opt_alg=2`` or ``opt_alg=3``.
+        Number of iterations of the local search procedure. Not applicable
+        when using ``opt_alg=1``.
 
     verbose : int, optional (default=0)
         If set to a positive value, information is output during the
@@ -2856,11 +2963,21 @@ def face_coloring(G, pos, strategy="dsatur", opt_alg=None, it_limit=0,
         * ``3`` : A local search algorithm that seeks to reduce the number of
           colors by temporarily allowing nodes in the dual to be uncolored.
           Each iteration has a complexity $O(m + kn)$, as above.
+        * ``4`` : A hybrid evolutionary algorithm (HEA) that evolves a small
+          population of solutions. During execution, when each new solution is
+          created, the local search method used in Option ``2`` above is
+          applied for a fixed number of iterations. Each iteration of this HEA
+          therefore has a complexity of $O(m + kn)$, as above.
+        * ``5`` : A hybrid evolutionary algorithm is applied (as above), using
+          the local search method from Option ``3``.
         * ``None`` : No optimization is performed.
 
+        Further details of these algorithms are given in the notes section of
+        the :meth:`node_coloring` method.
+
     it_limit : int, optional (default=0)
-        Number of iterations of the local search procedure. Only applicable
-        when using ``opt_alg=2`` or ``opt_alg=3``.
+        Number of iterations of the local search procedure. Not applicable
+        when using ``opt_alg=1``.
 
     verbose : int, optional (default=0)
         If set to a positive value, information is output during the
@@ -3091,11 +3208,21 @@ def face_k_coloring(G, pos, k, opt_alg=None, it_limit=0, verbose=0):
         * ``3`` : A local search algorithm that seeks to reduce the number of
           colors by temporarily allowing nodes in the dual to be uncolored.
           Each iteration has a complexity $O(m + kn)$, as above.
+        * ``4`` : A hybrid evolutionary algorithm (HEA) that evolves a small
+          population of solutions. During execution, when each new solution is
+          created, the local search method used in Option ``2`` above is
+          applied for a fixed number of iterations. Each iteration of this HEA
+          therefore has a complexity of $O(m + kn)$, as above.
+        * ``5`` : A hybrid evolutionary algorithm is applied (as above), using
+          the local search method from Option ``3``.
         * ``None`` : No optimization is performed.
 
+        Further details of these algorithms are given in the notes section of
+        the :meth:`node_coloring` method.
+
     it_limit : int, optional (default=0)
-        Number of iterations of the local search procedure. Only applicable
-        when using ``opt_alg=2`` or ``opt_alg=3``.
+        Number of iterations of the local search procedure. Not applicable
+        when using ``opt_alg=1``.
 
     verbose : int, optional (default=0)
         If set to a positive value, information is output during the
@@ -3243,11 +3370,21 @@ def equitable_face_k_coloring(G, pos, k, opt_alg=None, it_limit=0, verbose=0):
         * ``3`` : A local search algorithm that seeks to reduce the number of
           colors by temporarily allowing nodes in the dual to be uncolored.
           Each iteration has a complexity $O(m + kn)$, as above.
+        * ``4`` : A hybrid evolutionary algorithm (HEA) that evolves a small
+          population of solutions. During execution, when each new solution is
+          created, the local search method used in Option ``2`` above is
+          applied for a fixed number of iterations. Each iteration of this HEA
+          therefore has a complexity of $O(m + kn)$, as above.
+        * ``5`` : A hybrid evolutionary algorithm is applied (as above), using
+          the local search method from Option ``3``.
         * ``None`` : No optimization is performed.
 
+        Further details of these algorithms are given in the notes section of
+        the :meth:`node_coloring` method.
+
     it_limit : int, optional (default=0)
-        Number of iterations of the local search procedure. Only applicable
-        when using ``opt_alg=2`` or ``opt_alg=3``.
+        Number of iterations of the local search procedure. Not applicable
+        when using ``opt_alg=1``.
 
     verbose : int, optional (default=0)
         If set to a positive value, information is output during the
@@ -3416,11 +3553,21 @@ def face_precoloring(
         * ``3`` : A local search algorithm that seeks to reduce the number of
           colors by temporarily allowing nodes in the dual to be uncolored.
           Each iteration has a complexity $O(m + kn)$, as above.
+        * ``4`` : A hybrid evolutionary algorithm (HEA) that evolves a small
+          population of solutions. During execution, when each new solution is
+          created, the local search method used in Option ``2`` above is
+          applied for a fixed number of iterations. Each iteration of this HEA
+          therefore has a complexity of $O(m + kn)$, as above.
+        * ``5`` : A hybrid evolutionary algorithm is applied (as above), using
+          the local search method from Option ``3``.
         * ``None`` : No optimization is performed.
 
+        Further details of these algorithms are given in the notes section of
+        the :meth:`node_coloring` method.
+
     it_limit : int, optional (default=0)
-        Number of iterations of the local search procedure. Only applicable
-        when using ``opt_alg=2`` or ``opt_alg=3``.
+        Number of iterations of the local search procedure. Not applicable
+        when using ``opt_alg=1``.
 
     verbose : int, optional (default=0)
         If set to a positive value, information is output during the
