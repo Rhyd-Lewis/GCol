@@ -30,13 +30,13 @@ To start using this library, try executing the following code.
 
 :doc:`This demonstration <demo/Demo>` gives further examples. You may also find it useful to consult the user guide of `NetworkX <https://networkx.org/>`_, as GCol makes use of its data structures and functionality.
 
-Textbook
---------
+Publications
+------------
 
-The algorithms and techniques used in this library are based on the 2021 textbook by Lewis, R. M. R. (2021) `A Guide to Graph Colouring: Algorithms and Applications <https://link.springer.com/book/10.1007/978-3-030-81054-2>`_, Springer Cham. (2nd Edition). In bibtex, this book is cited as:: 
+The algorithms and techniques used in this library come from the 2021 textbook of Lewis, R. (2021) `A Guide to Graph Colouring: Algorithms and Applications <https://link.springer.com/book/10.1007/978-3-030-81054-2>`_, Springer Cham. (2nd Edition). In bibtex, this book is cited as:: 
 
     @book{10.1007/978-3-030-81054-2,
-      author = {Lewis, R. M. R.},
+      author = {Lewis, R.},
       title = {A Guide to Graph Colouring: Algorithms and Applications},
       year = {2021},
       isbn = {978-3-030-81056-6},
@@ -44,8 +44,18 @@ The algorithms and techniques used in this library are based on the 2021 textboo
       edition = {2nd}
     }
 
-.. image:: https://joss.theoj.org/papers/10.21105/joss.07871/status.svg
-   :target: https://doi.org/10.21105/joss.07871
+A `short description <https://joss.theoj.org/papers/10.21105/joss.07871/>`_ of this library is also published in the `Journal of Open Source Software <https://joss.theoj.org/>`_::
+
+    @article{10.21105/joss.07871,
+      author = {Lewis, R. and Palmer, G.},
+      title = {GCol: A High-Performance Python Library for Graph Colouring},
+      journal = {Journal of Open Source Software},
+      year = {2025},
+      volume = {10},
+      number = {108},
+      pages = {7871},
+      doi = {10.21105/joss.07871}
+    }
 
 Support
 -------
