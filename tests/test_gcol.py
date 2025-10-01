@@ -6,7 +6,7 @@ import gcol
 
 
 GREEDY_METHODS = ["random", "welsh_powell", "dsatur", "rlf"]
-OPT_ALGS = [1, 2, 3, None]
+OPT_ALGS = [1, 2, 3, 4, 5, None]
 IT_LIMITS = [0, 100, 1000]
 VERBOSE = [0, 1, 2]
 
@@ -79,7 +79,7 @@ class TestColorings:
             it_limit="this is not an integer",
         )
 
-    def test_negative_tabu_parameter(self):
+    def test_negative_its_parameter(self):
         graph = singleton()
         pytest.raises(ValueError, gcol.node_coloring, graph, it_limit=-1)
 
@@ -397,51 +397,58 @@ class TestMinCostKColoring:
                 for v in G[u]:
                     G[u][v]["weight"] = 3
             for it_limit in IT_LIMITS:
-                for k in range(1, len(G) + 1):
-                    gcol.min_cost_k_coloring(
-                        G,
-                        k,
-                        weight=None,
-                        weights_at="nodes",
-                        it_limit=it_limit
-                    )
-                    gcol.min_cost_k_colouring(
-                        G,
-                        k,
-                        weight=None,
-                        weights_at="nodes",
-                        it_limit=it_limit
-                    )
-                for k in range(2, len(G) + 1):
-                    gcol.min_cost_k_coloring(
-                        G,
-                        k,
-                        weight=None,
-                        weights_at="edges",
-                        it_limit=it_limit
-                    )
-                    gcol.min_cost_k_colouring(
-                        G,
-                        k,
-                        weight=None,
-                        weights_at="edges",
-                        it_limit=it_limit
-                    )
-                for k in range(2, len(G) + 1):
-                    gcol.min_cost_k_coloring(
-                        G,
-                        k,
-                        weight="weight",
-                        weights_at="edges",
-                        it_limit=it_limit
-                    )
-                    gcol.min_cost_k_colouring(
-                        G,
-                        k,
-                        weight="weight",
-                        weights_at="edges",
-                        it_limit=it_limit
-                    )
+                for HEA in [True, False]:
+                    for k in range(1, len(G) + 1):
+                        gcol.min_cost_k_coloring(
+                            G,
+                            k,
+                            weight=None,
+                            weights_at="nodes",
+                            HEA=HEA,
+                            it_limit=it_limit
+                        )
+                        gcol.min_cost_k_colouring(
+                            G,
+                            k,
+                            weight=None,
+                            weights_at="nodes",
+                            HEA=HEA,
+                            it_limit=it_limit
+                        )
+                    for k in range(2, len(G) + 1):
+                        gcol.min_cost_k_coloring(
+                            G,
+                            k,
+                            weight=None,
+                            weights_at="edges",
+                            HEA=HEA,
+                            it_limit=it_limit
+                        )
+                        gcol.min_cost_k_colouring(
+                            G,
+                            k,
+                            weight=None,
+                            weights_at="edges",
+                            HEA=HEA,
+                            it_limit=it_limit
+                        )
+                    for k in range(2, len(G) + 1):
+                        gcol.min_cost_k_coloring(
+                            G,
+                            k,
+                            weight="weight",
+                            weights_at="edges",
+                            HEA=HEA,
+                            it_limit=it_limit
+                        )
+                        gcol.min_cost_k_colouring(
+                            G,
+                            k,
+                            weight="weight",
+                            weights_at="edges",
+                            HEA=HEA,
+                            it_limit=it_limit
+                        )
 
     def test_bad_node_weights(self):
         graph = nx.Graph()
