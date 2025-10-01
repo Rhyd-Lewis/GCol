@@ -6,9 +6,9 @@ algorithms in the ``gcol`` library. Where appropriate, we also make
 comparisons to similar algorithms from the ``networkx`` library.
 
 Here, algorithms are evaluated by looking at solution quality and run
-times. Details on asymptotic algorithm complexity (in terms of big O
-notation) can be found in ``gcol``\ ’s documentation. Here, all tests
-are conducted on randomly generated
+times. Details on algorithm complexity (in terms of big O notation) can
+be found in ``gcol``\ ’s documentation. Here, all tests are conducted on
+randomly generated
 `Erdos-Renyi <https://en.wikipedia.org/wiki/Erdos-Renyi_model>`__
 graphs, commonly denoted by :math:`G(n,p)`. These graphs are constructed
 by taking :math:`n` nodes and adding an edge between each node pair at
@@ -23,10 +23,10 @@ of `Nick Wormald <https://en.wikipedia.org/wiki/Nick_Wormald>`__, who
 has established that for :math:`n \gtrapprox 30`, a set of randomly
 constructed :math:`G(n, 0.5)` graphs can be considered equivalent to a
 random sample from the population of *all* unlabeled :math:`n`-node
-graphs. Note, however, that although this allows us to make general
-statistical statements about performance, different observations may
-well be made when executing these algorithms on specifically chosen
-topologies, such as `scale-free
+graphs. This allows us to make general statistical statements about
+performance across the set of all :math:`n`-node graphs, although
+different observations may well be made when executing these algorithms
+on specifically chosen topologies, such as `scale-free
 graphs <https://en.wikipedia.org/wiki/Scale-free_network>`__ and `planar
 graphs <https://en.wikipedia.org/wiki/Planar_graph>`__. Examples of
 these differences are discussed in this
@@ -156,9 +156,11 @@ This allows us to assess algorithm performance.
     Ending backtracking at iteration 34324898 - optimal solution achieved.
     
 
-In the above example, the default optimization algorithm (backtracking)
-has been used. We can do similar things with the other optimization
-algorithms:
+In the above example, the initial solution has used 13 colors. The
+backtracking algorithm (``opt_alg=1``) has been used to reduce the
+number of colors, eventually finding an optimal solution. We can do
+similar things with the other optimization algorithms while controlling
+their number of iterations:
 
 .. code:: ipython3
 
@@ -175,7 +177,7 @@ algorithms:
     Ending local search. Iteration limit of 10000 has been reached.
     
 
-In some cases, we can also increase the amount of information by using a
+In some cases, we can also increase the amount of output by using a
 larger value with ``verbose``:
 
 .. code:: ipython3
@@ -222,12 +224,11 @@ The next set of experiments compares the performance of ``gcol``\ ’s
 local search routines and NetworkX’s `interchange coloring
 routine <https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.coloring.greedy_color.html>`__.
 As a benchmark, we also include ``gcol``\ ’s ``dsatur`` option from
-earlier, which has also been used to produce the initial solutions for
-the local search algorithms. For comparative purposes, both of
-``gcol``\ ’s local search algorithms (``opt_alg=2`` and ``opt_alg=3``)
-are used here, and we impose a fixed iteration limit of :math:`n`. The
-results are collected and displayed in the same manner as the previous
-example.
+earlier, which is also used to produce the initial solutions for the
+local search algorithms. For comparative purposes, two of ``gcol``\ ’s
+local search algorithms (``opt_alg=2`` and ``opt_alg=3``) are used here,
+and we impose a fixed iteration limit of :math:`n`. The results are
+collected and displayed in the same manner as the previous example.
 
 .. code:: ipython3
 
@@ -302,24 +303,25 @@ It is clear from the above results that the local search algorithms make
 significant improvements to the solutions provided by the ``dsatur``
 strategy, albeit with additional time requirements. The solutions and
 run times of these local search algorithms are also superior to
-NetworkX’s node coloring routines. Note that further improvements in
-solution quality might also be found by increasing the iteration limit
-of the local search algorithms.
+NetworkX’s node coloring routines. Further improvements in solution
+quality can usually be found by increasing the iteration limit of the
+local search algorithms, as demonstrated below.
 
 Exact Algorithm Performance
 ---------------------------
 
-In addition to the two local search heuristics, the ``gcol`` library
-also features an exact, exponential-time algorithm for node coloring,
-based on backtracking. This algorithm is invoked by setting
-``opt_alg=1``. At the start of this algorithm’s execution, a large
-clique :math:`C` is identified in :math:`G` using the NetworkX function
-``nx.max_clique()``. The nodes of :math:`C` are then permanently
-assigned to different colors. The main backtracking algorithm is then
-executed and only halts only when a solution using :math:`C` colors has
-been identified, or when the algorithm has backtracked to the root of
-the search tree. In both cases the returned solution will be optimal
-(that is, will be using the minimum number of colors).
+In addition to local search, the ``gcol`` library features an exact,
+exponential-time algorithm for node coloring, based on backtracking.
+This algorithm is invoked by setting ``opt_alg=1`` (the parameter
+``it_limit`` is redundant here). At the start of this algorithm’s
+execution, a large clique :math:`C` is identified in :math:`G` using the
+NetworkX function ``nx.max_clique()``. The nodes of :math:`C` are then
+permanently assigned to different colors. The main backtracking
+algorithm is then executed and only halts only when a solution using
+:math:`C` colors has been identified, or when the algorithm has
+backtracked to the root of the search tree. In both cases the returned
+solution will be optimal (that is, will be using the minimum number of
+colors).
 
 The following code evaluates the performance of this algorithm on
 :math:`G(n,0.5)` graphs for a range of :math:`n`-values.
@@ -369,15 +371,107 @@ The following code evaluates the performance of this algorithm on
 The first chart above shows the chromatic numbers from a sample of
 :math:`G(n,0.5)` graphs for an increasing number of nodes :math:`n`. It
 can be seen that the chromatic number rises in a close-to-linear fashion
-in relation to :math:`n`. The second figure also demonstrates the
-disadvantages of using an exponential-time algorithm: once :math:`n` is
-increased beyond a moderately small value (approximately 50 here), run
-times become high and unpredictable. Note, however, that the specific
-:math:`n`-values that give these long run times can vary considerably
-depending on the topology of the graph. For example, planar graphs and
-scale-free graphs can often be solved very quickly for graphs with
-several hundred nodes. These sorts of results will usually need to be
-confirmed empirically.
+in relation to :math:`n`. The second figure demonstrates the
+disadvantages of using this exponential-time algorithm: once :math:`n`
+is increased beyond a moderately small value (approximately 50 here),
+run times become unpredictable and often very long. Note, however, that
+the specific :math:`n`-values that give these long run times can vary
+considerably depending on the topology of the graph. For example, planar
+graphs and scale-free graphs with several hundred nodes are often solved
+very quickly by the backtracking algorithm. These sorts of results will
+usually need to be confirmed empirically.
+
+Local Search Comparison
+-----------------------
+
+In addition to the above exact algorithm, the ``gcol`` library features
+a choice of four high-performance optimization heuristics, based on
+local search (more specifically, tabu search).
+
+- ``opt_alg=2`` makes use of the TabuCol algorithm
+- ``opt_alg=3`` makes use of the PartialCol algorithm
+- ``opt_alg=4`` uses a hybrid evolutionary algorithm (HEA) in
+  conjunction with TabuCol
+- ``opt_alg=5`` uses a hybrid evolutionary algorithm (HEA) in
+  conjunction with PartialCol
+
+These are among the best-known algorithms for graph coloring. Further
+information on these can be found in the library’s
+`documentation <https://gcol.readthedocs.io/en/latest/modules.html>`__
+and in this
+`book <https://link.springer.com/book/10.1007/978-3-030-81054-2>`__.
+Executing these heuristics with higher iteration limits usually gives
+better solutions (that is, solutions using fewer colors). To illustrate,
+the following code runs the four optimization algorithms with differing
+iteration limits on a set of twenty :math:`G(500, 0.5)` graphs.
+
+.. code:: ipython3
+
+    results = []
+    it_limits = [200, 2000, 20000, 200000, 2000000, 20000000]
+    for seed in range(20):
+        G = nx.gnp_random_graph(500, 0.5, seed)
+        for opt_alg in [2, 3, 4, 5]:
+            for it_limit in it_limits:
+                start = time.time()
+                c = gcol.node_colouring(G, opt_alg=opt_alg, it_limit=it_limit)
+                results.append([seed, opt_alg, it_limit, max(c.values()) + 1, time.time()-start])
+    
+    # Create a pandas dataframe from this list and make a pivot table
+    df = pd.DataFrame(results, columns=["seed", "opt_alg", "it_limit", "cols", "time"])
+    pivot = df.pivot_table(columns='opt_alg', aggfunc=['mean','std'], values=['cols','time'], index='it_limit')
+    
+    # Use the pivot table to make charts as before
+    mean1, SD1 = pivot[("mean","cols",2)], pivot[("std","cols",2)]
+    mean2, SD2 = pivot[("mean","cols",3)], pivot[("std","cols",3)]
+    mean3, SD3 = pivot[("mean","cols",4)], pivot[("std","cols",4)]
+    mean4, SD4 = pivot[("mean","cols",5)], pivot[("std","cols",5)]
+    plt.plot(it_limits, mean1, linestyle='-', linewidth=1.5, color="b", label='opt_alg=2')
+    plt.fill_between(it_limits, mean1-SD1, mean1+SD1, color='b', alpha=0.2)
+    plt.plot(it_limits, mean2, linestyle='--', linewidth=1.5, color="r", label='opt_alg=3')
+    plt.fill_between(it_limits, mean2-SD2, mean2+SD2, color='r', alpha=0.2)
+    plt.plot(it_limits, mean3, linestyle='-.', linewidth=1.5, color="g", label='opt_alg=4')
+    plt.fill_between(it_limits, mean3-SD3, mean3+SD3, color='k', alpha=0.2)
+    plt.plot(it_limits, mean4, linestyle=':', linewidth=1.5, color="black", label='opt_alg=5')
+    plt.fill_between(it_limits, mean4-SD4, mean4+SD4, color='g', alpha=0.2)
+    plt.xlabel("it_limit")
+    plt.ylabel("Colours")
+    plt.legend()
+    plt.xscale('log')
+    plt.show()
+    
+    mean1, SD1 = pivot[("mean","time",2)], pivot[("std","time",2)]
+    mean2, SD2 = pivot[("mean","time",3)], pivot[("std","time",3)]
+    mean3, SD3 = pivot[("mean","time",4)], pivot[("std","time",4)]
+    mean4, SD4 = pivot[("mean","time",5)], pivot[("std","time",5)]
+    plt.plot(it_limits, mean1, linestyle='-', linewidth=1.5, color="b", label='opt_alg=2')
+    plt.fill_between(it_limits, mean1-SD1, mean1+SD1, color='b', alpha=0.2)
+    plt.plot(it_limits, mean2, linestyle='--', linewidth=1.5, color="r", label='opt_alg=3')
+    plt.fill_between(it_limits, mean2-SD2, mean2+SD2, color='r', alpha=0.2)
+    plt.plot(it_limits, mean3, linestyle='-.', linewidth=1.5, color="g", label='opt_alg=4')
+    plt.fill_between(it_limits, mean3-SD3, mean3+SD3, color='k', alpha=0.2)
+    plt.plot(it_limits, mean4, linestyle=':', linewidth=1.5, color="black", label='opt_alg=5')
+    plt.fill_between(it_limits, mean4-SD4, mean4+SD4, color='g', alpha=0.2)
+    plt.xlabel("it_limit")
+    plt.ylabel("Run time (s)")
+    plt.legend()
+    plt.xscale('log')
+    plt.show()
+
+
+
+.. image:: output_15_0.png
+
+
+
+.. image:: output_15_1.png
+
+
+Note that the charts above use log scales on their horizontal axes. The
+first chart shows how using an increased iteration limit can result in
+solutions that have fewer colors. For very high limits, the hybrid
+evolutionary algorithms are clearly more favourable. The second chart
+shows how the iteration limits affect run times with these graphs.
 
 Equitable Coloring
 ------------------
@@ -430,11 +524,11 @@ else a cost of one indicates an equitable coloring.
 
 
 
-.. image:: output_15_0.png
+.. image:: output_17_0.png
 
 
 
-.. image:: output_15_1.png
+.. image:: output_17_1.png
 
 
 The first chart above demonstrates that the
@@ -518,15 +612,15 @@ iteration limit of :math:`n` for the former.
 
 
 
-.. image:: output_17_0.png
+.. image:: output_19_0.png
 
 
 
-.. image:: output_17_1.png
+.. image:: output_19_1.png
 
 
 The results above show quite clearly that the
-``gcol.max_independent_set()`` routine produces larger independent sets
-(and therefore better quality solutions) in less run time. As before,
-further improvements in solution quality (but longer run times) may also
-be found by increasing the ``it_limit`` parameter.
+``gcol.max_independent_set()`` routine produces better quality solutions
+(larger independent sets) in less run time. As before, further
+improvements in solution quality (but longer run times) may also be
+found by increasing the ``it_limit`` parameter.
