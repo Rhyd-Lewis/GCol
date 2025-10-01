@@ -38,8 +38,8 @@ plt.show()
 
 ## Textbook
 
-The algorithms and techniques used in this library are based on the 2021
-textbook by Lewis, R. M. R. (2021) [A Guide to Graph Colouring:
+The algorithms and techniques used in this library come from the 2021
+textbook by Lewis, R. (2021) [A Guide to Graph Colouring:
 Algorithms and
 Applications](https://link.springer.com/book/10.1007/978-3-030-81054-2),
 Springer Cham. (2nd Edition). In bibtex, this book is cited as:
@@ -51,6 +51,21 @@ Springer Cham. (2nd Edition). In bibtex, this book is cited as:
       isbn = {978-3-030-81056-6},
       publisher = {Springer Cham},
       edition = {2nd}
+    }
+
+A [short description](https://joss.theoj.org/papers/10.21105/joss.07871/) 
+of this library is also published in the [Journal of Open Source Software](
+https://joss.theoj.org/):
+
+    @article{10.21105/joss.07871,
+      author = {Lewis, R. and Palmer, G.},
+      title = {GCol: A High-Performance Python Library for Graph Colouring},
+      journal = {Journal of Open Source Software},
+      year = {2025},
+      volume = {10},
+      number = {108},
+      pages = {7871},
+      doi = {10.21105/joss.07871}
     }
 
 ## Support
