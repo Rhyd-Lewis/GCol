@@ -1124,23 +1124,21 @@ giving a total weight of 12.
     The following edges are causing clashes [(0, 10), (3, 19), (4, 5), (6, 7), (11, 12), (13, 14)] giving a total cost of 11
     
 
-Kempe Chains
-------------
+Kempe Chains and :math:`s`-Chains
+---------------------------------
 
 Given a node coloring of a graph, a `Kempe
-chain <https://en.wikipedia.org/wiki/Kempe_chain>`__ is a connected set
-of nodes that alternate in color. Equivalently, it is a maximal
-connected subgraph that contains nodes of at most two colors.
-Interchanging the colors of the nodes in a Kempe chain creates a new
-coloring that uses the same number of colors, or one less color.
+chain <https://en.wikipedia.org/wiki/Kempe_chain>`__ is a connected
+component in the graph induced by nodes of two different colors,
+:math:`i` and :math:`j`. Given a proper node coloring (that is, a
+coloring where no adjacent nodes have the same color), interchanging the
+colors of the nodes in a Kempe chain creates a new, proper coloring.
 
 The following example takes a coloring ``c`` of a graph ``G`` and
-determines a Kempe using node 18 (which is yellow) and color 1 (green).
-The resultant Kempe chain is therefore the connected component of yellow
-and green nodes that contains node 18. The nodes in this chain are
-stored in the set ``K``. A Kempe chain interchange is then performed,
-which swaps the colors of the nodes in ``K``, leading to the second
-solution below.
+determines a red-yellow Kempe chain from node 5 (which is red). The
+nodes in the resultant Kempe chain are put in the set ``C``. A Kempe
+chain interchange is then performed, which swaps the colors of all nodes
+in ``C``, leading to the second solution shown.
 
 .. code:: ipython3
 
@@ -1148,29 +1146,21 @@ solution below.
     c = gcol.node_k_coloring(G, 4)
     nx.draw_networkx(G, 
                      pos=nx.spring_layout(G, seed=1), 
-                     node_color=gcol.get_node_colors(G,
-                                                     c, 
-                                                     palette=gcol.colorful))
+                     node_color=gcol.get_node_colors(G, c, palette=gcol.colorful))
     plt.show()
     
-    K = gcol.kempe_chain(G, c, 18, 1)
-    print("Kempe Chain built from node-18 and color 1 =", K)
-    
-    #do a Kempe chain interchange
-    col1 = c[18]
-    col2 = 1
-    for v in K:
-        if c[v] == col1:
-            c[v] = col2
+    i, j = 0, 3  # red, yellow
+    C = gcol.kempe_chain(G, c, 5, i, j)
+    print("Above, the red-yellow Kempe chain from node 5 has nodes:", C)
+    print("Interchanging the colors in this chain gives:")
+    for u in C:
+        if c[u] == i:
+            c[u] = j
         else:
-            c[v] = col1
-    
-    print("Interchanging the colors of these nodes gives:")
+            c[u] = i
     nx.draw_networkx(G, 
                      pos=nx.spring_layout(G, seed=1), 
-                     node_color=gcol.get_node_colors(G,
-                                                     c,
-                                                     palette=gcol.colorful))
+                     node_color=gcol.get_node_colors(G, c, palette=gcol.colorful))
     plt.show()
 
 
@@ -1180,12 +1170,67 @@ solution below.
 
 .. parsed-literal::
 
-    Kempe Chain built from node-18 and color 1 = {3, 4, 10, 11, 12, 17, 18}
-    Interchanging the colors of these nodes gives:
+    Above, the red-yellow Kempe chain from node 5 has nodes: {4, 5, 14, 15}
+    Interchanging the colors in this chain gives:
     
 
 
 .. image:: output_56_2.png
+
+
+An :math:`s`-chain is a generalisation of a Kempe chain that allows more
+than two colors. Given a proper node coloring of a graph
+:math:`G=(V,E)`, an :math:`s`-chain is defined by a prescribed node
+:math:`v\in V` and sequence of unique colors
+:math:`j_0,j_1,\ldots,j_{s-1}`, where the current color of :math:`v` is
+:math:`j_0`. The result is the set of nodes that are reachable from
+:math:`v` in the digraph :math:`G'=(V',A)` in which
+
+- :math:`V' = \{u \; : \; u \in V \; \wedge \; c(u) \in \{j_0,j_1,\ldots,j_{s-1}\}\}`,
+  and
+- :math:`A = \{(u,w) \; : \; \{u,w\} \in E \; \wedge \; c(u) = j_i \; \wedge \; c(w) = j_{(i+1) \bmod s} \}`,
+
+where :math:`c(u)` gives the color of node :math:`u`. In a proper
+coloring, interchanging the colors of all nodes in an :math:`s`-chain
+via the following mapping
+
+- :math:`j_i \leftarrow j_{(i+1) \bmod s}`
+
+results in a new proper coloring.
+
+The following code shows an example of this. Here, an :math:`s`-chain is
+generated in the coloring using node 4 and colors 0, 1, and 3 (red,
+green, and yellow respectively). The described color mapping is then
+used to interchange the colors on this :math:`s`-chain, giving the
+coloring shown below.
+
+.. code:: ipython3
+
+    L = [0, 1, 3]  # red, green, yellow
+    C = gcol.s_chain(G, c, 4, L)
+    print("The s-chain for node 4 with color sequence", L, "is", C)
+    
+    color_map = {L[j]: L[(j+1) % len(L)] for j in range(len(L))}
+    for u in C:
+        c[u] = color_map[c[u]]
+    
+    print("Interchanging the colors on this chain using", color_map, "gives:")
+    nx.draw_networkx(
+        G, pos=nx.spring_layout(G, seed=1), node_color=gcol.get_node_colors(
+            G, c, palette=gcol.colorful
+        )
+    )
+    plt.show()
+
+
+.. parsed-literal::
+
+    The s-chain for node 4 with color sequence [0, 1, 3] is {17, 18, 3, 4}
+    Interchanging the colors on this chain using {0: 1, 1: 3, 3: 0} gives:
+    
+
+
+.. image:: output_58_1.png
 
 
 Independent Sets, Cliques and Coverings
@@ -1237,7 +1282,7 @@ can be determined in the Les Miserables graph using the
     
 
 
-.. image:: output_58_1.png
+.. image:: output_60_1.png
 
 
 In the above, the members of the independent set, whose size we have
@@ -1268,5 +1313,5 @@ demonstration of this is shown below.
     
 
 
-.. image:: output_60_1.png
+.. image:: output_62_1.png
 
