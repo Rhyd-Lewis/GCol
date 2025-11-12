@@ -289,17 +289,83 @@ class TestKempeChain:
             k = get_num_cols(c)
             for u in G:
                 for j in range(k):
-                    gcol.kempe_chain(G, c, u, j)
+                    if j != c[u]:
+                        gcol.kempe_chain(G, c, u, c[u], j)
 
     def test_clashing_col(self):
-        graph = nx.erdos_renyi_graph(10, 1.0)
+        graph = nx.erdos_renyi_graph(10, 0.5)
         c = {v: 0 for v in graph}
-        pytest.raises(ValueError, gcol.kempe_chain, graph, c, 0, 0)
+        pytest.raises(ValueError, gcol.kempe_chain, graph, c, 0, 0, 1)
 
-    def test_bad_s(self):
-        graph = nx.erdos_renyi_graph(10, 1.0)
+    def test_bad_v(self):
+        graph = nx.erdos_renyi_graph(10, 0.5)
         c = gcol.node_coloring(graph, strategy="random")
-        pytest.raises(ValueError, gcol.kempe_chain, graph, c, 999, 0)
+        pytest.raises(ValueError, gcol.kempe_chain, graph, c, 999, 0, 1)
+
+    def test_same_cols(self):
+        graph = nx.erdos_renyi_graph(10, 0.5)
+        c = gcol.node_coloring(graph, strategy="random")
+        pytest.raises(ValueError, gcol.kempe_chain, graph, c, 0, 1, 1)
+
+
+class TestSChain:
+    def test_basic(self):
+        G = nx.dodecahedral_graph()
+        c = gcol.node_coloring(G, strategy="dsatur")
+        L = [0, 1, 2]
+        C = gcol.s_chain(G, c, 0, L)
+        color_map = {L[j]: L[(j+1) % len(L)] for j in range(len(L))}
+        for u in C:
+            c[u] = color_map[c[u]]
+        assert verify_node_coloring(G, c)
+
+    def test_bad_first_col(self):
+        G = nx.dodecahedral_graph()
+        c = gcol.node_coloring(G, strategy="dsatur")
+        L = [1, 2, 0]
+        pytest.raises(ValueError, gcol.s_chain, G, c, 0, L)
+
+    def test_clashing_col(self):
+        G = nx.dodecahedral_graph()
+        c = {v: 0 for v in G}
+        pytest.raises(ValueError, gcol.s_chain, G, c, 0, [0, 1])
+
+    def test_bad_v(self):
+        G = nx.dodecahedral_graph()
+        c = gcol.node_coloring(G, strategy="dsatur")
+        L = [0, 1, 2]
+        pytest.raises(ValueError, gcol.s_chain, G, c, 999, L)
+
+    def test_incomplete_c(self):
+        G = nx.dodecahedral_graph()
+        c = gcol.node_coloring(G, strategy="dsatur")
+        del c[1]
+        L = [0, 1, 2]
+        pytest.raises(ValueError, gcol.s_chain, G, c, 0, L)
+
+    def test_bad_L(self):
+        G = nx.dodecahedral_graph()
+        c = gcol.node_coloring(G, strategy="dsatur")
+        L = [0, "not a valid color label", 2]
+        pytest.raises(ValueError, gcol.s_chain, G, c, 0, L)
+
+    def test_bad_L2(self):
+        G = nx.dodecahedral_graph()
+        c = gcol.node_coloring(G, strategy="dsatur")
+        L = {0, 1, 2}
+        pytest.raises(ValueError, gcol.s_chain, G, c, 0, L)
+
+    def test_bad_L3(self):
+        G = nx.dodecahedral_graph()
+        c = gcol.node_coloring(G, strategy="dsatur")
+        L = []
+        pytest.raises(ValueError, gcol.s_chain, G, c, 0, L)
+
+    def test_bad_L4(self):
+        G = nx.dodecahedral_graph()
+        c = gcol.node_coloring(G, strategy="dsatur")
+        L = [0, 1, 2, 1]
+        pytest.raises(ValueError, gcol.s_chain, G, c, 0, L)
 
 
 class TestKColourings:
