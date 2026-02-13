@@ -4,7 +4,7 @@ Case Study: Exam Timetabling
 In this chapter, we consider a practical case study concerning the use
 of graph coloring methods in the production of exam timetables at a
 university. This will help to showcase the various tools available in
-the GCol library.
+the ``gcol`` library.
 
 Background
 ----------
@@ -155,21 +155,21 @@ uses ``gcol``\ ’s precoloring routines to emulate this process.
     Exam 28 has 90 students. Assigning to timeslot 13
     Exam 132 has 89 students. Assigning to timeslot 14
     Here are the exams assigned to each timeslot
-    Timeslot 0 : [8, 9, 10, 11, 12, 13, 14, 15, 71, 133]
-    Timeslot 1 : [58, 59, 60, 62, 63, 64, 65, 66, 74, 88, 137]
-    Timeslot 2 : [84, 94, 95, 97, 98, 99, 100, 101, 134]
-    Timeslot 3 : [3, 16, 96, 130, 136]
-    Timeslot 4 : [70, 120, 121, 122, 124, 125, 126, 127, 128]
-    Timeslot 5 : [0, 1, 2, 17, 18, 19, 21, 22, 23, 24, 25, 41, 119]
-    Timeslot 6 : [47, 49, 50, 51, 52, 53, 54, 55, 56, 107, 131]
-    Timeslot 7 : [5, 85, 86, 87, 89, 90, 91, 92, 93, 123]
-    Timeslot 8 : [38, 39, 40, 42, 43, 44, 45, 46, 61, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118]
-    Timeslot 9 : [37, 102, 103, 104, 105, 138]
-    Timeslot 10 : [73]
-    Timeslot 11 : [6, 7, 72, 106]
-    Timeslot 12 : [20, 26, 27, 57, 67, 68, 69, 76, 77, 78, 79, 80, 81, 82, 83]
-    Timeslot 13 : [4, 28, 29, 30, 31, 32, 33, 34, 35, 36, 48, 135]
-    Timeslot 14 : [75, 129, 132]
+    Timeslot 0 : [9, 10, 29, 53, 71, 114, 116, 117, 118, 133]
+    Timeslot 1 : [42, 43, 75, 86, 87, 91, 120, 123, 127, 128, 129, 137]
+    Timeslot 2 : [26, 27, 84, 88, 94, 95, 99, 134]
+    Timeslot 3 : [96]
+    Timeslot 4 : [7, 61, 70, 72, 74, 85, 92, 93, 121, 122, 124, 125, 126]
+    Timeslot 5 : [2, 57, 102, 103, 138]
+    Timeslot 6 : [79, 81, 82, 83, 107, 111, 112, 113, 115, 130, 136]
+    Timeslot 7 : [5, 6, 20, 38, 39, 40, 44, 45, 46, 62, 63]
+    Timeslot 8 : [32, 33, 34, 35, 36, 37, 49, 50, 51, 97, 98, 100, 101, 108, 109, 110]
+    Timeslot 9 : [47, 104, 105, 131, 135]
+    Timeslot 10 : [41, 58, 59, 60, 64, 65, 66, 73, 89, 90]
+    Timeslot 11 : [0, 1, 8, 11, 12, 13, 14, 15, 16, 30, 31, 106]
+    Timeslot 12 : [3, 4, 52, 54, 55, 56, 67, 68, 69, 76, 77, 78, 80, 119]
+    Timeslot 13 : [17, 18, 19, 21, 22, 23, 24, 25, 28]
+    Timeslot 14 : [48, 132]
     
 
 Balancing Exams
@@ -187,8 +187,8 @@ exams in each timeslot.
 To do this, she creates a similar graph as above but specifies a weight
 for each node, which gives the size of the corresponding exam. She also
 ignores the seven empty exams. As shown, she is now able to produce a
-clash-free 13-timeslot solution in which the number of students
-per-timeslot ranges between 417 and 442.
+clash-free 13-timeslot solution in which the number of students per
+timeslot ranges between 417 and 443.
 
 .. code:: ipython3
 
@@ -248,15 +248,15 @@ Limiting Timeslots
 
 At this point, the administrator is feeling rather pleased with herself:
 she has produced a 13-timeslot solution, proved that this is the minimum
-number of timeslots needed, and found a nice balance of students
-per-timeslot. She is somewhat irritated, then, when the college manager
+number of timeslots needed, and found a nice balance of students per
+timeslot. She is somewhat irritated, then, when the college manager
 tells her that there is ample seating capacity, but only twelve
 timeslots. The latter means that the timetable will either need to have
 some clashes or some unscheduled exams.
 
 To investigate this, she first constructs a solution that seeks to
 minimize the total size of unscheduled exams. To do this, she uses the
-same node-weighted graph as above, but makes use of the
+same node-weighted graph as above but makes use of the
 ``gcol.min_cost_k_coloring()`` routine. This leads to the following
 solution:
 
@@ -330,11 +330,11 @@ has a weight equal to :math:`X_{ij}`.
     Timeslot 3 : [47, 131, 134, 135]
     Timeslot 4 : [0, 1, 26, 137, 138]
     Timeslot 5 : [94, 95, 99, 104, 105, 106, 107]
-    Timeslot 6 : [4, 8, 9, 10, 11, 12, 13, 14, 15, 19, 20, 24, 28, 48, 120, 121, 124, 125, 126, 128]
+    Timeslot 6 : [4, 8, 9, 10, 11, 12, 13, 14, 15, 20, 23, 28, 40, 48, 63, 120, 121, 124, 127, 128]
     Timeslot 7 : [29, 30, 31, 32, 33, 34, 35, 36, 75, 97, 98, 100, 101, 129]
-    Timeslot 8 : [17, 18, 21, 22, 23, 25, 41, 49, 50, 51, 52, 53, 54, 55, 56, 67, 68, 69, 122, 127]
-    Timeslot 9 : [38, 39, 40, 42, 43, 44, 45, 46, 61, 76, 77, 78, 79, 80, 81, 82, 83, 108, 109, 110]
-    Timeslot 10 : [5, 6, 7, 58, 59, 60, 62, 63, 64, 65, 66, 88, 111, 112, 113, 114, 115, 116, 117, 118]
+    Timeslot 8 : [17, 18, 19, 21, 22, 24, 25, 41, 49, 50, 51, 52, 53, 54, 55, 56, 67, 68, 69, 126]
+    Timeslot 9 : [38, 39, 42, 43, 44, 45, 46, 61, 76, 77, 78, 79, 80, 81, 82, 83, 108, 109, 110, 122]
+    Timeslot 10 : [5, 6, 7, 58, 59, 60, 62, 64, 65, 66, 88, 111, 112, 113, 114, 115, 116, 117, 118, 125]
     Timeslot 11 : [72, 73, 74, 85, 86, 87, 89, 90, 91, 92, 93, 123]
     Here are the clashes in this timetable:
     Exams 26 and 138 assigned to timeslot 4 but have 1 common student(s)
