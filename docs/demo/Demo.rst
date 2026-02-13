@@ -14,7 +14,7 @@ Let us first review some basic terminology in graph theory.
 - A
   `graph <https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)>`__
   is an object comprising a set of nodes that are linked by edges. They
-  be can visualized in diagram form, as shown below. Graphs are
+  can be visualized in diagram form, as shown below. Graphs are
   sometimes known as *networks*; nodes are sometimes called *vertices*.
 - A `node coloring <https://en.wikipedia.org/wiki/Graph_coloring>`__ of
   a graph is an assignment of colors to nodes so that all pairs of
@@ -26,12 +26,12 @@ Let us first review some basic terminology in graph theory.
   a graph is an assignment of colors to edges so that all pairs of
   adjacent edges have different colors (a pair of edges is considered
   adjacent if and only if they share a common endpoint). The aim is to
-  use as few colors as possible. The smallest number of colors needed
-  for coloring the edges of a graph :math:`G` is known as the graph’s
-  chromatic index, denoted by :math:`\chi'(G)`. According to Vizing’s
-  theorem, :math:`\chi'(G)` is either :math:`\Delta(G)` or
-  :math:`\Delta(G) + 1`, where :math:`\Delta(G)` is the maximum degree
-  in :math:`G`. However, identifying :math:`\chi'(G)` is still NP-hard.
+  use as few colors as possible. The smallest number of colors needed to
+  color the edges of a graph :math:`G` is known as the graph’s chromatic
+  index, denoted by :math:`\chi'(G)`. According to Vizing’s theorem,
+  :math:`\chi'(G)` is either :math:`\Delta(G)` or :math:`\Delta(G) + 1`,
+  where :math:`\Delta(G)` is the maximum degree in :math:`G`. However,
+  identifying :math:`\chi'(G)` is still NP-hard.
 - A face coloring of a planar graph is an assignment of colors to one of
   its `planar embeddings <https://en.wikipedia.org/wiki/Planar_graph>`__
   so that all pairs of adjacent faces have different colors. The aim is
@@ -42,14 +42,26 @@ Let us first review some basic terminology in graph theory.
   The smallest number of colors needed to color the faces of a planar
   embedding is known as its face chromatic number. Due to the `Four
   Color Theorem <https://en.wikipedia.org/wiki/Four_color_theorem>`__,
-  the face chromatic number is always less than or equal to four. Note
-  that non-planar graphs do not have embeddings.
+  the face chromatic number is always less than or equal to four. The
+  problem of determining a face four-coloring of a graph is polynomially
+  solvable; however, determining whether or not the face chromatic
+  number of a graph is three is NP-complete. Note that face colorings
+  only exist in graphs that have a planar embedding. A graph has a
+  planar embedding if and only if it is planar.
 - In the `node
   precoloring <https://en.wikipedia.org/wiki/Precoloring_extension>`__
   problem, some of the nodes have already been assigned colors. The aim
   is to allocate colors to the remaining nodes so that we get a full
   coloring that uses a minimum number of colors. The same concepts apply
-  for the edge precoloring problem and face precoloring problem.
+  for the edge precoloring problem and face precoloring problem. The
+  problem is NP-hard.
+- In the `list coloring <https://en.wikipedia.org/wiki/List_coloring>`__
+  problem, each node of the graph is associated with a list of *allowed
+  colors*. The aim is to allocate colors to all nodes so that adjacent
+  nodes have different colors, and each node has a color belonging to
+  its list of allowed colors. Again, the same concepts apply for the
+  edge list coloring problem and face list coloring problem. The problem
+  is also NP-hard.
 
 Getting Started
 ---------------
@@ -64,6 +76,9 @@ our graph coloring routines.
     import networkx as nx              # python library for graph theory
     import matplotlib.pyplot as plt    # python library for visualization  
     import gcol                        # the gcol library
+
+Node Coloring and Visualization
+-------------------------------
 
 Having imported the relevant libraries, the following code generates a
 `dodecahedron
@@ -82,28 +97,27 @@ it to the screen.
 
 
 Now that we have defined a graph, we can easily color it using
-``gcol``\ ’s routines. The example below shows how to use the
-``gcol.node_coloring()`` routine to color the nodes of ``G``. Some
+``gcol``\ ’s routines. The example below shows how to do this. Some
 information about this coloring is then written to the screen, along
 with a visualization. The colors of the nodes are held in the dictionary
 ``c``, using the integers ``0,1,2,...`` as color labels. We can also
 write the coloring as a partition, which groups all nodes of the same
-color. Note that pairs of adjacent nodes are always painted with
+color. Note that pairs of adjacent nodes are always assigned to
 different colors, as required.
 
 .. code:: ipython3
 
     G = nx.dodecahedral_graph()
     c = gcol.node_coloring(G)
-    
     print("Here is a node coloring of the above graph:", c)
     print("The number of colors in this solution is:", max(c.values()) + 1)
     print("Here is the same solution, expressed as a partition of the nodes:", gcol.partition(c))
-    
-    print("Here is a picture of this coloring:")
-    nx.draw_networkx(G, 
-                     pos=nx.spring_layout(G, seed=1), 
-                     node_color=gcol.get_node_colors(G, c))
+    print("Here is a picture of the coloring:")
+    nx.draw_networkx(
+        G, 
+        pos=nx.spring_layout(G, seed=1), 
+        node_color=gcol.get_node_colors(G, c)
+    )
     plt.show()
 
 
@@ -112,7 +126,7 @@ different colors, as required.
     Here is a node coloring of the above graph: {0: 0, 1: 1, 19: 1, 10: 1, 2: 0, 3: 2, 8: 0, 9: 2, 18: 0, 11: 2, 6: 1, 7: 2, 4: 0, 5: 2, 13: 0, 12: 1, 14: 1, 15: 0, 16: 2, 17: 1}
     The number of colors in this solution is: 3
     Here is the same solution, expressed as a partition of the nodes: [[0, 2, 4, 8, 13, 15, 18], [1, 6, 10, 12, 14, 17, 19], [3, 5, 7, 9, 11, 16]]
-    Here is a picture of this coloring:
+    Here is a picture of the coloring:
     
 
 
@@ -136,21 +150,22 @@ chromatic index, and face chromatic number of this graph.
     The face chromatic number of this graph is: 4
     
 
-Note that we are allowed to use the ``gcol.face_chromatic_number()``
-method here, because the above graph can be represented as a `planar
+Above, we are allowed to use the ``gcol.face_chromatic_number()``
+method, because the graph can be represented as a `planar
 embedding <https://en.wikipedia.org/wiki/Planar_graph>`__. (If the graph
 does not have a planar embedding, an error will be raised.) Here is an
-example planar embedding of the dodecahedral graph seen above. This is
-merely a positioning of the nodes so that no edges cross in the
-resultant visualization.
+example planar embedding. This is merely a positioning of the nodes so
+that no edges cross in the resultant visualization.
 
 .. code:: ipython3
 
     G = nx.dodecahedral_graph()
-    nx.draw_networkx(G, 
-                     pos=nx.planar_layout(G),
-                     node_size=100, 
-                     font_size=8)
+    nx.draw_networkx(
+        G, 
+        pos=nx.planar_layout(G),
+        node_size=100, 
+        font_size=8
+    )
     plt.show()
 
 
@@ -158,257 +173,38 @@ resultant visualization.
 .. image:: output_10_0.png
 
 
-Node Coloring and Visualization
--------------------------------
+Observe that, although it looks different, this graph is equivalent to
+the graph shown in the previous figure.
 
-The previous example showed a node 3-coloring of the 20-node
-dodecahedron graph. The positions of the nodes in the visualization have
-been determined using the ``nx.spring_layout()`` routine from
-``networkx``; however, we can also choose to position the nodes based on
-their colors.
-
-The first example below uses the routine ``gcol.coloring_layout()`` in
-combination with ``nx.draw_networkx()`` to position the nodes in a ring
-so that those of the same color are next to each other. Similarly, the
-second example uses the routine ``gcol.multipartite_layout()`` to put
-nodes of the same color into columns.
-
-Note that, despite looking superficially different, the solutions shown
-are the same as the previous example.
+We now show a node coloring of a slightly larger example, the so-called
+`Hoffman-Singleton
+graph <https://en.wikipedia.org/wiki/Hoffman%E2%80%93Singleton_graph>`__.
+This has 50 nodes, 175 edges and, as shown, a chromatic number of four.
 
 .. code:: ipython3
 
-    G = nx.dodecahedral_graph()
-    c = gcol.node_coloring(G)
-    nx.draw_networkx(G, 
-                     pos=gcol.coloring_layout(G, c), 
-                     node_color=gcol.get_node_colors(G, c))
+    G = nx.hoffman_singleton_graph()
+    c = gcol.node_coloring(G, opt_alg=1)
+    print("The number of colors in this solution is:", max(c.values()) + 1)
+    nx.draw_networkx(
+        G, 
+        pos=nx.spring_layout(G, seed=1), 
+        node_color=gcol.get_node_colors(G, c)
+    )
     plt.show()
+
+
+.. parsed-literal::
+
+    The number of colors in this solution is: 4
     
-    nx.draw_networkx(G, 
-                     pos=gcol.multipartite_layout(G, c), 
-                     node_color=gcol.get_node_colors(G, c))
-    plt.show()
-
-
-
-.. image:: output_12_0.png
-
 
 
 .. image:: output_12_1.png
 
 
-We will now do something similar with a larger graph. In the following,
-the nodes of the graph ``G`` represent the different characters in the
-play Les Miserables. Edges between nodes then indicate pairs of
-characters that appear in the same scenes together.
-
-.. code:: ipython3
-
-    G = nx.les_miserables_graph()
-    c = gcol.node_coloring(G, opt_alg=1)
-    print("Number of colors =", max(c.values()) + 1)
-    
-    nx.draw_networkx(G, 
-                     pos=nx.spring_layout(G, seed=1), 
-                     node_color=gcol.get_node_colors(G, c), 
-                     node_size=20, 
-                     font_size=8, 
-                     width=0.25)
-    plt.show()
-
-
-.. parsed-literal::
-
-    Number of colors = 10
-    
-
-
-.. image:: output_14_1.png
-
-
-In the above, we have used the option ``opt_alg=1`` meaning that an
-exact algorithm has been used to produce the optimal solution. The
-output tells us that the nodes of ``G`` can be colored using a minimum
-of ten colors. In this case, it means that it is possible to partition
-the characters of Les Miserables into ten groups (but no fewer) so that
-the characters in each group never appear together.
-
-The visualization of the above graph appears rather cluttered, however,
-so we might choose to position the nodes according to color and also
-remove the node’s labels. This can be done using the following commands,
-which show the same solution.
-
-.. code:: ipython3
-
-    nx.draw_networkx(G, 
-                     pos=gcol.coloring_layout(G, c), 
-                     node_color=gcol.get_node_colors(G, c), 
-                     node_size=20, 
-                     with_labels=False, 
-                     width=0.25)
-    plt.show()
-    
-    nx.draw_networkx(G, 
-                     pos=gcol.multipartite_layout(G, c), 
-                     node_color=gcol.get_node_colors(G, c), 
-                     node_size=20, 
-                     with_labels=False, 
-                     width=0.25)
-    plt.show()
-
-
-
-.. image:: output_16_0.png
-
-
-
-.. image:: output_16_1.png
-
-
-Color Palettes
---------------
-
-So far, the colors used to display the above solutions have been taken
-from the in-built default color palette ``gcol.tableau``, which maps the
-integers :math:`0,1,2,\ldots` to RGB triplets. This palette is a
-collection of 21 colors, provided by Tableau, that are intended to be
-aesthetically pleasing and easy on the eye. However, other options are
-available: ``gcol.colorful`` gives a collection of 57 bright colors that
-are chosen to contrast each other as much as possible;
-``gcol.colorblind`` gives eleven colors (also provided by Tableau) that
-are intended to be easily distinguishable by those with colorblindness.
-A demonstration of these palettes is now given.
-
-.. code:: ipython3
-
-    G = nx.dodecahedral_graph()
-    c = gcol.node_coloring(G)
-    nx.draw_networkx(G, 
-                     pos=nx.spring_layout(G, seed=1), 
-                     node_color=gcol.get_node_colors(G, c, palette=gcol.tableau))
-    plt.show()
-    
-    nx.draw_networkx(G, 
-                     pos=nx.spring_layout(G, seed=1), 
-                     node_color=gcol.get_node_colors(G, c, palette=gcol.colorful))
-    plt.show()
-    
-    nx.draw_networkx(G, 
-                     pos=nx.spring_layout(G, seed=1), 
-                     node_color=gcol.get_node_colors(G, c, palette=gcol.colorblind))
-    plt.show()
-
-
-
-.. image:: output_18_0.png
-
-
-
-.. image:: output_18_1.png
-
-
-
-.. image:: output_18_2.png
-
-
-The following shows the colors that are available in each palette. These
-are identified by the integers, starting from 0.
-
-.. code:: ipython3
-
-    G = nx.complete_graph(20)
-    c = gcol.node_coloring(G)
-    nx.draw_networkx(G, 
-                     node_color=gcol.get_node_colors(G, c, gcol.tableau),
-                     pos=gcol.coloring_layout(G, c),
-                     node_size=600,
-                     width=0.00)
-    print("The (default) gcol.tableau palette (20 colors):")
-    plt.show()
-        
-    G = nx.complete_graph(56)
-    c = gcol.node_coloring(G)
-    nx.draw_networkx(G, 
-                     node_color=gcol.get_node_colors(G, c, gcol.colorful),
-                     pos=gcol.coloring_layout(G, c),
-                     node_size=150,
-                     width=0.00)
-    print("The gcol.colorful palette (56 colors):")
-    plt.show()
-        
-    G = nx.complete_graph(10)
-    c = gcol.node_coloring(G)
-    nx.draw_networkx(G, 
-                     node_color=gcol.get_node_colors(G, c, gcol.colorblind),
-                     pos=gcol.coloring_layout(G, c),
-                     node_size=800,
-                     width=0.00)
-    print("The gcol.colorblind palette (10 colors):")
-    plt.show()
-
-
-.. parsed-literal::
-
-    The (default) gcol.tableau palette (20 colors):
-    
-
-
-.. image:: output_20_1.png
-
-
-.. parsed-literal::
-
-    The gcol.colorful palette (56 colors):
-    
-
-
-.. image:: output_20_3.png
-
-
-.. parsed-literal::
-
-    The gcol.colorblind palette (10 colors):
-    
-
-
-.. image:: output_20_5.png
-
-
-User-defined palettes can also be created. The following demonstrates
-how to create a greyscale palette based on the number of colors
-:math:`k` in the current solution ``c``.
-
-.. code:: ipython3
-
-    def grayscale(k):
-        minVal, maxVal, palette = 0.25, 0.85, {}
-        step = (maxVal - minVal) / (k - 1)
-        for i in range(k):
-            x = minVal + step * i
-            palette[i] = (x, x, x)
-        palette[-1] = (1.0, 1.0, 1.0)
-        return palette
-    
-    G = nx.dodecahedral_graph()
-    c = gcol.node_coloring(G)
-    k = max(c.values()) + 1
-    print("Custom greyscale palette based on three colors:") 
-    nx.draw_networkx(G, 
-                     pos=nx.spring_layout(G, seed=1), 
-                     node_color=gcol.get_node_colors(G, c, palette=grayscale(k)))
-    plt.show()
-
-
-.. parsed-literal::
-
-    Custom greyscale palette based on three colors:
-    
-
-
-.. image:: output_22_1.png
-
+To some, this visualization might seem quite cluttered; however, steps
+can be taken to remedy this, as we will see in the next chapter.
 
 Edge Coloring and Visualization
 -------------------------------
@@ -417,8 +213,8 @@ The following example shows how we can use the ``gcol`` library to color
 the edges of a graph. As we have discussed, in edge coloring the maximum
 degree :math:`\Delta(G)` in the graph :math:`G` gives a lower bound on
 the chromatic index :math:`\chi'(G)`. Since :math:`\Delta(G)=3` and an
-edge-3-coloring has been determined, we can conclude that this is an
-optimal solution.
+edge-3-coloring has been determined, we can conclude that the solution
+produced is optimal.
 
 .. code:: ipython3
 
@@ -428,11 +224,12 @@ optimal solution.
     print("Here is the same solution, expressed as a partition of the edges:", gcol.partition(c))
     print("Maximum degree   =", max(G.degree(v) for v in G))
     print("Number of colors =", max(c.values()) + 1)
-    
-    nx.draw_networkx(G, 
-                     pos=nx.spring_layout(G, seed=1), 
-                     edge_color=gcol.get_edge_colors(G, c), 
-                     width=5)
+    nx.draw_networkx(
+        G, 
+        pos=nx.spring_layout(G, seed=1), 
+        edge_color=gcol.get_edge_colors(G, c), 
+        width=5
+    )
 
 
 .. parsed-literal::
@@ -444,7 +241,7 @@ optimal solution.
     
 
 
-.. image:: output_24_1.png
+.. image:: output_14_1.png
 
 
 Here is another example using a `complete
@@ -458,9 +255,11 @@ scheduling <https://rhydlewis.eu/papers/sportsPaper.pdf>`__.
     c = gcol.edge_coloring(G, opt_alg=1)
     print("Maximum degree   =", max(G.degree(v) for v in G))
     print("Number of colors =", max(c.values()) + 1)
-    nx.draw_networkx(G, 
-                     pos=nx.circular_layout(G), 
-                     edge_color=gcol.get_edge_colors(G, c))
+    nx.draw_networkx(
+        G, 
+        pos=nx.circular_layout(G), 
+        edge_color=gcol.get_edge_colors(G, c)
+    )
 
 
 .. parsed-literal::
@@ -470,7 +269,7 @@ scheduling <https://rhydlewis.eu/papers/sportsPaper.pdf>`__.
     
 
 
-.. image:: output_26_1.png
+.. image:: output_16_1.png
 
 
 Face Coloring and Visualization
@@ -478,10 +277,10 @@ Face Coloring and Visualization
 
 As noted earlier, a face coloring is an assignment of colors to each
 face in a `planar
-embedding <https://en.wikipedia.org/wiki/Planar_graph>`__ so all pairs
-of adjacent faces have different colors. Since non-planar graphs do not
-have planar embeddings, the following routines are only suitable for
-planar graphs. Planar graphs featuring
+embedding <https://en.wikipedia.org/wiki/Planar_graph>`__ so that all
+pairs of adjacent faces have different colors. Since non-planar graphs
+do not have planar embeddings, the following routines are only suitable
+for planar graphs. Planar graphs featuring
 `bridges <https://en.wikipedia.org/wiki/Bridge_(graph_theory)>`__ are
 also disallowed, as these give faces that are adjacent to themselves. In
 the ``gcol`` library, face colorings of an embedding are determined by
@@ -489,10 +288,10 @@ node-coloring its `dual
 graph <https://en.wikipedia.org/wiki/Dual_graph>`__.
 
 Below, we generate a two-dimensional `grid
-graph <https://en.wikipedia.org/wiki/Lattice_graph>`__ ``G``. In
-``pos``, we also specify suitable :math:`(x,y)` coordinates for each
-node. These positions define the planar embedding. After determining a
-face coloring ``c``, it is drawn to the screen using the
+graph <https://en.wikipedia.org/wiki/Lattice_graph>`__ ``G``. In the
+dictionary ``pos``, we also specify suitable :math:`(x,y)` coordinates
+for each node. These positions define the planar embedding. After
+determining a face coloring ``c``, it is drawn to the screen using the
 ``gcol.draw_face_coloring()`` method. By default, the external face is
 not colored in the first visualization; however, we can change this by
 setting ``external=True``, as shown in the second figure. The second
@@ -513,34 +312,41 @@ shape.
     c = gcol.face_coloring(G, pos)
     
     gcol.draw_face_coloring(c, pos)
-    plt.show()
     
-    gcol.draw_face_coloring(c, pos, external= True)
-    nx.draw_networkx(G,
-                     pos=pos,
-                     node_color='k',
-                     node_size=20,
-                     with_labels=False)
+    gcol.draw_face_coloring(c, pos, external=True)
+    nx.draw_networkx(
+        G,
+        pos=pos,
+        node_color='k',
+        node_size=10,
+        with_labels=False
+    )
     plt.show()
     
     pos = nx.planar_layout(G)
     c = gcol.face_coloring(G, pos)
     gcol.draw_face_coloring(c, pos, external=True)
+    nx.draw_networkx(
+        G,
+        pos=pos,
+        node_color='k',
+        node_size=10,
+        with_labels=False
+    )
     plt.show()
-    
     print("Face chromatic number =", gcol.face_chromatic_number(G))
 
 
 
-.. image:: output_28_0.png
+.. image:: output_18_0.png
 
 
 
-.. image:: output_28_1.png
+.. image:: output_18_1.png
 
 
 
-.. image:: output_28_2.png
+.. image:: output_18_2.png
 
 
 .. parsed-literal::
@@ -569,16 +375,18 @@ Here, each node is assigned the attribute ``pos``, so the command
     pos = nx.get_node_attributes(G, "pos")
     c = gcol.face_coloring(G, pos, opt_alg=1)
     gcol.draw_face_coloring(c, pos, external=True)
-    nx.draw_networkx(G,
-                     pos=pos,
-                     node_color='k',
-                     node_size=5,
-                     with_labels=False)
+    nx.draw_networkx(
+        G,
+        pos=pos,
+        node_color='k',
+        node_size=5,
+        with_labels=False
+    )
     plt.show()
 
 
 
-.. image:: output_30_0.png
+.. image:: output_20_0.png
 
 
 Precoloring
@@ -596,70 +404,75 @@ corresponding full coloring.
 
     G = nx.dodecahedral_graph()
     P = {0:0, 1:1, 8:2, 9:3, 10:1}
-    nx.draw_networkx(G, 
-                     pos=nx.spring_layout(G, seed=1), 
-                     node_color=gcol.get_node_colors(G, P))
+    nx.draw_networkx(
+        G, 
+        pos=nx.spring_layout(G, seed=1), 
+        node_color=gcol.get_node_colors(G, P)
+    )
     plt.show()
     
     c = gcol.node_precoloring(G, P, strategy="random", opt_alg=2, it_limit=100)
-    nx.draw_networkx(G, 
-                     pos=nx.spring_layout(G, seed=1), 
-                     node_color=gcol.get_node_colors(G, c))
+    nx.draw_networkx(
+        G, 
+        pos=nx.spring_layout(G, seed=1), 
+        node_color=gcol.get_node_colors(G, c)
+    )
     plt.show()
 
 
 
-.. image:: output_32_0.png
+.. image:: output_22_0.png
 
 
 
-.. image:: output_32_1.png
+.. image:: output_22_1.png
 
 
 A similar process can also be followed for edge precoloring, which the
-following example demonstrates. Note that, when defining edges in the
-dictionary ``P``, the endpoints must be given in the order used by
-NetworkX. For example, in the example below, using ``(1,0):0`` in ``P``
-instead of ``(0,1):0`` will raise a ``ValueError``.
+following example demonstrates.
 
 .. code:: ipython3
 
     G = nx.dodecahedral_graph()
     P = {(0, 1): 0, (7, 8): 1, (13, 14): 1, (11, 12): 2, (15, 16): 3}
-    nx.draw_networkx(G, 
-                     pos=nx.spring_layout(G, seed=1), 
-                     edge_color=gcol.get_edge_colors(G, P), 
-                     width=5)
+    nx.draw_networkx(
+        G, 
+        pos=nx.spring_layout(G, seed=1), 
+        edge_color=gcol.get_edge_colors(G, P), 
+        width=5
+    )
     plt.show()
     
     c = gcol.edge_precoloring(G, P, strategy="random", opt_alg=2, it_limit=100)
-    nx.draw_networkx(G, 
-                     pos=nx.spring_layout(G, seed=1), 
-                     edge_color=gcol.get_edge_colors(G, c), 
-                     width=5)
+    nx.draw_networkx(
+        G, 
+        pos=nx.spring_layout(G, seed=1), 
+        edge_color=gcol.get_edge_colors(G, c), 
+        width=5
+    )
     plt.show()
 
 
 
-.. image:: output_34_0.png
+.. image:: output_24_0.png
 
 
 
-.. image:: output_34_1.png
+.. image:: output_24_1.png
 
 
 We can also precolor the faces of a planar embedding. To do this we
 follow the same process as the previous examples, though precolored
-faces are now identified by using one or more of their surrounding arcs.
-As the example below demonstrates, each internal face in a planar
-embedding is characterized by the series of arcs that surround it *in a
+faces are now identified by their sequences of surrounding nodes. As the
+example below demonstrates, each internal face in a planar embedding is
+characterized by the series of nodes that surround it *in a
 counterclockwise direction*. Similarly, the one external face is
-identified by the series of arcs traveling in *a clockwise direction*.
-Including one of these surrounding arcs in the precoloring is
-sufficient.
+identified by the series of nodes traveling in *a clockwise direction*.
 
 The following example creates a 20-node planar graph. It then precolors
-two internal faces with color 0, and the external face with color 1.
+the external face ``(0, 2, 3, 1)`` with color 1, the internal face
+``(6, 9, 7)`` with color 2, and the internal face ``(16, 17, 19)`` with
+color 3.
 
 .. code:: ipython3
 
@@ -683,22 +496,15 @@ two internal faces with color 0, and the external face with color 1.
     
     G = make_planar_graph(20, seed=1)
     pos = nx.get_node_attributes(G, "pos")
-    
-    P = {(14,16): 0, (9,3): 0, (2,3): 1}
+    P = {(0, 2, 3, 1): 1, (6, 9, 7): 2, (16, 17, 19): 3}
     c = gcol.face_precoloring(G, pos, P, opt_alg=1)
-    print(c)
     gcol.draw_face_coloring(c, pos, True)
     nx.draw_networkx(G, pos=pos, node_size=180, with_labels=True)
     plt.show()
 
 
-.. parsed-literal::
 
-    {(1, 0, 2, 3): 1, (8, 0, 10): 1, (17, 0, 8): 0, (14, 0, 17): 2, (2, 0, 14): 0, (10, 0, 1): 0, (15, 1, 3): 0, (13, 1, 15): 2, (10, 1, 13): 1, (4, 2, 14): 1, (12, 2, 4): 2, (3, 2, 12): 0, (7, 3, 12): 1, (9, 3, 7): 0, (15, 3, 9): 1, (16, 4, 14): 0, (11, 4, 16): 1, (12, 4, 11): 0, (9, 5, 15): 0, (6, 5, 9): 2, (19, 5, 6): 0, (10, 5, 19): 1, (13, 5, 10): 0, (15, 5, 13): 1, (11, 6, 7): 0, (18, 6, 11): 1, (16, 6, 18): 0, (19, 6, 16): 1, (7, 6, 9): 1, (11, 7, 12): 2, (17, 8, 19): 1, (19, 8, 10): 0, (18, 11, 16): 2, (16, 14, 17): 1, (19, 16, 17): 0}
-    
-
-
-.. image:: output_36_1.png
+.. image:: output_26_0.png
 
 
 Solving Sudoku
@@ -708,11 +514,11 @@ Node precoloring can also be used to solve `sudoku
 puzzles <https://en.wikipedia.org/wiki/Sudoku>`__. The objective in
 sudoku is to fill a :math:`d^2 \times d^2` grid with digits so that each
 column, each row, and each of the :math:`d \times d` boxes contain all
-of the digits from :math:`0` to :math:`d^2-1`. The puzzle comes with
-some of the cells filled. The player then needs to fill the remaining
-cells while satisfying the above constraints. Here is an example puzzle
-using :math:`d=3` and the digits :math:`0,1,\ldots,8`. Blank cells are
-marked by dots.
+digits from :math:`0` to :math:`d^2-1`. The puzzle comes with some of
+the cells filled. The player then needs to fill the remaining cells
+while satisfying the above constraints. Here is an example puzzle using
+:math:`d=3` and the digits :math:`0,1,\ldots,8`. Blank cells are marked
+by dots.
 
 .. math::
 
@@ -752,16 +558,20 @@ following code shows how to solve the above puzzle.
     G = nx.sudoku_graph(3)
     P = {4:5, 11:8, 13:1, 25:1, 26:2, 28:7, 32:2, 39:6, 46:4, 50:0, 52:3, 55:5, 67:2, 69:6, 79:2}
     print("Here is the sudoku puzzle from above")
-    nx.draw_networkx(G, 
-                     pos=sudoku_layout(G, 3), 
-                     node_color=gcol.get_node_colors(G, P))
+    nx.draw_networkx(
+        G, 
+        pos=sudoku_layout(G, 3), 
+        node_color=gcol.get_node_colors(G, P)
+    )
     plt.show()
     
     c = gcol.node_precoloring(G, P, opt_alg=1)
     print("Here is its solution. Number of colors =", max(c.values()) + 1)
-    nx.draw_networkx(G, 
-                     pos=sudoku_layout(G, 3), 
-                     node_color=gcol.get_node_colors(G, c))
+    nx.draw_networkx(
+        G, 
+        pos=sudoku_layout(G, 3), 
+        node_color=gcol.get_node_colors(G, c)
+    )
     plt.show()
 
 
@@ -771,7 +581,7 @@ following code shows how to solve the above puzzle.
     
 
 
-.. image:: output_38_1.png
+.. image:: output_28_1.png
 
 
 .. parsed-literal::
@@ -780,8 +590,52 @@ following code shows how to solve the above puzzle.
     
 
 
-.. image:: output_38_3.png
+.. image:: output_28_3.png
 
+
+List Coloring
+-------------
+
+In the node `list
+coloring <https://en.wikipedia.org/wiki/List_coloring>`__ problem, each
+node has a list of *allowed colors*. The aim is to color each node with
+one of its allowed colors while ensuring that adjacent nodes always have
+different colors.
+
+In the following example, the dictionary ``A`` defines the allowed
+colors for each node in the graph ``G``. (Node ``0``, for example, can
+only be assigned to colors ``1`` or ``2``.). This particular problem
+instance is solvable, as the output demonstrates.
+
+.. code:: ipython3
+
+    import random
+    random.seed(1)
+    G = nx.dodecahedral_graph()
+    A = {v: random.sample([0, 1, 2 ,3], 2) for v in G}
+    c = gcol.node_list_colouring(G, allowed_cols=A, opt_alg=1)
+    print("Allowed colors A =", A)
+    print("Solution c=", c)
+    nx.draw_networkx(
+        G, 
+        pos=nx.spring_layout(G, seed=1), 
+        node_color=gcol.get_node_colors(G, c)
+    )
+
+
+.. parsed-literal::
+
+    Allowed colors A = {0: [1, 2], 1: [0, 1], 2: [0, 1], 3: [3, 1], 4: [3, 0], 5: [0, 1], 6: [0, 1], 7: [3, 2], 8: [0, 2], 9: [3, 1], 10: [1, 2], 11: [0, 1], 12: [0, 3], 13: [0, 2], 14: [0, 1], 15: [1, 3], 16: [0, 2], 17: [1, 3], 18: [3, 2], 19: [1, 3]}
+    Solution c= {1: 0, 2: 1, 8: 2, 3: 3, 6: 0, 7: 3, 4: 0, 19: 1, 5: 1, 15: 3, 0: 2, 10: 1, 11: 0, 12: 3, 9: 3, 14: 0, 13: 2, 17: 1, 16: 2, 18: 2}
+    
+
+
+.. image:: output_30_1.png
+
+
+List coloring can also be performed on the edges and faces of a graph.
+If the defined problem instance cannot be solved (that is, the lists of
+allowed colors are too restrictive), then a ``ValueError`` is raised.
 
 :math:`k`-Coloring
 ------------------
@@ -795,8 +649,8 @@ problem can be formulated, including equitable coloring and weighted
 graph coloring, using both weighted and unweighted graphs. Examples are
 considered below.
 
-In this first example, we make use of ``gcol.node_k_coloring()`` method
-to produce node :math:`k`-colorings of a
+In the following example, we make use of ``gcol.node_k_coloring()``
+method to produce node :math:`k`-colorings of a
 `random <https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model>`__
 :math:`G(n,p)` graph. These graphs are generated by taking :math:`n`
 nodes and then adding an edge between each pair of nodes at random with
@@ -811,12 +665,14 @@ solutions are not possible and a ``ValueError`` will be returned.
     for k in [6, 5, 4]:
         c = gcol.node_k_coloring(G, k, opt_alg=2, it_limit=1000)
         print("Here is a node", k, "-coloring of G:")
-        nx.draw_networkx(G, 
-                         pos=nx.arf_layout(G), 
-                         node_color=gcol.get_node_colors(G, c), 
-                         node_size=100, 
-                         font_size=8, 
-                         width=0.25)
+        nx.draw_networkx(
+            G, 
+            pos=nx.arf_layout(G), 
+            node_color=gcol.get_node_colors(G, c), 
+            node_size=100, 
+            font_size=8, 
+            width=0.25
+        )
         plt.show()
 
 
@@ -826,7 +682,7 @@ solutions are not possible and a ``ValueError`` will be returned.
     
 
 
-.. image:: output_40_1.png
+.. image:: output_32_1.png
 
 
 .. parsed-literal::
@@ -835,7 +691,7 @@ solutions are not possible and a ``ValueError`` will be returned.
     
 
 
-.. image:: output_40_3.png
+.. image:: output_32_3.png
 
 
 .. parsed-literal::
@@ -844,7 +700,7 @@ solutions are not possible and a ``ValueError`` will be returned.
     
 
 
-.. image:: output_40_5.png
+.. image:: output_32_5.png
 
 
 The following shows a similar process for edge :math:`k`-coloring.
@@ -856,10 +712,12 @@ The following shows a similar process for edge :math:`k`-coloring.
     for k in [5, 4, 3]:
         c = gcol.edge_k_coloring(G, k)
         print("Here is an edge", k, "-coloring of G:")
-        nx.draw_networkx(G, 
-                         pos=nx.spring_layout(G, seed=1), 
-                         edge_color=gcol.get_edge_colors(G, c), 
-                         width=5)
+        nx.draw_networkx(
+            G, 
+            pos=nx.spring_layout(G, seed=1), 
+            edge_color=gcol.get_edge_colors(G, c), 
+            width=5
+        )
         plt.show()
 
 
@@ -869,7 +727,7 @@ The following shows a similar process for edge :math:`k`-coloring.
     
 
 
-.. image:: output_42_1.png
+.. image:: output_34_1.png
 
 
 .. parsed-literal::
@@ -878,7 +736,7 @@ The following shows a similar process for edge :math:`k`-coloring.
     
 
 
-.. image:: output_42_3.png
+.. image:: output_34_3.png
 
 
 .. parsed-literal::
@@ -887,7 +745,7 @@ The following shows a similar process for edge :math:`k`-coloring.
     
 
 
-.. image:: output_42_5.png
+.. image:: output_34_5.png
 
 
 Equitable :math:`k`-coloring
@@ -912,12 +770,14 @@ for a random :math:`G(100,0.05)` graph.
     P = gcol.partition(c)
     print("Largest color class has", max(len(j) for j in P), "nodes")
     print("Smallest color class has", min(len(j) for j in P), "nodes")
-    nx.draw_networkx(G, 
-                     pos=nx.arf_layout(G), 
-                     node_color=gcol.get_node_colors(G, c), 
-                     node_size=100, 
-                     font_size=8, 
-                     width=0.25)
+    nx.draw_networkx(
+        G, 
+        pos=nx.arf_layout(G), 
+        node_color=gcol.get_node_colors(G, c), 
+        node_size=100, 
+        font_size=8, 
+        width=0.25
+    )
     plt.show()
 
 
@@ -929,7 +789,7 @@ for a random :math:`G(100,0.05)` graph.
     
 
 
-.. image:: output_44_1.png
+.. image:: output_36_1.png
 
 
 The following example also determines an equitable node
@@ -957,15 +817,16 @@ node, and the text gives the total weight of each color class.
         Wj = sorted([G.nodes[v]["weight"] for v in P[j]])
         print("Weight of color class", j, "=", sum(Wj), Wj)
     labels = {u: G.nodes[u]['weight'] for u in G.nodes}
-    nx.draw_networkx(G,
-                     pos=nx.arf_layout(G), 
-                     node_color=gcol.get_node_colors(G, c), 
-                     node_size=100, 
-                     font_size=8, 
-                     width=0.25, 
-                     labels=labels)
+    nx.draw_networkx(
+        G,
+        pos=nx.arf_layout(G), 
+        node_color=gcol.get_node_colors(G, c), 
+        node_size=100, 
+        font_size=8, 
+        width=0.25, 
+        labels=labels
+    )
     plt.show()
-    
 
 
 .. parsed-literal::
@@ -979,7 +840,7 @@ node, and the text gives the total weight of each color class.
     
 
 
-.. image:: output_46_1.png
+.. image:: output_38_1.png
 
 
 The same process can also be followed to produce equitable edge
@@ -1015,7 +876,7 @@ edge-weighted graph.
     
 
 
-.. image:: output_48_1.png
+.. image:: output_40_1.png
 
 
 The next example shows an equitable face coloring using 6 colors.
@@ -1031,7 +892,7 @@ The next example shows an equitable face coloring using 6 colors.
 
 
 
-.. image:: output_50_0.png
+.. image:: output_42_0.png
 
 
 Minimum Cost :math:`k`-Coloring
@@ -1049,8 +910,8 @@ weights of the uncolored nodes.
 The following example creates a node-weighted random graph and then
 produces a node 3-coloring solution using the routine
 ``gcol.min_cost_k_coloring()``. This solution has five uncolored nodes
-with a total weight of six. In the visualization, node labels refer to
-node weights.
+(shown in white) with a total weight of 14. In the visualization, node
+labels refer to node weights.
 
 .. code:: ipython3
 
@@ -1063,21 +924,22 @@ node weights.
     labels = {u: G.nodes[u]['weight'] for u in G} 
     
     c = gcol.min_cost_k_coloring(G, 3, weight="weight", weights_at="nodes", it_limit=1000)
-    nx.draw_networkx(G, 
-                     pos=nx.arf_layout(G), 
-                     node_color=gcol.get_node_colors(G, c), 
-                     node_size=100, 
-                     font_size=8, 
-                     width=0.25, 
-                     labels=labels)
+    nx.draw_networkx(
+        G, 
+        pos=nx.arf_layout(G), 
+        node_color=gcol.get_node_colors(G, c), 
+        node_size=100, 
+        font_size=8, 
+        width=0.25, 
+        labels=labels
+    )
     plt.show()
-    
     U = list(G.nodes[u]["weight"] for u in c if c[u] <= -1)
     print("Uncolored nodes have weights", sorted(U), "giving a total cost =", sum(U))
 
 
 
-.. image:: output_52_0.png
+.. image:: output_44_0.png
 
 
 .. parsed-literal::
@@ -1096,7 +958,7 @@ the clashing edges.
 The following example creates a small edge-weighted graph and then
 produces a node 2-coloring using the routine
 ``gcol.min_cost_k_coloring()``. Six of the edges are causing a clash,
-giving a total weight of 12.
+giving a total weight of 11.
 
 .. code:: ipython3
 
@@ -1104,7 +966,12 @@ giving a total weight of 12.
     for u, v in G.edges():
         G.add_edge(u, v, edgeweight=random.randint(1,5))
     
-    c = gcol.min_cost_k_coloring(G, 2, weight="edgeweight", weights_at="edges", it_limit=1000)
+    c = gcol.min_cost_k_coloring(
+        G, 2, 
+        weight="edgeweight", 
+        weights_at="edges", 
+        it_limit=1000
+    )
     pos = nx.spring_layout(G, seed=1)
     nx.draw_networkx(G, pos=pos, node_color=gcol.get_node_colors(G, c))
     labels = nx.get_edge_attributes(G,'edgeweight')
@@ -1116,7 +983,7 @@ giving a total weight of 12.
 
 
 
-.. image:: output_54_0.png
+.. image:: output_46_0.png
 
 
 .. parsed-literal::
@@ -1144,9 +1011,11 @@ in ``C``, leading to the second solution shown.
 
     G = nx.dodecahedral_graph()
     c = gcol.node_k_coloring(G, 4)
-    nx.draw_networkx(G, 
-                     pos=nx.spring_layout(G, seed=1), 
-                     node_color=gcol.get_node_colors(G, c, palette=gcol.colorful))
+    nx.draw_networkx(
+        G, 
+        pos=nx.spring_layout(G, seed=1), 
+        node_color=gcol.get_node_colors(G, c, gcol.colorful)
+    )
     plt.show()
     
     i, j = 0, 3  # red, yellow
@@ -1158,14 +1027,16 @@ in ``C``, leading to the second solution shown.
             c[u] = j
         else:
             c[u] = i
-    nx.draw_networkx(G, 
-                     pos=nx.spring_layout(G, seed=1), 
-                     node_color=gcol.get_node_colors(G, c, palette=gcol.colorful))
+    nx.draw_networkx(
+        G, 
+        pos=nx.spring_layout(G, seed=1), 
+        node_color=gcol.get_node_colors(G, c, gcol.colorful)
+    )
     plt.show()
 
 
 
-.. image:: output_56_0.png
+.. image:: output_48_0.png
 
 
 .. parsed-literal::
@@ -1175,10 +1046,10 @@ in ``C``, leading to the second solution shown.
     
 
 
-.. image:: output_56_2.png
+.. image:: output_48_2.png
 
 
-An :math:`s`-chain is a generalisation of a Kempe chain that allows more
+An :math:`s`-chain is a generalization of a Kempe chain that allows more
 than two colors. Given a proper node coloring of a graph
 :math:`G=(V,E)`, an :math:`s`-chain is defined by a prescribed node
 :math:`v\in V` and sequence of unique colors
@@ -1216,9 +1087,9 @@ coloring shown below.
     
     print("Interchanging the colors on this chain using", color_map, "gives:")
     nx.draw_networkx(
-        G, pos=nx.spring_layout(G, seed=1), node_color=gcol.get_node_colors(
-            G, c, palette=gcol.colorful
-        )
+        G, 
+        pos=nx.spring_layout(G, seed=1), 
+        node_color=gcol.get_node_colors(G, c, gcol.colorful)
     )
     plt.show()
 
@@ -1230,13 +1101,13 @@ coloring shown below.
     
 
 
-.. image:: output_58_1.png
+.. image:: output_50_1.png
 
 
 Independent Sets, Cliques and Coverings
 ---------------------------------------
 
-In this final section we show how the algorithms of the ``gcol`` library
+In the final section of this chapter, we show how the ``gcol`` library
 can be used to find (possibly approximate) solutions to the following
 three NP-hard optimization problems.
 
@@ -1258,21 +1129,25 @@ aims are to now maximize (or minimize) the sum of the weights of the
 selected nodes.
 
 The following example demonstrates how a large independent set of nodes
-can be determined in the Les Miserables graph using the
-``gcol.max_independent_set()`` method.
+can be determined by the ``gcol.max_independent_set()`` method. Here, we
+use a graph in which nodes represent different characters in the play
+`Les Miserables <https://en.wikipedia.org/wiki/Les_Mis%C3%A9rables>`__.
+Edges between nodes then indicate pairs of characters that appear in the
+same scenes together.
 
 .. code:: ipython3
 
     G = nx.les_miserables_graph()
     S = gcol.max_independent_set(G, it_limit=10000)
     print("In Les Miserables, there is a subset of", len(S), "characters who never meet.")
-    
-    nx.draw_networkx(G, 
-                     nx.spring_layout(G, seed=1), 
-                     node_color=gcol.get_set_colors(G, S), 
-                     node_size=100, 
-                     font_size=8, 
-                     width=0.25)
+    nx.draw_networkx(
+        G, 
+        nx.spring_layout(G, seed=1), 
+        node_color=gcol.get_set_colors(G, S), 
+        node_size=100, 
+        font_size=8, 
+        width=0.25
+    )
     plt.show()
 
 
@@ -1282,7 +1157,7 @@ can be determined in the Les Miserables graph using the
     
 
 
-.. image:: output_60_1.png
+.. image:: output_52_1.png
 
 
 In the above, the members of the independent set, whose size we have
@@ -1297,21 +1172,24 @@ demonstration of this is shown below.
 .. code:: ipython3
 
     S = gcol.max_independent_set(nx.complement(G), it_limit=10000)
-    print("In the set of", len(G), "Les Miserables characters, there's a subset of", len(S), "characters who form a clique. These are", S)
-    nx.draw_networkx(G, 
-                     nx.spring_layout(G, seed=1), 
-                     node_color=gcol.get_set_colors(G, S), 
-                     node_size=100, 
-                     font_size=8, 
-                     width=0.25)
+    print("In the set of", len(G), "Les Miserables characters, there is a subset of",
+          len(S), "characters who form a clique. These are", S)
+    nx.draw_networkx(
+        G, 
+        nx.spring_layout(G, seed=1), 
+        node_color=gcol.get_set_colors(G, S), 
+        node_size=100, 
+        font_size=8, 
+        width=0.25
+    )
     plt.show()
 
 
 .. parsed-literal::
 
-    In the set of 77 Les Miserables characters, there's a subset of 10 characters who form a clique. These are ['Combeferre', 'Feuilly', 'Mabeuf', 'Bahorel', 'Joly', 'Courfeyrac', 'Bossuet', 'Enjolras', 'Marius', 'Gavroche']
+    In the set of 77 Les Miserables characters, there is a subset of 10 characters who form a clique. These are ['Combeferre', 'Feuilly', 'Mabeuf', 'Bahorel', 'Joly', 'Courfeyrac', 'Bossuet', 'Enjolras', 'Marius', 'Gavroche']
     
 
 
-.. image:: output_62_1.png
+.. image:: output_54_1.png
 
