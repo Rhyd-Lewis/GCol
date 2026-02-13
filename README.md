@@ -5,7 +5,7 @@
 GCol is an open-source Python library for graph coloring, built on top
 of NetworkX. It provides easy-to-use, high-performance algorithms for
 node coloring, edge coloring, face coloring, equitable coloring, 
-weighted coloring, precoloring, and maximum independent set 
+weighted coloring, precoloring, list coloring, and maximum independent set 
 identification. It also offers several tools for solution visualization.
 
 In general, graph coloring problems are NP-hard. This library therefore
@@ -22,7 +22,7 @@ or execute the following in a notebook:
 
     !python -m pip install gcol
 
-To start using this library, try executing the following code.
+then restart ther kernal. To start using this library, try executing the following code.
 
 ```python
 import networkx as nx
