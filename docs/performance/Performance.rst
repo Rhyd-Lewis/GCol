@@ -138,7 +138,7 @@ Optimization Output
 
 The following code demonstrates how the ``verbose`` parameter can be
 used to produce run-time output for the various optimization algorithms.
-This allows us to assess algorithm performance.
+This allows us to monitor algorithm performance during execution.
 
 .. code:: ipython3
 
@@ -320,8 +320,8 @@ permanently assigned to different colors. The main backtracking
 algorithm is then executed and only halts only when a solution using
 :math:`C` colors has been identified, or when the algorithm has
 backtracked to the root of the search tree. In both cases the returned
-solution will be optimal (that is, will be using the minimum number of
-colors).
+solution will be optimal (that is, it will be using the minimum number
+of colors).
 
 The following code evaluates the performance of this algorithm on
 :math:`G(n,0.5)` graphs for a range of :math:`n`-values.
@@ -329,7 +329,7 @@ The following code evaluates the performance of this algorithm on
 .. code:: ipython3
 
     results = []
-    nVals = range(2,55,2)
+    nVals = range(2,61,2)
     for n in nVals:
         for seed in range(25):
             G = nx.gnp_random_graph(n, 0.5, seed)
@@ -354,7 +354,7 @@ The following code evaluates the performance of this algorithm on
     plt.plot(nVals, mean1, linestyle='-', linewidth=1.5, color="b", label='opt_alg=1')
     plt.fill_between(nVals, mean1-SD1, mean1+SD1, color='b', alpha=0.2)
     plt.xlabel("Number of nodes $n$")
-    plt.ylim((0, 600))
+    plt.ylim((0, 120))
     plt.ylabel("Run time (s)")
     plt.legend()
     plt.show()
@@ -373,7 +373,7 @@ The first chart above shows the chromatic numbers from a sample of
 can be seen that the chromatic number rises in a close-to-linear fashion
 in relation to :math:`n`. The second figure demonstrates the
 disadvantages of using this exponential-time algorithm: once :math:`n`
-is increased beyond a moderately small value (approximately 50 here),
+is increased beyond a moderately small value (approximately 55 here),
 run times become unpredictable and often very long. Note, however, that
 the specific :math:`n`-values that give these long run times can vary
 considerably depending on the topology of the graph. For example, planar
@@ -400,7 +400,7 @@ information on these can be found in the library’s
 `documentation <https://gcol.readthedocs.io/en/latest/modules.html>`__
 and in this
 `book <https://link.springer.com/book/10.1007/978-3-030-81054-2>`__.
-Executing these heuristics with higher iteration limits usually gives
+Executing these heuristics with higher iteration limits usually leads to
 better solutions (that is, solutions using fewer colors). To illustrate,
 the following code runs the four optimization algorithms with differing
 iteration limits on a set of twenty :math:`G(500, 0.5)` graphs.
@@ -470,17 +470,17 @@ iteration limits on a set of twenty :math:`G(500, 0.5)` graphs.
 Note that the charts above use log scales on their horizontal axes. The
 first chart shows how using an increased iteration limit can result in
 solutions that have fewer colors. For very high limits, the hybrid
-evolutionary algorithms are clearly more favourable. The second chart
+evolutionary algorithms are clearly more favorable. The second chart
 shows how the iteration limits affect run times with these graphs.
 
 Equitable Coloring
 ------------------
 
-In the equitable node-coloring problem, we are interested in coloring
-the nodes with a user-defined number of colors :math:`k` so that (a)
-adjacent nodes have different colors, and (b) the number of nodes in
-each color is as equal as possible. The following trials run the
-``gcol.equitable_node_k_coloring()`` method on a sample of random
+In the (unweighted) equitable node-coloring problem, we are interested
+in coloring the nodes with a user-defined number of colors :math:`k` so
+that (a) adjacent nodes have different colors, and (b) the number of
+nodes in each color is as equal as possible. The following trials run
+the ``gcol.equitable_node_k_coloring()`` method on a sample of random
 :math:`G(500,0.5)` graphs over a range of suitable :math:`k`-values. The
 reported cost is simply the difference in size between the largest and
 smallest color classes in a solution. Hence, if :math:`k` is a divisor
@@ -621,6 +621,6 @@ iteration limit of :math:`n` for the former.
 
 The results above show quite clearly that the
 ``gcol.max_independent_set()`` routine produces better quality solutions
-(larger independent sets) in less run time. As before, further
-improvements in solution quality (but longer run times) may also be
-found by increasing the ``it_limit`` parameter.
+(larger independent sets) in less time. As before, further improvements
+in solution quality (but longer run times) may also be found by
+increasing the ``it_limit`` parameter.
