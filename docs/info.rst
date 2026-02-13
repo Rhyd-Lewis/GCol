@@ -14,7 +14,7 @@ or execute the following in a notebook::
 
     !python -m pip install gcol
 
-To start using this library, try executing the following code.
+then restart the kernal. To start using this library, try executing the following code.
 
 .. code:: ipython3
 
@@ -63,7 +63,7 @@ The GCol repository is hosted on `github <https://github.com/Rhyd-Lewis/GCol>`_.
 
 MIT License
 -----------
-Copyright (c) 2025 Rhyd-Lewis, Cardiff University, `www.rhydlewis.eu <https://www.rhydlewis.eu>`_.
+Copyright (c) 2026 Rhyd-Lewis, Cardiff University, `www.rhydlewis.eu <https://www.rhydlewis.eu>`_.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
