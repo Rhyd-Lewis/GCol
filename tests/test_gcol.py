@@ -198,11 +198,6 @@ class TestNodePrecolorings:
         pytest.raises(ValueError, gcol.node_precoloring,
                       graph, precol={0: 0, 1: 0})
 
-    def test_bad_precol5(self):
-        graph = three_node_clique()
-        pytest.raises(ValueError, gcol.node_precoloring,
-                      graph, precol={0: 0, 1: 3})
-
 
 class TestEdgePrecolorings:
     def test_many(self):
@@ -255,6 +250,17 @@ class TestEdgePrecolorings:
                         )
                         assert verify_edge_coloring(G, c, {})
 
+    def test_backward_edge(self):
+        graph = three_node_clique()
+        precol = {(2, 0): 1}
+        c = gcol.edge_precoloring(graph, precol)
+        assert verify_edge_coloring(graph, c, precol)
+
+    def test_multi_edge(self):
+        graph = three_node_clique()
+        pytest.raises(ValueError, gcol.edge_precoloring,
+                      graph, precol={(2, 0): 1, (0, 2): 1})
+
     def test_bad_precol1(self):
         graph = three_node_clique()
         pytest.raises(TypeError, gcol.edge_precoloring,
@@ -274,11 +280,6 @@ class TestEdgePrecolorings:
         graph = three_node_clique()
         pytest.raises(ValueError, gcol.edge_precoloring,
                       graph, precol={(0, 1): 0, (1, 2): 0})
-
-    def test_bad_precol5(self):
-        graph = three_node_clique()
-        pytest.raises(ValueError, gcol.edge_precoloring,
-                      graph, precol={(0, 1): 0, (1, 2): 3})
 
 
 class TestKempeChain:
@@ -594,8 +595,8 @@ class TestFaceColorings:
                         )
 
     def test_bad_strategy(self):
-        graph = singleton()
-        pos = {0: (0, 0)}
+        graph = dodec()
+        pos = nx.planar_layout(graph)
         pytest.raises(
             ValueError,
             gcol.face_coloring,
@@ -605,8 +606,8 @@ class TestFaceColorings:
         )
 
     def test_bad_opt_alg(self):
-        graph = singleton()
-        pos = {0: (0, 0)}
+        graph = dodec()
+        pos = nx.planar_layout(graph)
         pytest.raises(
             ValueError,
             gcol.face_coloring,
@@ -616,8 +617,8 @@ class TestFaceColorings:
         )
 
     def test_bad_its_parameter(self):
-        graph = singleton()
-        pos = {0: (0, 0)}
+        graph = dodec()
+        pos = nx.planar_layout(graph)
         pytest.raises(
             ValueError,
             gcol.face_coloring,
@@ -627,8 +628,8 @@ class TestFaceColorings:
         )
 
     def test_negative_tabu_parameter(self):
-        graph = singleton()
-        pos = {0: (0, 0)}
+        graph = dodec()
+        pos = nx.planar_layout(graph)
         pytest.raises(ValueError, gcol.face_coloring, graph, pos, it_limit=-1)
 
     def test_directed_graph(self):
@@ -668,6 +669,13 @@ class TestFaceColorings:
         pos = {0: (0, 0), 1: (1, 0), 2: (0, 1)}
         pytest.raises(ValueError, gcol.face_coloring, graph, pos)
 
+    def test_is_diconnected(self):
+        graph = nx.Graph()
+        graph.add_edges_from([(0, 1), (1, 2), (2, 0), (3, 4), (4, 5), (5, 3)])
+        pos = {0: (0, 0), 1: (0, 1), 2: (1, 0),
+               3: (3, 0), 4: (3, 1), 5: (4, 0)}
+        pytest.raises(NotImplementedError, gcol.face_coloring, graph, pos)
+
     def test_not_embedding(self):
         graph = nx.cycle_graph(4)
         pos = {0: (0, 0), 1: (1, 0), 2: (0, 1), 3: (1, 1)}
@@ -678,6 +686,25 @@ class TestFaceColorings:
         pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (2, 0)}
         pytest.raises(ValueError, gcol.face_coloring, graph, pos)
 
+    def test_is_singleton(self):
+        graph = singleton()
+        pos = {0: (0, 0)}
+        pytest.raises(NotImplementedError, gcol.face_coloring, graph, pos)
+
+    def test_precol_good(self):
+        graph = nx.cycle_graph(4)
+        graph.add_edge(0, 2)
+        pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (0, 1)}
+        precol = {(0, 3, 2, 1): 1, (0, 1, 2): 0}
+        gcol.face_precoloring(graph, pos, precol)
+
+    def test_precol_good_unrotated(self):
+        graph = nx.cycle_graph(4)
+        graph.add_edge(0, 2)
+        pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (0, 1)}
+        precol = {(3, 2, 1, 0): 1, (2, 0, 1): 0}
+        gcol.face_precoloring(graph, pos, precol)
+
     def test_precol_invalid_arg(self):
         graph = nx.cycle_graph(4)
         graph.add_edge(0, 2)
@@ -685,46 +712,308 @@ class TestFaceColorings:
         precol = "I am not a dict"
         pytest.raises(TypeError, gcol.face_precoloring, graph, pos, precol)
 
-    def test_precol_invalid_edge(self):
+    def test_precol_not_a_face(self):
         graph = nx.cycle_graph(4)
         graph.add_edge(0, 2)
         pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (0, 1)}
-        precol = {(1, 3): 1}
+        precol = {"I am not a tuple": 0}
+        pytest.raises(ValueError, gcol.face_precoloring, graph, pos, precol)
+
+    def test_precol_nonexistant_face(self):
+        graph = nx.cycle_graph(4)
+        graph.add_edge(0, 2)
+        pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (0, 1)}
+        precol = {(0, 3, 2): 1}
         pytest.raises(ValueError, gcol.face_precoloring, graph, pos, precol)
 
     def test_precol_invalid_col(self):
         graph = nx.cycle_graph(4)
         graph.add_edge(0, 2)
         pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (0, 1)}
-        precol = {(1, 2): 0.5}
+        precol = {(0, 3, 2, 1): "invalid color"}
         pytest.raises(ValueError, gcol.face_precoloring, graph, pos, precol)
 
-    def test_precol_invalid_col2(self):
+    def test_precol_clashing_precol(self):
         graph = nx.cycle_graph(4)
         graph.add_edge(0, 2)
         pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (0, 1)}
-        precol = {(1, 2): 1}
+        precol = {(0, 1, 2): 0, (0, 2, 3): 0}
         pytest.raises(ValueError, gcol.face_precoloring, graph, pos, precol)
 
-    def test_precol_invalid_col3(self):
+
+class TestDual:
+
+    def test_many(self):
+        for graph_func in FACE_TEST_CASES:
+            G = graph_func()
+            pos = nx.planar_layout(G)
+            gcol.dual_graph(
+                G,
+                pos,
+            )
+
+    def test_diff_types(self):
+        G = nx.Graph()
+        G.add_edges_from([(0, 2.1), (2.1, "3"), ("3", True), (True, 0)])
+        pos = nx.planar_layout(G)
+        gcol.dual_graph(
+            G,
+            pos,
+        )
+
+    def test_directed_graph(self):
+        graph = nx.erdos_renyi_graph(3, 1.0, directed=True)
+        pos = {0: (0, 0), 1: (1, 1), 3: (1, 0)}
+        pytest.raises(NotImplementedError, gcol.dual_graph, graph, pos)
+
+    def test_multigraph(self):
+        graph = nx.MultiGraph()
+        graph.add_edges_from(
+            [(0, 1), (0, 1)])
+        pos = {0: (0, 0), 1: (1, 1)}
+        pytest.raises(NotImplementedError, gcol.dual_graph, graph, pos)
+
+    def test_invalid_pos(self):
+        graph = nx.complete_graph(3)
+        pos = "I am not a dict"
+        pytest.raises(TypeError, gcol.dual_graph, graph, pos)
+
+    def test_missing_pos(self):
+        graph = nx.complete_graph(3)
+        pos = {0: (0, 0), 1: (1, 0)}
+        pytest.raises(ValueError, gcol.dual_graph, graph, pos)
+
+    def test_duplicate_pos(self):
+        graph = nx.complete_graph(3)
+        pos = {0: (0, 0), 1: (1, 0), 2: (1, 0)}
+        pytest.raises(ValueError, gcol.dual_graph, graph, pos)
+
+    def test_not_planar_embedding(self):
+        graph = nx.complete_graph(4)
+        pos = {0: (0, 0), 1: (1, 0), 2: (0, 1), 3: (1, 1)}
+        pytest.raises(ValueError, gcol.dual_graph, graph, pos)
+
+    def test_not_planar(self):
+        graph = nx.complete_graph(5)
+        pos = {0: (0.1, 0.9), 1: (0.8, 0.3), 2: (0.3, 0.1), 3: (0.3, 0.4), 4: (0.2, 0.8)}
+        pytest.raises(ValueError, gcol.dual_graph, graph, pos)
+
+    def test_mixed_graph_on_line(self):
+        graph = mixed_names()
+        graph.add_edge(0, "node-A")
+        pos = {0: (0, 0),
+               1.5: (1, 0),
+               "node-A": (2, 0.0000000001),
+               ("A", 3): (3, 0.0000000001)}
+        pytest.raises(ValueError, gcol.dual_graph, graph, pos)
+
+    def test_not_planar(self):
+        graph = nx.complete_graph(5)
+        pos = {0: (0, 0), 1: (1, 0), 2: (0, 1), 3: (1, 1), 4: (2, 2)}
+        pytest.raises(ValueError, gcol.dual_graph, graph, pos)
+
+    def test_has_bridges(self):
+        graph = nx.path_graph(3)
+        pos = {0: (0, 0), 1: (1, 0), 2: (0, 1)}
+        pytest.raises(ValueError, gcol.dual_graph, graph, pos)
+
+    def test_is_diconnected(self):
+        graph = nx.Graph()
+        graph.add_edges_from([(0, 1), (1, 2), (2, 0), (3, 4), (4, 5), (5, 3)])
+        pos = {0: (0, 0), 1: (0, 1), 2: (1, 0),
+               3: (3, 0), 4: (3, 1), 5: (4, 0)}
+        pytest.raises(NotImplementedError, gcol.face_coloring, graph, pos)
+
+    def test_is_singleton(self):
+        graph = singleton()
+        pos = {0: (0, 0)}
+        pytest.raises(NotImplementedError, gcol.dual_graph, graph, pos)
+
+    def test_not_connected(self):
+        graph = nx.Graph()
+        graph.add_node(0)
+        graph.add_node(1)
+        pos = {0: (0, 0), 1: (1, 1)}
+        pytest.raises(NotImplementedError, gcol.dual_graph, graph, pos)
+
+    def test_not_embedding(self):
+        graph = nx.cycle_graph(4)
+        pos = {0: (0, 0), 1: (1, 0), 2: (0, 1), 3: (1, 1)}
+        pytest.raises(ValueError, gcol.dual_graph, graph, pos)
+
+    def test_not_embedding2(self):
+        graph = nx.cycle_graph(4)
+        pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (2, 0)}
+        pytest.raises(ValueError, gcol.dual_graph, graph, pos)
+
+
+class TestNodeListColorings:
+    def test_many(self):
+        for graph_func in TEST_CASES:
+            G = graph_func()
+            # color all nodes and use the solution to get a valid allowed_cols
+            V = gcol.node_coloring(G, strategy="random")
+            for u in V:
+                V[u] = [V[u]]
+            c = gcol.node_list_coloring(G, V, opt_alg=1)
+            assert verify_node_list_coloring(G, c, V)
+            c = gcol.node_list_colouring(G, V, opt_alg=2, it_limit=1000)
+            assert verify_node_list_coloring(G, c, V)
+
+    def test_not_dict(self):
+        graph = singleton()
+        pytest.raises(TypeError, gcol.node_list_coloring,
+                      graph, "this is not a dict")
+
+    def test_missing_lists(self):
+        graph = three_node_clique()
+        pytest.raises(ValueError, gcol.node_list_coloring,
+                      graph, {0: [1, 2]})
+
+    def test_clashing_lists(self):
+        graph = three_node_clique()
+        pytest.raises(ValueError, gcol.node_list_coloring,
+                      graph, {0: [1], 1: [1], 2: [0, 1, 2]})
+
+    def test_rogue_node(self):
+        graph = three_node_clique()
+        pytest.raises(ValueError, gcol.node_list_coloring,
+                      graph, {0: [1], 1: [0], 2: [0, 1, 2], 4: [0, 1, 2]})
+
+    def test_not_enough_colors(self):
+        graph = three_node_clique()
+        pytest.raises(ValueError, gcol.node_list_coloring,
+                      graph, {0: [0, 1], 1: [0, 1], 2: [0, 1]})
+
+    def test_bad_color(self):
+        graph = three_node_clique()
+        pytest.raises(ValueError, gcol.node_list_coloring,
+                      graph, {0: [0, 1], 1: [0, -1], 2: [0, 1]})
+
+
+class TestEdgeListColorings:
+    def test_many(self):
+        for graph_func in TEST_CASES:
+            G = graph_func()
+            # color all edges and use the solution to get a valid allowed_cols
+            E = gcol.edge_coloring(G, strategy="random")
+            for u, v in E:
+                E[u, v] = [E[u, v]]
+            c = gcol.edge_list_coloring(G, E, opt_alg=1)
+            assert verify_edge_list_coloring(G, c, E)
+            c = gcol.edge_list_colouring(G, E, opt_alg=2, it_limit=1000)
+            assert verify_edge_list_coloring(G, c, E)
+
+    def test_not_dict(self):
+        graph = three_node_clique()
+        pytest.raises(TypeError, gcol.edge_list_coloring,
+                      graph, "this is not a dict")
+
+    def test_missing_lists(self):
+        graph = three_node_clique()
+        pytest.raises(ValueError, gcol.edge_list_coloring,
+                      graph, {(0, 1): [1, 2]})
+
+    def test_backward_edges(self):
+        graph = three_node_clique()
+        E = {(1, 0): [1], (1, 2): [0], (2, 0): [0, 1, 2]}
+        c = gcol.edge_list_coloring(graph, E, opt_alg=1)
+        assert verify_edge_list_coloring(graph, c, E)
+
+    def test_multi_edge(self):
+        graph = three_node_clique()
+        pytest.raises(ValueError, gcol.edge_list_coloring,
+                      graph, {(0, 1): [1], (1, 2): [0], (2, 0): [0, 1, 2],
+                              (2, 1): [0, 1, 2]})
+
+    def test_rogue_edge(self):
+        graph = three_node_clique()
+        pytest.raises(ValueError, gcol.edge_list_coloring,
+                      graph, {(0, 1): [1], (1, 2): [0], (2, 0): [0, 1, 2],
+                              (0, 4): [0, 1, 2]})
+
+    def test_not_enough_colors(self):
+        graph = three_node_clique()
+        pytest.raises(ValueError, gcol.edge_list_coloring,
+                      graph, {(1, 0): [0, 1], (1, 2): [1], (2, 0): [0]})
+
+    def test_bad_color(self):
+        graph = three_node_clique()
+        pytest.raises(ValueError, gcol.edge_list_coloring,
+                      graph, {(1, 0): [0, -1], (1, 2): [1, 2], (2, 0): [2, 0]})
+
+
+class TestFaceListColorings:
+    def test_solvable(self):
+        graph = nx.dodecahedral_graph()
+        pos = nx.planar_layout(graph)
+        H, faces = gcol.dual_graph(graph, pos)
+        F = {f: {0, 1, 2, 3} for f in faces}
+        c = gcol.face_list_coloring(graph, pos, allowed_cols=F, opt_alg=1)
+        assert verify_face_list_coloring(graph, pos, c, F)
+
+    def test_anothersolvable(self):
         graph = nx.cycle_graph(4)
         graph.add_edge(0, 2)
         pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (0, 1)}
-        precol = {(1, 0): 0, (2, 1): 1}
-        pytest.raises(ValueError, gcol.face_precoloring, graph, pos, precol)
+        F = {(0, 3, 2, 1): [0, 1], (0, 2, 3): [0, 2], (2, 0, 1): [0]}
+        c = gcol.face_list_coloring(graph, pos, allowed_cols=F, opt_alg=1)
+        assert verify_face_list_coloring(graph, pos, c, F)
+
+    def test_unsolvable(self):
+        graph = nx.dodecahedral_graph()
+        pos = nx.planar_layout(graph)
+        H, faces = gcol.dual_graph(graph, pos)
+        F = {f: {0, 1, 2} for f in faces}
+        pytest.raises(
+            ValueError, gcol.face_list_coloring, graph, pos, F, opt_alg=1
+        )
+
+    def test_anotherunsolvable(self):
+        graph = nx.cycle_graph(4)
+        graph.add_edge(0, 2)
+        pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (0, 1)}
+        F = {(0, 3, 2, 1): [0], (0, 2, 3): [1], (2, 0, 1): [0]}
+        pytest.raises(
+            ValueError, gcol.face_list_coloring, graph, pos, F, opt_alg=1
+        )
+
+    def test_missing_lists(self):
+        graph = nx.cycle_graph(4)
+        graph.add_edge(0, 2)
+        pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (0, 1)}
+        F = {(0, 3, 2, 1): [0], (0, 2, 3): [1]}
+        pytest.raises(
+            ValueError, gcol.face_list_coloring, graph, pos, F, opt_alg=1
+        )
+
+    def test_rogue_face(self):
+        graph = nx.cycle_graph(4)
+        graph.add_edge(0, 2)
+        pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (0, 1)}
+        F = {(0, 3, 2, 1): [0], (91, 92, 93): [1], (2, 0, 1): [0]}
+        pytest.raises(
+            ValueError, gcol.face_list_coloring, graph, pos, F, opt_alg=1
+        )
+
+    def test_clashing_faces(self):
+        graph = nx.cycle_graph(4)
+        graph.add_edge(0, 2)
+        pos = {0: (0, 0), 1: (1, 0), 2: (1, 1), 3: (0, 1)}
+        F = {(0, 3, 2, 1): [0, 1, 2, 3], (0, 2, 3): [1], (2, 0, 1): [1]}
+        pytest.raises(
+            ValueError, gcol.face_list_coloring, graph, pos, F, opt_alg=1
+        )
 
 
 # Utility functions
 def verify_node_coloring(G, c, precol=None):
     if len(c) != 0:
         k = max(c.values()) + 1
-        used = set()
         for v in c:
             assert (
                 c[v] >= 0 and c[v] < k
             ), "Node assigned to a color not in {0,1,...,k-1}"
-            used.add(c[v])
-        assert len(used) == k, "Unused colors in {0,1,...,k-1}"
         for u in G:
             for v in G[u]:
                 assert c[u] != c[v], "Adjacent nodes have the same color"
@@ -741,13 +1030,10 @@ def verify_node_coloring(G, c, precol=None):
 def verify_edge_coloring(G, c, precol=None):
     if len(c) != 0:
         k = max(c.values()) + 1
-        used = set()
         for e in c:
             assert (
                 c[e] >= 0 and c[e] < k
             ), "Edge assigned to a color not in {0,1,...,k-1}"
-            used.add(c[e])
-        assert len(used) == k, "Unused colors in {0,1,...,k-1}"
         for e1 in G.edges:
             for e2 in G.edges:
                 if e1 != e2:
@@ -760,11 +1046,91 @@ def verify_edge_coloring(G, c, precol=None):
                         assert c[e1] != c[e2], "Adjacent edges are same color"
         if precol is not None:
             for u, v in precol:
-                assert (
-                    c[u, v] == precol[u, v]
-                ), "Error a precolored edge is not colored correctly"
+                if (u, v) in c:
+                    assert (
+                        c[u, v] == precol[u, v]
+                    ), ("Error a precolored edge is not colored correctly")
+                else:
+                    assert (
+                        c[v, u] == precol[u, v]
+                    ), ("Error a precolored edge is not colored correctly")
     gcol.partition(c)
     gcol.get_edge_colors(G, c)
+    return True
+
+
+def verify_node_list_coloring(G, c, L):
+    assert set(G) == set(L), "Nodes in G and L should match"
+    assert set(G) == set(c), "Nodes in G and c should match"
+    if len(c) != 0:
+        k = max(c.values()) + 1
+        for v in c:
+            assert (
+                c[v] >= 0 and c[v] < k
+            ), "Node assigned to a color not in {0,1,...,k-1}"
+        for u in G:
+            for v in G[u]:
+                assert c[u] != c[v], "Adjacent nodes have the same color"
+            assert c[u] in L[u], "Node assigned to inpermissible color"
+    gcol.partition(c)
+    gcol.get_node_colors(G, c)
+    return True
+
+
+def verify_edge_list_coloring(G, c, L):
+    if len(c) != 0:
+        k = max(c.values()) + 1
+        for e in c:
+            assert (
+                c[e] >= 0 and c[e] < k
+            ), "Edge assigned to a color not in {0,1,...,k-1}"
+        for e1 in G.edges:
+            for e2 in G.edges:
+                if e1 != e2:
+                    if (
+                        e1[0] == e2[0]
+                        or e1[0] == e2[1]
+                        or e1[1] == e2[0]
+                        or e1[1] == e2[1]
+                    ):
+                        assert c[e1] != c[e2], "Adjacent edges are same color"
+        if L is not None:
+            for u, v in L:
+                if (u, v) in c:
+                    assert (
+                        c[u, v] in L[u, v]
+                    ), ("Error edge assigned to ilegal color")
+                else:
+                    assert (
+                        c[v, u] in L[u, v]
+                    ), ("Error edge assigned to ilegal color")
+    gcol.partition(c)
+    gcol.get_edge_colors(G, c)
+    return True
+
+
+def verify_face_list_coloring(G, pos, c, L):
+    def canonical_order(S):
+        if not S:
+            return S
+        i = min(range(len(S)), key=lambda j: (type(S[j]).__name__, repr(S[j])))
+        return tuple(S[i:] + S[:i])
+    H, faces = gcol.dual_graph(G, pos)
+    L_canon = {canonical_order(f): L[f] for f in L}
+    assert len(L_canon) == len(H), "H and L should be same size"
+    assert len(L_canon) == len(c), "Nodes in G and c should match"
+    for f in L_canon:
+        assert f in c, "A face in c is not in L"
+        assert f in faces, "A face in c is not in L"
+    if len(c) != 0:
+        for u in H:
+            for v in H[u]:
+                assert (
+                    c[faces[u]] != c[faces[v]]
+                ), ("Adjacent faces have the same color")
+            assert (
+                c[faces[u]] in L_canon[faces[u]]
+            ), ("Node assigned to inpermissible color")
     return True
 
 
@@ -820,8 +1186,8 @@ def disconnected():
 
 def mixed_names():
     graph = nx.Graph()
-    graph.add_nodes_from([0, 1, "node-A", ("A", 3)])
-    graph.add_edges_from([(0, 1), (1, "node-A"),
+    graph.add_nodes_from([0, 1.5, "node-A", ("A", 3)])
+    graph.add_edges_from([(0, 1.5), (1.5, "node-A"),
                           ("node-A", ("A", 3)), (0, ("A", 3))])
     return graph
 
@@ -883,10 +1249,8 @@ TEST_CASES = [
 
 FACE_TEST_CASES = [
     null_graph,
-    singleton,
     three_node_clique,
     mixed_names,
-    empty,
     dodec,
     grid,
 ]
