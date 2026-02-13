@@ -1,3 +1,5 @@
+"""Output functions."""
+
 import networkx as nx
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
@@ -48,7 +50,7 @@ def _all_numeric(L):
 
 
 def partition(c):
-    """Convert a coloring into its equivalent partition-based representation.
+    r"""Convert a coloring into its equivalent partition-based representation.
 
     Negative color labels (signifying uncolored nodes/edges) are ignored.
 
@@ -57,7 +59,7 @@ def partition(c):
     c : dict
         A dictionary with keys representing nodes or edges and values
         representing their colors. Colors are identified by the integers
-        $0,1,2,\\ldots$.
+        $0,1,2,\ldots$.
 
     Returns
     -------
@@ -97,12 +99,15 @@ def partition(c):
         if _all_numeric(S[i]):
             S[i].sort()
         else:
-            S[i] = sorted(S[i], key=str)
+            try:
+                S[i] = sorted(S[i], key=str)
+            except TypeError:
+                print("Error, list of nodes contains incompatible types.")
     return S
 
 
 def coloring_layout(G, c):
-    """Arrange the nodes of the graph in a circle.
+    r"""Arrange the nodes of the graph in a circle.
 
     Nodes of the same color are put next to each other. This method is designed
     to be used with the ``pos`` argument in the drawing functions of NetworkX
@@ -115,7 +120,7 @@ def coloring_layout(G, c):
 
     c : dict
         A dictionary with keys representing nodes and values representing
-        their colors. Colors are identified by the integers $0,1,2,\\ldots$.
+        their colors. Colors are identified by the integers $0,1,2,\ldots$.
         Nodes with negative values are ignored.
 
     Returns
@@ -154,7 +159,7 @@ def coloring_layout(G, c):
 
 
 def multipartite_layout(G, c):
-    """Arrange the nodes of the graph into columns.
+    r"""Arrange the nodes of the graph into columns.
 
     Nodes of the same color are put in the same column. This method is  used
     with the ``pos`` argument in the drawing functions of NetworkX (see
@@ -167,7 +172,7 @@ def multipartite_layout(G, c):
 
     c : dict
         A dictionary with keys representing nodes and values representing
-        their colors. Colors are identified by the integers $0,1,2,\\ldots$.
+        their colors. Colors are identified by the integers $0,1,2,\ldots$.
         Nodes with negative color labels are ignored.
 
     Returns
@@ -206,7 +211,7 @@ def multipartite_layout(G, c):
 
 
 def get_node_colors(G, c, palette=None):
-    """Generate an RGB color for each node in the graph ``G``.
+    r"""Generate an RGB color for each node in the graph ``G``.
 
     The RGB color of a node is determined by its color label in ``c`` and the
     chosen palette. This method is designed to be used with the ``node_color``
@@ -221,10 +226,10 @@ def get_node_colors(G, c, palette=None):
 
     c : dict
         A dictionary with keys representing nodes and values representing their
-        colors. Colors are identified by the integers $0,1,2,\\ldots$.
+        colors. Colors are identified by the integers $0,1,2,\ldots$.
 
     palette : None or dict, optional (default=None)
-        A dictionary that maps the integers $-1,0,1,\\ldots$ to RGB values.
+        A dictionary that maps the integers $-1,0,1,\ldots$ to RGB values.
         The in-built options are as follows
 
         * ``gcol.tableau`` : A collection of 21 colors provided by Tableau.
@@ -286,7 +291,7 @@ def get_node_colors(G, c, palette=None):
 
 
 def get_edge_colors(G, c, palette=None):
-    """Generate an RGB color for each edge in the graph ``G``.
+    r"""Generate an RGB color for each edge in the graph ``G``.
 
     The RGB color of an edge is determined by its color label in ``c`` and the
     chosen palette. This method is designed to be used with the ``edge_color``
@@ -301,10 +306,10 @@ def get_edge_colors(G, c, palette=None):
 
     c : dict
         A dictionary with keys representing edges and values representing
-        their colors. Colors are identified by the integers $0,1,2,\\ldots$.
+        their colors. Colors are identified by the integers $0,1,2,\ldots$.
 
     palette : None or dict, optional (default=None)
-        A dictionary that maps the integers $-1,0,1,\\ldots$ to RGB values.
+        A dictionary that maps the integers $-1,0,1,\ldots$ to RGB values.
         The in-built options are as follows
 
         * ``gcol.tableau`` : A collection of 21 colors provided by Tableau.
@@ -370,7 +375,7 @@ def get_edge_colors(G, c, palette=None):
 
 
 def get_set_colors(G, S, S_color="yellow", other_color="grey"):
-    """Generate an RGB color for each node based on if it is in ``S``.
+    r"""Generate an RGB color for each node based on if it is in ``S``.
 
     By default, nodes in ``S`` are painted yellow and all others are painted
     grey. This method is designed to be used with the ``node_color`` argument
@@ -430,8 +435,7 @@ def get_set_colors(G, S, S_color="yellow", other_color="grey"):
 
 
 def draw_face_coloring(c, pos, external=False, palette=None):
-    """
-    Draw the face coloring defined by ``c`` and ``pos``
+    r"""Draw the face coloring defined by ``c`` and ``pos``.
 
     The RGB color of each face is determined by its color label in ``c`` and
     the chosen palette. If a face is marked as uncolored (i.e., assigned a
@@ -442,7 +446,7 @@ def draw_face_coloring(c, pos, external=False, palette=None):
     c : dict
         A dictionary where keys represent the sequence of nodes occurring
         in each face (polygon), and values represent the face's color.
-        Colors are identified by the integers $0,1,2,\\ldots$. The first
+        Colors are identified by the integers $0,1,2,\ldots$. The first
         element in ``c`` defines the external face of the embedding; the
         remaining elements define the internal faces.
 
@@ -454,7 +458,7 @@ def draw_face_coloring(c, pos, external=False, palette=None):
         of the embedding) is also colored, else it is left blank.
 
     palette : None or dict, optional (default=None)
-        A dictionary that maps the integers $-1,0,1,\\ldots$ to RGB values.
+        A dictionary that maps the integers $-1,0,1,\ldots$ to RGB values.
         The in-built options are as follows
 
         * ``gcol.tableau`` : A collection of 21 colors provided by Tableau.
@@ -521,6 +525,14 @@ def draw_face_coloring(c, pos, external=False, palette=None):
         )
     fig, ax = plt.subplots()
     ax.autoscale()
+    ax.tick_params(
+        axis="both",
+        which="both",
+        bottom=False,
+        left=False,
+        labelbottom=False,
+        labelleft=False,
+    )
     faceList = list(c.keys())
     if external:
         ax.set_facecolor(palette[c[faceList[0]]])

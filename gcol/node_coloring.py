@@ -1,9 +1,102 @@
+"""Node coloring functions."""
+
 import networkx as nx
 import itertools
 import random
 from collections import deque
 from queue import PriorityQueue
-from collections import defaultdict
+from heapdict import heapdict
+
+
+class _Coloring:
+    # Class for storing details of a coloring and maintaining a queue of
+    # uncolored nodes' saturation degrees. Used by the backtracking algorithm
+    def __init__(self, G, C):
+        # Initialize the coloring of G using the given clique C
+        self._adjcols = {u: {} for u in G}
+        self._colsize = {}
+        self._d = {u: G.degree(u) for u in G}
+        self._c = {C[i]: i for i in range(len(C))}
+        for u in self._c:
+            i = self._c[u]
+            if i not in self._colsize:
+                self._colsize[i] = 0
+            self._colsize[i] += 1
+            for v in G[u]:
+                if v not in self._c:
+                    if i not in self._adjcols[v]:
+                        self._adjcols[v][i] = 0
+                    self._adjcols[v][i] += 1
+                    self._d[v] -= 1
+        self._q = heapdict()
+        for u in G:
+            if u not in self._c:
+                self._q[u] = (-len(self._adjcols[u]), -self._d[u])
+
+    def __len__(self):
+        # Return the number of colored nodes
+        return len(self._c)
+
+    def currentNodeCol(self, u):
+        # Return the current color of node u
+        return self._c[u]
+
+    def nodeFeasibleForCol(self, u, i):
+        # Return True iff node u is not adjacent to a node with color i
+        if i in self._adjcols[u]:
+            return False
+        else:
+            return True
+
+    def getNextNode(self):
+        # Identify the next node to color based on dsatur heuristic. Return
+        # None if q is empty (meaning all nodes are colored)
+        if self._q:
+            return self._q.peekitem()[0]
+        else:
+            return None
+
+    def assignNodeToCol(self, G, u, i):
+        # Assign node u to color i and update data structures
+        del self._q[u]
+        self._c[u] = i
+        if i not in self._colsize:
+            self._colsize[i] = 0
+        self._colsize[i] += 1
+        for v in G[u]:
+            if v not in self._c:
+                if i not in self._adjcols[v]:
+                    self._adjcols[v][i] = 0
+                self._adjcols[v][i] += 1
+                self._d[v] -= 1
+                self._q[v] = (-len(self._adjcols[v]), -self._d[v])
+
+    def unassignNodeFromCol(self, G, u):
+        # Unassign node u from its current color and update data structures
+        i = self._c[u]
+        del self._c[u]
+        self._colsize[i] -= 1
+        if self._colsize[i] == 0:
+            del self._colsize[i]
+        self._d[u] = 0
+        self._adjcols[u].clear()
+        for v in G[u]:
+            if v not in self._c:
+                self._d[u] += 1
+                self._adjcols[v][i] -= 1
+                if self._adjcols[v][i] == 0:
+                    del self._adjcols[v][i]
+                self._d[v] += 1
+                self._q[v] = (-len(self._adjcols[v]), -self._d[v])
+            else:
+                if self._c[v] not in self._adjcols[u]:
+                    self._adjcols[u][self._c[v]] = 0
+                self._adjcols[u][self._c[v]] += 1
+        self._q[u] = (-len(self._adjcols[u]), -self._d[u])
+
+    def numCols(self):
+        # Return the number of different colors being used by the coloring
+        return len(self._colsize)
 
 
 def _check_params(G, strategy, opt_alg, it_limit, verbose):
@@ -236,7 +329,7 @@ def _dsatur_equitable(G, k, W):
     for u in G.nodes:
         d[u] = G.degree(u)
         adjcols[u] = set()
-        q.put((0, d[u] * (-1), next(counter), u))
+        q.put((0, -d[u], next(counter), u))
     while len(c) < len(G):
         # Get the uncolored node u with max saturation degree, breaking
         # ties using the highest value for d. Remove u from q.
@@ -260,8 +353,7 @@ def _dsatur_equitable(G, k, W):
                 if v not in c:
                     adjcols[v].add(i)
                     d[v] -= 1
-                    q.put((len(adjcols[v]) * (-1), d[v]
-                          * (-1), next(counter), v))
+                    q.put((-len(adjcols[v]), -d[v], next(counter), v))
     return c
 
 
@@ -292,7 +384,7 @@ def _dsatur(G, c=None):
     for u in G.nodes:
         d[u] = G.degree(u)
         adjcols[u] = set()
-        q.put((0, d[u] * (-1), next(counter), u))
+        q.put((0, -d[u], next(counter), u))
     # If any nodes are already colored in c, update the data structures
     # accordingly
     if c is not None:
@@ -306,15 +398,14 @@ def _dsatur(G, c=None):
                 if v not in c:
                     adjcols[v].add(c[u])
                     d[v] -= 1
-                    q.put((len(adjcols[v]) * (-1), d[v]
-                          * (-1), next(counter), v))
+                    q.put((-len(adjcols[v]), -d[v], next(counter), v))
                 elif c[u] == c[v]:
                     raise ValueError(
                         "Error, clashing nodes defined in supplied coloring"
                     )
     else:
         c = {}
-        # Color all remaining nodes
+    # Now color all remaining nodes
     while len(c) < len(G):
         # Get the uncolored node u with max saturation degree, breaking ties
         # using the highest value for d. Remove u from q.
@@ -330,8 +421,7 @@ def _dsatur(G, c=None):
                 if v not in c:
                     adjcols[v].add(i)
                     d[v] -= 1
-                    q.put((len(adjcols[v]) * (-1), d[v]
-                          * (-1), next(counter), v))
+                    q.put((-len(adjcols[v]), -d[v], next(counter), v))
     return c
 
 
@@ -402,79 +492,50 @@ def _rlf(G):
 
 
 def _backtrackcol(G, targetcols, verbose):
-    def is_feasible(u, i):
-        # Returns true iff node u can be feasibly assigned to color i in c
-        for v in G[u]:
-            if c.get(v) == i:
-                return False
-        return True
-
-    def color(uPos):
-        # Recursive function used for backtracking. Attempts to color node at
-        # position uPos in V
-        its[0] += 1
-        if len(colsize) > numcols[0]:
-            # Current (partial) solution is using too many colors, so backtrack
-            return False
-        if uPos == len(G):
-            # At a leaf node in search tree. A new best solution has been
-            # found.
-            bestc.clear()
-            for v in c:
-                bestc[v] = c[v]
-            if verbose > 0:
-                print("    Found solution with", len(colsize),
-                      "colors. Total backtracking iterations =", its[0])
-            if len(colsize) == targetcols:
-                # Optimum solution has been constructed or target reached
-                return True
-            else:
-                # Reduce number of available colors and continue
-                numcols[0] = len(colsize) - 1
-                return False
-        u = V[uPos]
-        for i in range(numcols[0]):
-            if i < numcols[0] and is_feasible(u, i):
-                c[u] = i
-                colsize[i] += 1
-                if color(uPos + 1):
-                    return True
-                colsize[c[u]] -= 1
-                if colsize[c[u]] == 0:
-                    del colsize[c[u]]
-                del c[u]
-        return False
-
-    # Exact backtracking algorithm for node coloring. First, find a large
-    # clique C in G
+    # Exact backtracking algorithm for node coloring
     C = list(nx.approximation.max_clique(G))
     targetcols = max(targetcols, len(C))
+    k, its, bestc = len(G), 0, {}
+
+    def color(u):
+        # Recursive function used for backtracking. Attempts to color node u
+        nonlocal its, k
+        its += 1
+        if len(S) == len(G):
+            # A new best solution has been found.
+            for v in G:
+                bestc[v] = S.currentNodeCol(v)
+            if verbose > 0:
+                print("    Found solution with", S.numCols(),
+                      "colors. Total backtracking iterations =", its)
+            if S.numCols() == targetcols:
+                return True
+            else:
+                # Reduce the number of available colors and continue
+                k = S.numCols() - 1
+                return False
+        i = 0
+        while True:
+            if i >= k or S.numCols() > k:
+                # Using too many colors or have tried all available colors
+                break
+            elif S.nodeFeasibleForCol(u, i):
+                S.assignNodeToCol(G, u, i)
+                v = S.getNextNode()
+                if color(v):
+                    return True
+                S.unassignNodeFromCol(G, u)
+            i += 1
+        return False
+
     if verbose > 0:
         print("Running backtracking algorithm:")
-    # Generate an initial solution. Do this by assigning the nodes in C
-    # to different colors, then get a starting number of colors (numcols) using
-    # dsatur. V holds the order in which the vetices were colored
-    bestc = {C[i]: i for i in range(len(C))}
-    bestc = _dsatur(G, bestc)
-    numcols = [max(bestc.values()) + 1]
-    if verbose > 0:
-        print("    Found solution with",
-              numcols[0], "colors. Total backtracking iterations = 0")
-    numcols[0] -= 1
-    V = list(bestc)
-    # Now assign the nodes in C to c and run the backtracking algorithm
-    # from the next node in V. Here, bestc holds the best solution seen so far
-    # and colsize holds the size of all nonempty color classes in c.
-    # len(colsize) therefore gives the number of colors (cost) being used by
-    # the (sub-)solution c
-    c, colsize, its = {}, defaultdict(int), [0]
-    for i in range(len(C)):
-        c[C[i]] = i
-        colsize[i] += 1
-    color(len(C))
+    S = _Coloring(G, C)
+    u = S.getNextNode()
+    color(u)
     if verbose > 0:
         print("Ending backtracking at iteration",
-              its[0], "- optimal solution achieved.")
+              its, "- optimal solution achieved.")
     return bestc
 
 
@@ -859,27 +920,27 @@ def _reducecolors(G, c, target, W, opt_alg, it_limit, verbose):
 
 
 def s_chain(G, c, v, L):
-    """Return the set of nodes in an $s$-chain.
+    r"""Return the set of nodes in an $s$-chain.
 
-    An $s$-chain is a generalisation of a Kempe chain that allows more than two
+    An $s$-chain is a generalization of a Kempe chain that allows more than two
     colors. Given a proper node coloring of a graph $G=(V,E)$, an $s$-chain is
-    defined by a prescribed node $v\\in V$ and sequence of unique colors
-    $j_0,j_1,\\ldots,j_{s-1}$, where the current color of $v$ is $j_0$. The
+    defined by a prescribed node $v\in V$ and sequence of unique colors
+    $j_0,j_1,\ldots,j_{s-1}$, where the current color of $v$ is $j_0$. The
     result is the set of nodes that are reachable from $v$ in the digraph
     $G'=(V',A)$ in which:
 
-    * $V' = \\{u \\; : \\; u \\in V \\; \\wedge \\; c(u) \\in \\{j_0,j_1,
-      \\ldots,j_{s-1}\\}\\}$, and
+    * $V' = \{u \; : \; u \in V \; \wedge \; c(u) \in \{j_0,j_1,
+      \ldots,j_{s-1}\}\}$, and
 
-    * $A = \\{(u,w) \\; : \\; \\{u,w\\} \\in E \\; \\wedge \\; c(u) = j_i \\;
-      \\wedge \\; c(w) = j_{(i+1) \\bmod s} \\}$,
+    * $A = \{(u,w) \; : \; \{u,w\} \in E \; \wedge \; c(u) = j_i \;
+      \wedge \; c(w) = j_{(i+1) \bmod s} \}$,
 
     where $c(u)$ gives the color of a node $u$.
 
     In a proper coloring, interchanging the colors of all nodes in an $s$-chain
     via the following mapping
 
-    * $j_i \\leftarrow j_{(i+1) \\bmod s}$
+    * $j_i \leftarrow j_{(i+1) \bmod s}$
 
     results in a new proper coloring [1]_.
 
@@ -941,17 +1002,22 @@ def s_chain(G, c, v, L):
         If the first value of ``L`` is not equal to ``c[v]``
 
         If ``L`` contains values that are not in the set
-        $\\{0,1,2,\\ldots\\}$.
+        $\{0,1,2,\ldots\}$.
 
     Notes
     -----
     This method uses a modified version of breadth-first search and operates in
     $O(m)$ time.
 
+    $s$-chains can also be constructed for edge and face colorings of a graph
+    $G$ by using the corresponding node colorings of the line graph $L(G)$
+    and dual graph $G^*$, respectively.
+
     See Also
     --------
     kempe_chain
     equitable_node_k_coloring
+    :meth:`gcol.face_coloring.dual_graph`
 
     References
     ----------
@@ -1008,7 +1074,7 @@ def s_chain(G, c, v, L):
 
 
 def kempe_chain(G, c, v, i, j):
-    """Return the set of nodes in a Kempe chain.
+    r"""Return the set of nodes in a Kempe chain.
 
     Given a proper node coloring of graph $G$, a Kempe chain is a
     connected component in the graph induced by nodes of color $i$ and
@@ -1073,6 +1139,10 @@ def kempe_chain(G, c, v, i, j):
     A Kempe chain is simply an $s$-chain using $s=2$ colors. As such, this
     method applies the :meth:`s_chain` method.
 
+    Kempe-chains can also be constructed for edge and face colorings of a graph
+    $G$ by using the corresponding node colorings of the line graph $L(G)$
+    and dual graph $G^*$, respectively.
+
     See Also
     --------
     s_chain
@@ -1096,21 +1166,21 @@ def kempe_chain(G, c, v, i, j):
 
 
 def max_independent_set(G, weight=None, it_limit=0, verbose=0):
-    """Attempt to identify the largest independent set of nodes in a graph.
+    r"""Attempt to identify the largest independent set of nodes in a graph.
 
     Here, nodes can also be allocated weights if desired.
 
     The maximum independent set in a graph $G$ is the largest subset of nodes
     in which none are adjacent. The size of the largest independent in a graph
     $G$ is known as the independence number of $G$ and is often denoted by
-    $\\alpha(G)$. Similarly, the maximum-weighted independent set in $G$ is
+    $\alpha(G)$. Similarly, the maximum-weighted independent set in $G$ is
     the subset of mutually nonadjacent nodes whose weight-total is maximized.
 
     The problem of determining a maximum(-weighted) independent set of nodes
     is NP-hard. Consequently, this method makes use of a polynomial-time
     heuristic based on local search. It will always return an independent
-    set but offers no guarantees on whether this is the optimal solution. The
-    algorithm halts once the iteration limit has been reached.
+    set but offers no guarantees as to whether this is an optimal solution.
+    The algorithm halts once the iteration limit has been reached.
 
     Note that the similar problem of determining the maximum(-weighted)
     independent set of edges is equivalent to finding a maximum(-weighted)
@@ -1223,7 +1293,7 @@ def max_independent_set(G, weight=None, it_limit=0, verbose=0):
 
 def min_cost_k_coloring(G, k, weight=None, weights_at="nodes", it_limit=0,
                         HEA=False, verbose=0):
-    """Color the nodes of the graph using ``k`` colors.
+    r"""Color the nodes of the graph using ``k`` colors.
 
     This is done so that a cost function is minimized. Equivalently, this
     routine partitions a graph's nodes while attempting to minimize a specific
@@ -1288,7 +1358,7 @@ def min_cost_k_coloring(G, k, weight=None, weights_at="nodes", it_limit=0,
     dict
         A dictionary with keys representing nodes and values representing
         their colors. Colors are identified by the integers
-        $0,1,2,\\ldots,k-1$. Uncolored nodes are given a value of ``-1``.
+        $0,1,2,\ldots,k-1$. Uncolored nodes are given a value of ``-1``.
 
     Examples
     --------
@@ -1423,7 +1493,7 @@ def min_cost_k_coloring(G, k, weight=None, weights_at="nodes", it_limit=0,
 
 def equitable_node_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0,
                               verbose=0):
-    """Attempt to color the nodes of a graph using ``k`` colors.
+    r"""Attempt to color the nodes of a graph using ``k`` colors.
 
     This is done so that (a) all adjacent nodes have different colors, and (b)
     the weight of each color class is equal. If ``weight=None``, the weight of
@@ -1500,7 +1570,7 @@ def equitable_node_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0,
     -------
     dict
         A dictionary with keys representing nodes and values representing their
-        colors. Colors are identified by the integers $0,1,2,\\ldots,k-1$.
+        colors. Colors are identified by the integers $0,1,2,\ldots,k-1$.
 
     Examples
     --------
@@ -1638,7 +1708,7 @@ def equitable_node_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0,
 
 
 def node_k_coloring(G, k, opt_alg=None, it_limit=0, verbose=0):
-    """Attempt to color the nodes of a graph using ``k`` colors.
+    r"""Attempt to color the nodes of a graph using ``k`` colors.
 
     This is done so that adjacent nodes have different colors. A set of nodes
     assigned to the same color corresponds to an independent set; hence the
@@ -1705,7 +1775,7 @@ def node_k_coloring(G, k, opt_alg=None, it_limit=0, verbose=0):
     -------
     dict
         A dictionary with keys representing edges and values representing their
-        colors. Colors are identified by the integers $0,1,2,\\ldots,k-1$.
+        colors. Colors are identified by the integers $0,1,2,\ldots,k-1$.
 
     Examples
     --------
@@ -1745,9 +1815,9 @@ def node_k_coloring(G, k, opt_alg=None, it_limit=0, verbose=0):
     -----
     This method begins by coloring the nodes in the order determined by the
     DSatur algorithm [1]_. During this process, each node is assigned to the
-    feasible color class $j$ (where $0 \\leq j \\leq k$) with the fewest nodes.
+    feasible color class $j$ (where $0 \leq j \leq k$) with the fewest nodes.
     This encourages an equitable spread of nodes across the $k$ colors. This
-    process has a complexity of $O((n \\lg n) + (nk) + (m \\lg m)$. If a node
+    process has a complexity of $O((n \lg n) + (nk) + (m \lg m)$. If a node
     $k$-coloring cannot be achieved in this way, further optimization is
     carried out, if desired. These optimization routines are the same as those
     used by the :meth:`node_coloring` method. They also halt immediately once
@@ -1805,7 +1875,7 @@ def node_k_coloring(G, k, opt_alg=None, it_limit=0, verbose=0):
 
 
 def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
-    """Return a coloring of a graph's nodes.
+    r"""Return a coloring of a graph's nodes.
 
     A node coloring of a graph is an assignment of colors to nodes so that
     adjacent nodes have different colors. The aim is to use as few colors as
@@ -1814,8 +1884,8 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
     into a minimum number of independent sets.
 
     The smallest number of colors needed to color the nodes of a graph $G$ is
-    known as the graph's chromatic number, denoted by $\\chi(G)$. Equivalently,
-    $\\chi(G)$ is the minimum number of independent sets needed to partition
+    known as the graph's chromatic number, denoted by $\chi(G)$. Equivalently,
+    $\chi(G)$ is the minimum number of independent sets needed to partition
     the nodes of $G$.
 
     Determining a node coloring that minimizes the number of colors is an
@@ -1881,7 +1951,7 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
     -------
     dict
         A dictionary with keys representing nodes and values representing their
-        colors. Colors are identified by the integers $0,1,2,\\ldots$. The
+        colors. Colors are identified by the integers $0,1,2,\ldots$. The
         number of colors being used in a solution ``c`` is therefore
         ``max(c.values()) + 1``.
 
@@ -1932,21 +2002,21 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
 
     The ``random`` strategy operates by first randomly permuting the nodes (an
     $O(n)$ operation) before applying the greedy algorithm. It is guaranteed to
-    produce a solution with $k \\leq \\Delta(G) + 1$ colors, where
-    $\\Delta(G)$ is the highest node degree in the graph $G$.
+    produce a solution with $k \leq \Delta(G) + 1$ colors, where
+    $\Delta(G)$ is the highest node degree in the graph $G$.
 
     The ``welsh-powell`` strategy operates by sorting the nodes by decreasing
-    degree (an $O(n \\lg n)$ operation), and then applies the greedy algorithm.
-    Its overall complexity is therefore $O(n \\lg n + m)$. Assuming that the
-    nodes are labelled $v_1, v_2,\\ldots,v_n$ so that $\\deg(v_1) \\geq
-    \\deg(v_2) \\geq \\ldots \\geq \\deg(v_n)$, this method is guaranteed to
-    produce a solution with $k \\leq\\max_{i=1,\\ldots,n} \\min(\\deg(v_i)+1,
-    i)$ colors. This bound is an improvement on $\\Delta(G) + 1$.
+    degree (an $O(n \lg n)$ operation), and then applies the greedy algorithm.
+    Its overall complexity is therefore $O(n \lg n + m)$. Assuming that the
+    nodes are labelled $v_1, v_2,\ldots,v_n$ so that $\deg(v_1) \geq
+    \deg(v_2) \geq \ldots \geq \deg(v_n)$, this method is guaranteed to
+    produce a solution with $k \leq\max_{i=1,\ldots,n} \min(\deg(v_i)+1,
+    i)$ colors. This bound is an improvement on $\Delta(G) + 1$.
 
     The ``dsatur`` and ``rlf`` strategies are exact for bipartite, cycle, and
     wheel graphs (that is, solutions with the minimum number of colors are
     guaranteed). The implementation of ``dsatur`` uses a priority queue and has
-    a complexity of $O(n \\lg n + m \\lg m)$. The ``rlf`` implementation has a
+    a complexity of $O(n \lg n + m \lg m)$. The ``rlf`` implementation has a
     complexity of $O(nm)$. In general, the ``rlf`` strategy yields the best
     solutions of the four strategies, though it is computationally more
     expensive. If expense is an issue, then ``dsatur`` is a cheaper alternative
@@ -1957,13 +2027,13 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
     the number of colors. The backtracking approach (``opt_alg=1``) is an
     implementation of the exact algorithm described in [4]_. It has exponential
     runtime and halts only when an optimum solution has been found. At the
-    start of execution, a large clique $C\\subseteq V$ is identified using the
+    start of execution, a large clique $C\subseteq V$ is identified using the
     NetworkX function ``max_clique(G)`` and the nodes of $C$ are each assigned
     to a different color. The main backtracking algorithm is then executed and
     only halts only when a solution using $|C|$ colors has been identified, or
     when the algorithm has backtracked to the root of the search tree. In both
     cases the returned solution will be optimal (that is, will be using
-    $\\chi(G)$ colors).
+    $\chi(G)$ colors).
 
     If local search is used (``opt_alg`` is set to ``2``, ``3``, ``4``, or
     ``5``), the algorithm removes a color class and uses the chosen local
@@ -1993,7 +2063,7 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
     solutions that is evolved using selection, recombination, local search and
     replacement. Specifically, in each HEA cycle, two parent solutions are
     selected from the population, and these are used in conjunction with a
-    specialised recombination operator to produce a new offspring solution.
+    specialized recombination operator to produce a new offspring solution.
     Local search is this applied to the offspring for a fixed number of
     iterations, and the resultant solution is inserted back into the
     population, replacing its weaker parent. If ``opt_alg=4``, TabuCol is
@@ -2004,7 +2074,7 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
     limits will usually be needed to see these improvements.
 
     As stated above, if ``verbose`` is set to a positive integer, output is
-    produced during the execution of the chosen optimzation algorithm. If the
+    produced during the execution of the chosen optimization algorithm. If the
     backtracking algorithm is being used, the stated iterations refer to the
     number of calls to its recursive function. Otherwise, iterations refer to
     the $O(nk +m)$ processes mentioned above. If no optimization is performed,
@@ -2065,11 +2135,11 @@ def node_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
 
 
 def chromatic_number(G):
-    """Return the chromatic number of the graph ``G``.
+    r"""Return the chromatic number of the graph ``G``.
 
     The chromatic number of a graph $G$ is the minimum number of colors needed
     to color the nodes so that no two adjacent nodes have the same color. It is
-    commonly denoted by $\\chi(G)$. Equivalently, $\\chi(G)$ is the minimum
+    commonly denoted by $\chi(G)$. Equivalently, $\chi(G)$ is the minimum
     number of independent sets needed to partition the nodes of $G$.
 
     Determining the chromatic number is NP-hard. The approach used here is
@@ -2143,18 +2213,15 @@ def chromatic_number(G):
 def node_precoloring(
     G, precol=None, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0
 ):
-    """Return a coloring of a graph's nodes where some nodes are precolored.
+    r"""Return a coloring of a graph's nodes where some nodes are precolored.
 
     A node coloring of a graph is an assignment of colors to nodes so that
-    adjacent nodes have different colors. The aim is to use as few colors as
-    possible. A set of nodes assigned to the same color corresponds to an
-    independent set; hence the equivalent aim is to partition the graph's
-    nodes into a minimum number of independent sets.
-
-    In the node precoloring problem, some of the nodes have already been
-    assigned colors. The aim is to allocate colors to the remaining nodes so
-    that we get a full, proper node coloring that uses a minimum number of
-    colors. The node precoloring problem can be used to model the Latin square
+    adjacent nodes have different colors. In the node precoloring problem, some
+    of the nodes have already been assigned colors. Colors are defined using
+    labels belonging to the set $\{0,1,2,\ldots\}$. Assuming $k$ is the
+    largest color label used in the precoloring, the aim is to color all
+    remaining nodes using $l$ colors, where $l$ is minimized and $k\leq l$.
+    The node precoloring problem can be used to model the Latin square
     completion problem and Sudoku puzzles [1]_.
 
     The node precoloring problem is NP-hard. This method therefore includes
@@ -2166,7 +2233,7 @@ def node_precoloring(
     appropriate.
 
     In this implementation, solutions are found by taking all nodes
-    pre-allocated to the same color $j$ and merging them into a single
+    pre-allocated to the same color and merging them into a single
     super-node. Edges are then added between all pairs of super-nodes,
     and the modified graph is passed to the :meth:`node_coloring` method. All
     parameters are therefore the same as the latter. This modification process
@@ -2178,8 +2245,8 @@ def node_precoloring(
         The nodes of this graph will be colored.
 
     precol : None or dict, optional (default=None)
-        A dictionary that specifies the (integer) colors of any precolored
-        nodes.
+        A dictionary that specifies the (nonnegative integer) colors of any
+        precolored nodes.
 
     strategy : string, optional (default='dsatur')
         A string specifying the method used to generate the initial solution.
@@ -2232,9 +2299,8 @@ def node_precoloring(
     -------
     dict
         A dictionary with keys representing nodes and values representing their
-        colors. Colors are identified by the integers $0,1,2,\\ldots$. The
-        number of colors being used in a solution ``c`` is therefore
-        ``max(c.values()) + 1``. If ``precol[v]==j`` then ``c[v]==j``.
+        colors. Colors are identified by the integers $0,1,2,\ldots$. If
+        ``precol[v]==j`` then ``c[v]==j``.
 
     Examples
     --------
@@ -2274,13 +2340,13 @@ def node_precoloring(
 
         If ``precol`` contains a node that is not in ``G``.
 
-        If ``precol`` contains a non-integer color label.
+        If ``precol`` contains a color label that is not a nonnegative integer.
 
-        If ``precol`` contains a pair of adjacent nodes assigned the same
+        If ``precol`` contains a pair of adjacent nodes assigned to the same
         color.
 
-        If ``precol`` uses an integer color label $j$, but there exists a color
-        label $0 \\leq i < j$ that is not being used.
+    TypeError
+        If ``precol`` is not a dict.
 
     Notes
     -----
@@ -2329,18 +2395,17 @@ def node_precoloring(
                 "Error, for this method, the name 'super' is reserved. "
                 "Please use another name"
             )
-    cols = set()
     for u in precol:
         if u not in G:
             raise ValueError(
-                "Error, an entity is defined in the precoloring that's not in "
+                "Error, entity defined in the precoloring that's not in "
                 "the graph"
             )
-        if not isinstance(precol[u], int):
+        if not isinstance(precol[u], int) or precol[u] < 0:
             raise ValueError(
-                "Error, all color labels in the precoloring should be integers"
+                "Error, all color labels in the precoloring should be "
+                "nonnegative integers."
             )
-        cols.add(precol[u])
         for v in G[u]:
             if v in precol and precol[u] == precol[v]:
                 raise ValueError(
@@ -2348,19 +2413,12 @@ def node_precoloring(
                     "with the same color"
                 )
     k = max(precol.values()) + 1
-    for i in range(k):
-        if i not in cols:
-            raise ValueError(
-                "Error, the color labels in the precoloring should be in "
-                "{0,1,2,...} and each color should be being used at least "
-                "once"
-            )
     # V[i] holds the set of nodes assigned to each color i
-    V = defaultdict(set)
+    V = {i: set() for i in range(k)}
     for v in precol:
         V[precol[v]].add(v)
-    # Form the graph GPrime. This incorporates the precolorings on G and
-    # merges nodes of the same color into a single super-node
+    # Form the graph GPrime. This takes the precolorings defined on G and
+    # merges each node of the same color into a single super-node
     GPrime = nx.Graph()
     for i in V:
         GPrime.add_node(("super", i))
@@ -2380,12 +2438,13 @@ def node_precoloring(
         for j in V:
             if i != j:
                 GPrime.add_edge(("super", i), ("super", j))
-    # Now color GPrime and use this solution to gain a coloring c for G
+    # Now color GPrime. At least k colors will be needed
     cPrime = node_coloring(
         GPrime, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit,
         verbose=verbose
     )
     k = max(cPrime.values()) + 1
+    # Make a coloring c of G by replacing the super-nodes by their originals
     c = {}
     for u in cPrime:
         if isinstance(u, tuple) and u[0] == "super":
@@ -2393,17 +2452,270 @@ def node_precoloring(
                 c[v] = cPrime[u]
         else:
             c[u] = cPrime[u]
-    # Finally, apply a color relabeling to conform to the original precoloring
+    # Finally, apply a color relabeling to conform to the specified precoloring
     colmap = {}
+    usedcols = set()
     for u in precol:
         colmap[c[u]] = precol[u]
-    cnt = len(V)
+        usedcols.add(precol[u])
+    unusedcols = [i for i in range(k) if i not in usedcols]
     for i in range(k):
         if i not in colmap:
-            colmap[i] = cnt
-            cnt += 1
+            colmap[i] = unusedcols[-1]
+            unusedcols.pop()
     for v in c:
         c[v] = colmap[c[v]]
+    return c
+
+
+def node_list_coloring(
+    G,
+    allowed_cols=None,
+    strategy="dsatur",
+    opt_alg=None,
+    it_limit=0,
+    verbose=0
+):
+    r"""Return a solution to the node list coloring problem on ``G``.
+
+    In the list coloring problem, each node $v$ is associated with a list of
+    allowed colors $L(v)$. A solution is an assignment of colors to all nodes
+    so that adjacent nodes have different colors, and the color of each node
+    $v$ belongs to the list $L(v)$.
+
+    The list coloring problem is NP-hard. This method therefore includes
+    options for using an exponential-time exact algorithm (based on
+    backtracking), or a choice of four polynomial-time heuristic algorithms
+    (based on local search). The exact algorithm is generally only suitable
+    for graphs that are small, or that have topologies suited to its search
+    strategies. In all other cases, the local search algorithms are more
+    appropriate.
+
+    In this implementation, colors are defined using labels belonging to
+    $\{0,1,2,\ldots\}$. Assuming $k$ is the largest color label appearing
+    across all lists $L(v)$, the aim is to find a solution using at
+    most $k$ colors. If this cannot be done, an exception is raised (see
+    below).
+
+    Here, solutions are found by adding a clique of $k$ dummy nodes, one for
+    each color. Additional edges are then added between a node $v$ and a
+    dummy node $i$ whenever $i$ does not occur in $L(v)$. The modified graph is
+    then passed to the :meth:`node_k_coloring` method. All parameters are
+    therefore the same as the latter. This modification process is described
+    in more detail in Chapter 6 of [1]_.
+
+    Parameters
+    ----------
+    G : NetworkX graph
+        The nodes of this graph will be colored.
+
+    allowed_cols : None or dict, optional (default=None)
+        A dictionary, keyed by the nodes of ``G``. ``allowed_cols[v]`` should
+        be a list of nonnegative integers that defines the permissible
+        colors for node ``v``. If None, a node coloring with the minimum
+        number of colors is returned.
+
+    strategy : string, optional (default='dsatur')
+        A string specifying the method used to generate the initial solution.
+        It must be one of the following:
+
+        * ``'random'`` : Randomly orders the modified graph's nodes and then
+          applies the greedy algorithm for graph node coloring [2]_.
+        * ``'welsh-powell'`` : Orders the modified graphs nodes by decreasing
+          degree, then applies the greedy algorithm.
+        * ``'dsatur'`` : Uses the DSatur algorithm for graph node coloring on
+          the modified graph [3]_.
+        * ``'rlf'`` : Uses the recursive largest first (RLF) algorithm for
+          graph node coloring on the modified graph [4]_.
+
+    opt_alg : None or int, optional (default=None)
+        An integer specifying the optimization method that will be used.
+
+        * ``1`` : An exact, exponential-time algorithm based on backtracking.
+          The algorithm halts only when an optimal solution has been found.
+        * ``2`` : A local search algorithm that seeks to reduce the number of
+          colors by temporarily allowing adjacent nodes to have the same color.
+          Each iteration has a complexity $O(m + kn)$, where $n$ is the number
+          of nodes in the modified graph, $m$ is the number of edges, and $k$
+          is the number of colors in the current solution.
+        * ``3`` : A local search algorithm that seeks to reduce the number of
+          colors by temporarily allowing nodes to be uncolored. Each iteration
+          has a complexity $O(m + kn)$, as above.
+        * ``4`` : A hybrid evolutionary algorithm (HEA) that evolves a small
+          population of solutions. During execution, when each new solution is
+          created, the local search method used in Option ``2`` above is
+          applied for a fixed number of iterations. Each iteration of this HEA
+          therefore has a complexity of $O(m + kn)$, as above.
+        * ``5`` : A hybrid evolutionary algorithm is applied (as above), using
+          the local search method from Option ``3``.
+        * ``None`` : No optimization is performed.
+
+        Further details of these algorithms are given in the notes section of
+        the :meth:`node_coloring` method.
+
+    it_limit : int, optional (default=0)
+        Number of iterations of the local search procedure. Not applicable
+        when using ``opt_alg=1``.
+
+    verbose : int, optional (default=0)
+        If set to a positive value, information is output during the
+        optimization process. The higher the value, the more information.
+
+    Returns
+    -------
+    dict
+        A dictionary with keys representing nodes and values representing their
+        colors. Colors are identified by the integers $0,1,2,\ldots$.
+        If ``c[v]==j`` then ``j`` is an element of ``allowed_cols[v]``.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import gcol
+    >>>
+    >>> G = nx.cycle_graph(4)
+    >>> V = {0: [0, 1], 1: [1], 2: [0, 3], 3: [0, 1, 3]}
+    >>> c = gcol.node_list_coloring(G, V)
+    >>> print(c)
+    {1: 1, 0: 0, 2: 3, 3: 1}
+
+    Raises
+    ------
+    NotImplementedError
+        If ``G`` is a directed graph or a multigraph.
+
+        If ``G`` contains any self-loops.
+
+    ValueError
+        If ``strategy`` is not among the supported options.
+
+        If ``opt_alg`` is not among the supported options.
+
+        If ``it_limit`` is not a nonnegative integer.
+
+        If ``verbose`` is not a nonnegative integer.
+
+        If ``G`` contains a node with the name ``'dummy'``.
+
+        If ``allowed_cols`` has a node not in G, or is missing an entry for a
+        node in ``G``.
+
+        If ``allowed_cols`` contains a color label that is not a nonnegative
+        integer.
+
+        If ``allowed_cols`` contains a list that is empty.
+
+        If ``allowed_cols`` contains a pair of adjacent nodes that have the
+        same single allowed color.
+
+        If a node list k-coloring could not be determined (the lists of
+        allowed colors are too restrictive).
+
+    TypeError
+        If ``allowed_cols`` is not a dict.
+
+    Notes
+    -----
+    As mentioned, in this implementation, solutions are formed by passing a
+    modified version of the graph to the :meth:`node_k_coloring` method.
+    Details are therefore the same as those in the latter.
+
+    All the above algorithms and bounds are described in detail in [1]. The c++
+    code used in [1]_ and [5]_ forms the basis of this library's Python
+    implementations.
+
+    See Also
+    --------
+    node_coloring
+    :meth:`gcol.edge_coloring.edge_precoloring`
+
+    References
+    ----------
+    .. [1] Lewis, R. (2021) A Guide to Graph Colouring: Algorithms and
+      Applications (second ed.). Springer. ISBN: 978-3-030-81053-5.
+      <https://link.springer.com/book/10.1007/978-3-030-81054-2>.
+    .. [2] Wikipedia: Greedy Coloring
+      <https://en.wikipedia.org/wiki/Greedy_coloring>
+    .. [3] Wikipedia: DSatur <https://en.wikipedia.org/wiki/DSatur>
+    .. [4] Wikipedia: Recursive largest first (RLF) algorithm
+      <https://en.wikipedia.org/wiki/Recursive_largest_first_algorithm>
+    .. [5] Lewis, R: Graph Colouring Algorithm User Guide
+      <https://rhydlewis.eu/gcol/>
+
+    """
+    _check_params(G, strategy, opt_alg, it_limit, verbose)
+    if len(G) == 0:
+        return {}
+    if allowed_cols is None or len(allowed_cols) == 0:
+        return node_coloring(
+            G, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit,
+            verbose=verbose
+        )
+    if not isinstance(allowed_cols, dict):
+        raise TypeError(
+            "Error, allowed_cols should be a dict specifying a set of "
+            "allowed colors for every graph entity."
+        )
+    if len(G) != len(allowed_cols):
+        raise ValueError(
+            "Error, list of allowed colors must be specified for every "
+            "entity."
+        )
+    for u in G:
+        if u not in allowed_cols:
+            raise ValueError(
+                "Error, list of allowed colors must be specified for "
+                "every entity."
+            )
+        if isinstance(u, tuple) and u[0] == "dummy":
+            raise ValueError(
+                "Error, for this method, the name 'dummy' is reserved. "
+                "Please use another name."
+            )
+    # For each node u, L[u] is the set of allowed colors.
+    L, allCols = {}, set()
+    for u in G:
+        L[u] = set(allowed_cols[u])
+        if not L[u]:
+            raise ValueError(
+                "Error, each entity needs at least one allowed color."
+            )
+        for i in L[u]:
+            if not isinstance(i, int) or i < 0:
+                raise ValueError(
+                    "Error, color labels used in allowed_cols must be "
+                    "nonnegative integers."
+                )
+        allCols.update(L[u])
+    for u, v in G.edges():
+        if len(L[u]) == 1 and len(L[v]) == 1 and L[u] == L[v]:
+            raise ValueError(
+                "Error, two adjacent entities have the same single "
+                "allowed color. No solution is possible.")
+    # Add a clique of dummy nodes to G, then more edges to stop nodes receiving
+    # certain colors
+    for i in allCols:
+        G.add_node(("dummy", i))
+    for i in allCols:
+        for j in allCols:
+            if i != j:
+                G.add_edge(("dummy", i), ("dummy", j))
+    for u in L:
+        for i in allCols:
+            if i not in L[u]:
+                G.add_edge(u, ("dummy", i))
+    c = node_k_coloring(
+        G, len(allCols), opt_alg=opt_alg, it_limit=it_limit, verbose=verbose
+    )
+    # Apply a color relabeling and delete the dummy nodes (any node with the
+    # same color as ("dummy", i) should receive color i
+    colmap = {}
+    for i in allCols:
+        colmap[c[("dummy", i)]] = i
+        del c[("dummy", i)]
+        G.remove_node(("dummy", i))
+    for u in c:
+        c[u] = colmap[c[u]]
     return c
 
 
@@ -2413,3 +2725,4 @@ min_cost_k_colouring = min_cost_k_coloring
 node_colouring = node_coloring
 node_k_colouring = node_k_coloring
 node_precolouring = node_precoloring
+node_list_colouring = node_list_coloring

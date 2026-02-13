@@ -1,14 +1,16 @@
+"""Edge coloring functions."""
+
 import networkx as nx
 import random
 from .node_coloring import equitable_node_k_coloring, node_k_coloring, _greedy
 from .node_coloring import _rlf, _dsatur, _getEdgeWeights, _getNodeWeights
 from .node_coloring import _reducecolors, _backtrackcol, node_precoloring
-from .node_coloring import _check_params
+from .node_coloring import _check_params, node_list_coloring
 
 
 def equitable_edge_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0,
                               verbose=0):
-    """Attempt to color the edges of a graph using ``k`` colors.
+    r"""Attempt to color the edges of a graph using ``k`` colors.
 
     This is done so that (a) adjacent edges have different colors, and (b) the
     weight of each color class is equal. (A pair of edges is considered
@@ -26,7 +28,7 @@ def equitable_edge_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0,
     passing $L(G)$ to the :meth:`node_k_coloring` method. All parameters are
     therefore the same as the latter. (Note that, if a graph $G=(V,E)$ has $n$
     nodes and $m$ edges, its line graph $L(G)$ will have $m$ nodes and
-    $\\frac{1}{2}\\sum_{v\\in V}\\deg(v)^2 - m$ edges.)
+    $\frac{1}{2}\sum_{v\in V}\deg(v)^2 - m$ edges.)
 
     If an edge $k$-coloring cannot be determined by the algorithm, a
     ``ValueError`` exception is raised. Otherwise, once an edge $k$-coloring
@@ -90,7 +92,7 @@ def equitable_edge_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0,
     dict
         A dictionary with keys representing edges and values representing
         their colors. Colors are identified by the integers
-        $0,1,2,\\ldots,k-1$.
+        $0,1,2,\ldots,k-1$.
 
     Examples
     --------
@@ -209,7 +211,7 @@ def equitable_edge_k_coloring(G, k, weight=None, opt_alg=None, it_limit=0,
 
 
 def edge_k_coloring(G, k, opt_alg=None, it_limit=0, verbose=0):
-    """Attempt to color the edges of a graph ``G`` using ``k`` colors.
+    r"""Attempt to color the edges of a graph ``G`` using ``k`` colors.
 
     This is done so that adjacent edges have different colors (a pair of edges
     is considered adjacent if and only if they share a common endpoint). A set
@@ -217,14 +219,14 @@ def edge_k_coloring(G, k, opt_alg=None, it_limit=0, verbose=0):
     equivalent aim is to partition the graph's edges into ``k`` matchings.
 
     The smallest number of colors needed for coloring the edges of a graph $G$
-    is known as the graph's chromatic index, denoted by $\\chi'(G)$.
-    Equivalently, $\\chi'(G)$ is the minimum number of matchings needed to
+    is known as the graph's chromatic index, denoted by $\chi'(G)$.
+    Equivalently, $\chi'(G)$ is the minimum number of matchings needed to
     partition the nodes of a simple graph $G$. According to Vizing's theorem
-    [1]_, $\\chi'(G)$ is either $\\Delta(G)$ or $\\Delta(G) + 1$, where
-    $\\Delta(G)$ is the maximum degree in $G$. The problem of determining an
-    edge $k$-coloring is polynomially solvable for any $k > \\Delta(G)$.
-    Similarly, it is certain no edge $k$-coloring exists for $k < \\Delta(G)$.
-    For $k = \\Delta(G)$, however, the problem is NP-hard.
+    [1]_, $\chi'(G)$ is either $\Delta(G)$ or $\Delta(G) + 1$, where
+    $\Delta(G)$ is the maximum degree in $G$. The problem of determining an
+    edge $k$-coloring is polynomially solvable for any $k > \Delta(G)$.
+    Similarly, it is certain no edge $k$-coloring exists for $k < \Delta(G)$.
+    For $k = \Delta(G)$, however, the problem is NP-hard.
 
     This method therefore includes options for using an exact exponential-time
     algorithm (based on backtracking), or a choice of four polynomial-time
@@ -238,7 +240,7 @@ def edge_k_coloring(G, k, opt_alg=None, it_limit=0, verbose=0):
     line graph $L(G)$ and then passing $L(G)$ to the :meth:`node_k_coloring`
     method. All parameters are therefore the same as the latter. (Note that,
     if a graph $G=(V,E)$ has $n$ nodes and $m$ edges, its line graph $L(G)$
-    will have $m$ nodes and $\\frac{1}{2}\\sum_{v\\in V}\\deg(v)^2 - m$ edges.)
+    will have $m$ nodes and $\frac{1}{2}\sum_{v\in V}\deg(v)^2 - m$ edges.)
 
     If an edge $k$-coloring cannot be determined by the algorithm, a
     ``ValueError`` exception is raised. Otherwise, an edge $k$-coloring is
@@ -293,7 +295,7 @@ def edge_k_coloring(G, k, opt_alg=None, it_limit=0, verbose=0):
     dict
         A dictionary with keys representing edges and values representing
         their colors. Colors are identified by the integers
-        $0,1,2,\\ldots,k-1$.
+        $0,1,2,\ldots,k-1$.
 
     Examples
     --------
@@ -378,7 +380,7 @@ def edge_k_coloring(G, k, opt_alg=None, it_limit=0, verbose=0):
 
 
 def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
-    """Return a coloring of a graph's edges.
+    r"""Return a coloring of a graph's edges.
 
     An edge coloring of a graph is an assignment of colors to edges so that
     adjacent edges have different colors (a pair of edges is considered
@@ -388,11 +390,11 @@ def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
     graph's edges into a minimum number of matchings.
 
     The smallest number of colors needed for coloring the edges of a graph $G$
-    is known as the graph's chromatic index, denoted by $\\chi'(G)$.
-    Equivalently, $\\chi'(G)$ is the minimum number of matchings needed to
+    is known as the graph's chromatic index, denoted by $\chi'(G)$.
+    Equivalently, $\chi'(G)$ is the minimum number of matchings needed to
     partition the nodes of a simple graph $G$. According to Vizing's theorem
-    [1]_, $\\chi'(G)$ is either $\\Delta(G)$ or $\\Delta(G) + 1$, where
-    $\\Delta(G)$ is the maximum degree in $G$.
+    [1]_, $\chi'(G)$ is either $\Delta(G)$ or $\Delta(G) + 1$, where
+    $\Delta(G)$ is the maximum degree in $G$.
 
     Determining an edge coloring that minimizes the number of colors is an
     NP-hard problem. This method therefore includes options for using an
@@ -406,8 +408,8 @@ def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
     forming $G$'s line graph $L(G)$, and then passing $L(G)$ to the
     :meth:`node_coloring` method. All parameters are therefore the same as the
     latter. (Note that, if a graph $G=(V,E)$ has $n$ nodes and $m$ edges, its
-    line graph $L(G)$ will have $m$ nodes and $\\frac{1}{2}\\sum_{v\\in V}
-    \\deg(v)^2 - m$ edges.)
+    line graph $L(G)$ will have $m$ nodes and $\frac{1}{2}\sum_{v\in V}
+    \deg(v)^2 - m$ edges.)
 
     Parameters
     ----------
@@ -465,7 +467,7 @@ def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
     -------
     dict
         A dictionary with keys representing edges and values representing their
-        colors. Colors are identified by the integers $0,1,2,\\ldots$. The
+        colors. Colors are identified by the integers $0,1,2,\ldots$. The
         number of colors being used in a solution ``c`` is therefore
         ``max(c.values()) + 1``.
 
@@ -569,15 +571,15 @@ def edge_coloring(G, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0):
 
 
 def chromatic_index(G):
-    """Return the chromatic index of the graph ``G``.
+    r"""Return the chromatic index of the graph ``G``.
 
     The chromatic index of a graph $G$ is the minimum number of colors needed
     to color the edges so that no two adjacent edges have the same color (a
     pair of edges is considered adjacent if and only if they share a common
-    endpoint). The chromatic index is commonly denoted by $\\chi'(G)$.
-    Equivalently, $\\chi'(G)$ is the minimum number of matchings needed to
-    partition the edges of $G$. According to Vizing's theorem [1]_, $\\chi'(G)$
-    is equal to either $\\Delta(G)$ or $\\Delta(G) + 1$, where $\\Delta(G)$ is
+    endpoint). The chromatic index is commonly denoted by $\chi'(G)$.
+    Equivalently, $\chi'(G)$ is the minimum number of matchings needed to
+    partition the edges of $G$. According to Vizing's theorem [1]_, $\chi'(G)$
+    is equal to either $\Delta(G)$ or $\Delta(G) + 1$, where $\Delta(G)$ is
     the maximum degree in $G$.
 
     Determining the chromatic index of a graph is NP-hard. The approach used
@@ -659,18 +661,14 @@ def chromatic_index(G):
 def edge_precoloring(
     G, precol=None, strategy="dsatur", opt_alg=None, it_limit=0, verbose=0
 ):
-    """Return a coloring of a graph's edges where some edges are precolored.
+    r"""Return a coloring of a graph's edges where some edges are precolored.
 
     An edge coloring of a graph is an assignment of colors to edges so that
-    adjacent edges have different colors (a pair of edges is considered
-    adjacent if and only if they share a common endpoint). The aim is to use
-    as few colors as possible. A set of edges assigned to the same color
-    corresponds to a matching; hence the equivalent aim is to partition the
-    graph's edges into a minimum number of matchings.
-
-    In the edge precoloring problem, some of the edges have already been
-    assigned colors. The aim is to allocate colors to the remaining edges so
-    that we get a full edge coloring that uses a minimum number of colors.
+    adjacent edges have different colors. In the edge precoloring problem, some
+    of the edges have already been assigned colors. Colors are defined using
+    labels belonging to the set $\{0,1,2,\ldots\}$. Assuming $k$ is the
+    largest color label used in the precoloring, the aim is to color all
+    remaining edges using $l$ colors, where $l$ is minimized and $k\leq l$.
 
     The edge precoloring problem is NP-hard. This method therefore includes
     options for using an exponential-time exact algorithm (based on
@@ -684,8 +682,8 @@ def edge_precoloring(
     forming $G$'s line graph $L(G)$ and then passing $L(G)$ to the
     :meth:`node_precoloring` method. All parameters are therefore the same as
     the latter. (Note that, if a graph $G=(V,E)$ has $n$ nodes and $m$ edges,
-    its line graph $L(G)$ will have $m$ nodes and $\\frac{1}{2}\\sum_{v\\in V}
-    \\deg(v)^2 - m$ edges.)
+    its line graph $L(G)$ will have $m$ nodes and $\frac{1}{2}\sum_{v\in V}
+    \deg(v)^2 - m$ edges.)
 
     Parameters
     ----------
@@ -746,9 +744,8 @@ def edge_precoloring(
     -------
     dict
         A dictionary with keys representing edges and values representing their
-        colors. Colors are identified by the integers $0,1,2,\\ldots$. The
-        number of colors being used in a solution ``c`` is therefore
-        ``max(c.values()) + 1``. If ``precol[(u,v)]==j`` then ``c[(u,v)]==j``.
+        colors. Colors are identified by the integers $0,1,2,\ldots$. If
+        ``precol[(u,v)]==j`` then ``c[(u,v)]==j``.
 
     Examples
     --------
@@ -760,9 +757,6 @@ def edge_precoloring(
     >>> c = gcol.edge_precoloring(G, precol=p)
     >>> print("Coloring is",c)
     Coloring is {(0, 1): 0, (8, 9): 1, ..., (5, 6): 2}
-    >>>
-    >>> print("Number of colors =", max(c.values()) + 1)
-    Number of colors = 4
 
     Raises
     ------
@@ -782,21 +776,18 @@ def edge_precoloring(
 
         If ``precol`` contains an edge that is not in ``G``.
 
-        If ``precol`` contains a non-integer color label.
+        If ``precol`` contains a color label that is not a nonnegative integer.
 
         If ``precol`` contains a pair of adjacent edges assigned to the same
         color.
 
-        If ``precol`` uses an integer color label $j$, but there exists a color
-        label $0 \\leq i < j$ that is not being used.
+        If ``precol`` contains entries for the same edges (u, v) and (v, u).
+
+    TypeError
+        If ``precol`` is not a dict.
 
     Notes
     -----
-    As mentioned, in this implementation, edge colorings of a graph $G$ are
-    determined by forming $G$'s line graph $L(G)$ and then passing $L(G)$ to
-    the :meth:`node_precoloring` method. All details are therefore the same as
-    those in the latter, where they are documented.
-
     All the above algorithms and bounds are described in detail in [4]_. The
     c++ code used in [4]_ and [5]_ forms the basis of this library's Python
     implementations.
@@ -834,18 +825,22 @@ def edge_precoloring(
             "Error, the precoloring should be a dict that assigns a subset of "
             "the graph's edges to colors"
         )
-    cols = set()
     for u, v in precol:
         if not G.has_edge(u, v):
             raise ValueError(
-                "Error, an edge is defined in the precoloring that is not in "
-                "the graph"
+                "Error, the edge (" + str(u) + ", " + str(v) + ") is defined "
+                "in the precoloring, but is not in the graph."
             )
-        if not isinstance(precol[u, v], int):
+        if not isinstance(precol[u, v], int) or precol[u, v] < 0:
             raise ValueError(
-                "Error, all color labels in the precoloring should be integers"
+                "Error, all color labels in the precoloring should be "
+                "nonnegative integers."
             )
-        cols.add(precol[u, v])
+        if (v, u) in precol:
+            raise ValueError(
+                "Error, precol contains an edge (u, v) and an edge (v, u). "
+                "Only one of these should be used as they mean the same thing."
+            )
     for e1 in precol:
         for e2 in precol:
             if e1 != e2:
@@ -860,17 +855,235 @@ def edge_precoloring(
                             "Error, there are adjacent edges in the "
                             "precoloring with the same color"
                         )
-    k = max(precol.values()) + 1
-    for i in range(k):
-        if i not in cols:
-            raise ValueError(
-                "Error, the color labels in the precoloring should be in "
-                "{0,1,2,...} and each color should be being used by at least "
-                "one edge"
-            )
+    # Form the line graph H and construct a new precoloring dict to ensure
+    # naming consistency for the edges
     H = nx.line_graph(G)
+    edge_precol = {}
+    for (u, v) in H.nodes():
+        if (u, v) in precol:
+            edge_precol[u, v] = precol[u, v]
+        elif (v, u) in precol:
+            edge_precol[u, v] = precol[v, u]
     return node_precoloring(
-        H, precol=precol, strategy=strategy, opt_alg=opt_alg,
+        H, precol=edge_precol, strategy=strategy, opt_alg=opt_alg,
+        it_limit=it_limit, verbose=verbose
+    )
+
+
+def edge_list_coloring(
+    G,
+    allowed_cols=None,
+    strategy="dsatur",
+    opt_alg=None,
+    it_limit=0,
+    verbose=0
+):
+    r"""Return a solution to the edge list coloring problem on ``G``.
+
+    In the edge list coloring problem, each edge $\{u,v\}$ is associated with a
+    list of allowed colors $L(\{u,v\})$. A solution is an assignment of colors
+    to all edges so that adjacent edges have different colors, and the color of
+    each edge $\{u,v\}$ belongs to the list $L(\{u,v\})$.
+
+    The list coloring problem is NP-hard. This method therefore includes
+    options for using an exponential-time exact algorithm (based on
+    backtracking), or a choice of four polynomial-time heuristic algorithms
+    (based on local search). The exact algorithm is generally only suitable
+    for graphs that are small, or that have topologies suited to its search
+    strategies. In all other cases, the local search algorithms are more
+    appropriate.
+
+    In this implementation, colors are defined using labels belonging to
+    $\{0,1,2,\ldots\}$. Assuming $k$ is the largest color label appearing
+    across all lists, the aim is to find a solution using at
+    most $k$ colors. If this cannot be achieved, an exception is raised (see
+    below).
+
+    Here, edge colorings of a graph $G$ are determined by
+    forming $G$'s line graph $L(G)$ and then passing $L(G)$ to the
+    :meth:`node_list_coloring` method. All parameters are therefore the same as
+    the latter. (Note that, if a graph $G=(V,E)$ has $n$ nodes and $m$ edges,
+    its line graph $L(G)$ will have $m$ nodes and $\frac{1}{2}\sum_{v\in V}
+    \deg(v)^2 - m$ edges.)
+
+    Parameters
+    ----------
+    G : NetworkX graph
+        The edges of this graph will be colored.
+
+    allowed_cols : None or dict, optional (default=None)
+        A dictionary keyed by the edges of ``G``. ``allowed_cols[(u, v)]``
+        should be a list of (nonnegative integer) colors that give the
+        permissible colors for edge ``(u, v)``. If None, an edge coloring with
+        the minimum number of colors is returned.
+
+    strategy : string, optional (default='dsatur')
+        A string specifying the method used to generate the initial solution.
+        It must be one of the following:
+
+        * ``'random'`` : Randomly orders $L(G)$'s nodes and then applies the
+          greedy algorithm for graph node coloring [1]_.
+        * ``'welsh-powell'`` : Orders $L(G)$'s nodes by decreasing degree,
+          then applies the greedy algorithm.
+        * ``'dsatur'`` : Uses the DSatur algorithm for graph node coloring on
+          $L(G)$ [2]_.
+        * ``'rlf'`` : Uses the recursive largest first (RLF) algorithm for
+          graph node coloring on $L(G)$ [3]_.
+
+    opt_alg : None or int, optional (default=None)
+        An integer specifying the optimization method that will be used.
+
+        * ``1`` : An exact, exponential-time algorithm based on backtracking.
+          The algorithm halts only when an optimal solution has been found.
+        * ``2`` : A local search algorithm that seeks to reduce the number of
+          colors by temporarily allowing adjacent nodes in $L(G)$ to have the
+          same color. Each iteration has a complexity $O(m + kn)$, where $n$ is
+          the number of nodes in $L(G)$, $m$ is the number of edges, and $k$ is
+          the number of colors in the current solution.
+        * ``3`` : A local search algorithm that seeks to reduce the number of
+          colors by temporarily allowing nodes in $L(G)$ to be uncolored. Each
+          iteration has a complexity $O(m + kn)$, as above.
+        * ``4`` : A hybrid evolutionary algorithm (HEA) that evolves a small
+          population of solutions. During execution, when each new solution is
+          created, the local search method used in Option ``2`` above is
+          applied for a fixed number of iterations. Each iteration of this HEA
+          therefore has a complexity of $O(m + kn)$, as above.
+        * ``5`` : A hybrid evolutionary algorithm is applied (as above), using
+          the local search method from Option ``3``.
+        * ``None`` : No optimization is performed.
+
+        Further details of these algorithms are given in the notes section of
+        the :meth:`node_coloring` method.
+
+    it_limit : int, optional (default=0)
+        Number of iterations of the local search procedure. Not applicable
+        when using ``opt_alg=1``.
+
+    verbose : int, optional (default=0)
+        If set to a positive value, information is output during the
+        optimization process. The higher the value, the more information.
+
+    Returns
+    -------
+    dict
+        A dictionary with keys representing edges and values representing their
+        colors. Colors are identified by the integers $0,1,2,\ldots$. If
+        ``c[(u,v)]==j`` then ``j`` is an element of ``allowed_cols[(u, v)]``.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> import gcol
+    >>>
+    >>> G = nx.cycle_graph(4)
+    >>> E = {(0, 1): [0, 1], (1, 2): [1, 2], (2, 3): [1], (3, 0): [0, 1]}
+    >>> c = gcol.edge_list_coloring(G, E)
+    >>> print("Coloring is", c)
+    Coloring is {(0, 3): 0, (2, 3): 1, (0, 1): 1, (1, 2): 0}
+
+    Raises
+    ------
+    NotImplementedError
+        If ``G`` is a directed graph or a multigraph.
+
+        If ``G`` contains any self-loops.
+
+    ValueError
+        If ``strategy`` is not among the supported options.
+
+        If ``opt_alg`` is not among the supported options.
+
+        If ``it_limit`` is not a nonnegative integer.
+
+        If ``verbose`` is not a nonnegative integer.
+
+        If ``allowed_cols`` has an edge not in G, or is missing an entry for an
+        edge in ``G``.
+
+        If ``allowed_cols`` contains a color label that is not a nonnegative
+        integer.
+
+        If ``allowed_cols`` contains a list that is empty.
+
+        If ``allowed_cols`` contains a pair of adjacent edges that have the
+        same single allowed color.
+
+        If ``allowed_cols`` contains entries for the same edges $(u, v)$ and
+        $(v, u)$.
+
+        If an edge list coloring could not be determined (the lists of
+        allowed colors are too restrictive).
+
+    TypeError
+        If ``allowed_cols`` is not a dict.
+
+    Notes
+    -----
+    All the above algorithms and bounds are described in detail in [1]. The c++
+    code used in [1]_ and [5]_ forms the basis of this library's Python
+    implementations.
+
+    See Also
+    --------
+    :meth:`gcol.node_coloring.node_coloring`
+    :meth:`gcol.edge_coloring.edge_precoloring`
+    :meth:`gcol.node_coloring.node_list_coloring`
+
+    References
+    ----------
+    .. [1] Lewis, R. (2021) A Guide to Graph Colouring: Algorithms and
+      Applications (second ed.). Springer. ISBN: 978-3-030-81053-5.
+      <https://link.springer.com/book/10.1007/978-3-030-81054-2>.
+    .. [2] Wikipedia: Greedy Coloring
+      <https://en.wikipedia.org/wiki/Greedy_coloring>
+    .. [3] Wikipedia: DSatur <https://en.wikipedia.org/wiki/DSatur>
+    .. [4] Wikipedia: Recursive largest first (RLF) algorithm
+      <https://en.wikipedia.org/wiki/Recursive_largest_first_algorithm>
+    .. [5] Lewis, R: Graph Colouring Algorithm User Guide
+      <https://rhydlewis.eu/gcol/>
+
+    """
+    _check_params(G, strategy, opt_alg, it_limit, verbose)
+    if len(G) == 0 or G.number_of_edges() == 0:
+        return {}
+    if allowed_cols is None or len(allowed_cols) == 0:
+        return edge_coloring(
+            G, strategy=strategy, opt_alg=opt_alg, it_limit=it_limit,
+            verbose=verbose
+        )
+    if not isinstance(allowed_cols, dict):
+        raise TypeError(
+            "Error, allowed_cols should be a dict specifying a set of "
+            "allowed colors for every graph entity."
+        )
+    for u, v in allowed_cols:
+        if not G.has_edge(u, v):
+            raise ValueError(
+                "Error, allowed_cols contains an entry for an edge that is "
+                "not present in the graph G."
+            )
+        if (v, u) in allowed_cols:
+            raise ValueError(
+                "Error, allowed_cols has a list for an edge (u, v) and an "
+                "edge (v, u). Only one of these should be used as they mean "
+                "the same thing."
+            )
+    if G.number_of_edges() != len(allowed_cols):
+        raise ValueError(
+            "Error, a list of allowed colors must be specified for every "
+            "edge."
+        )
+    # Form the line graph H and construct a new allowed_cols dict to ensure
+    # naming consistency for the edges
+    H = nx.line_graph(G)
+    edge_allowed_cols = {}
+    for (u, v) in H.nodes():
+        if (u, v) in allowed_cols:
+            edge_allowed_cols[u, v] = allowed_cols[u, v]
+        else:
+            edge_allowed_cols[u, v] = allowed_cols[v, u]
+    return node_list_coloring(
+        H, allowed_cols=edge_allowed_cols, strategy=strategy, opt_alg=opt_alg,
         it_limit=it_limit, verbose=verbose
     )
 
@@ -880,3 +1093,4 @@ edge_colouring = edge_coloring
 edge_k_colouring = edge_k_coloring
 edge_precolouring = edge_precoloring
 equitable_edge_k_colouring = equitable_edge_k_coloring
+edge_list_colouring = edge_list_coloring
